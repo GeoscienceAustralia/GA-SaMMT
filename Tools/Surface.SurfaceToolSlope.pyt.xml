@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<metadata xml:lang="en"><Esri><CreaDate>20210422</CreaDate><CreaTime>15032100</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><ModDate>20211202</ModDate><ModTime>14504600</ModTime><scaleRange><minScale>150000000</minScale><maxScale>5000</maxScale></scaleRange></Esri><tool name="SurfaceToolSlope" displayname="Morphological Surface Tool Slope" toolboxalias="Surface" xmlns=""><arcToolboxHelpPath>c:\program files\arcgis\pro\Resources\Help\gp</arcToolboxHelpPath><parameters><param name="slopeRas" displayname="Input Slope Raster" type="Required" direction="Input" datatype="Raster Dataset" expression="slopeRas"><dialogReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;This is the input &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;slope gradient &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;raster.&lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;&lt;/DIV&gt;</dialogReference><pythonReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;This is the input &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;slope gradient &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;raster.&lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;</pythonReference></param><param name="outFeat" displayname="Output Feature" type="Required" direction="Output" datatype="Feature Class" expression="outFeat"><dialogReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;This is &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;the output&lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt; feature class delineates the &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;"surface" class &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;features.&lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;&lt;/DIV&gt;</dialogReference><pythonReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;This is &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;the output&lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt; feature class delineates the &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;"surface" class &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;features.&lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;</pythonReference></param><param name="areaThreshold" displayname="Area Threshold" type="Required" direction="Input" datatype="Areal Unit" expression="areaThreshold"><dialogReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;The threshold of polygon area. All resulted &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;"surface" class &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;feature polygons should have areas greater than this threshold. &lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;&lt;/DIV&gt;</dialogReference><pythonReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;The threshold of polygon area. All resulted &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;"surface" class &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;feature polygons should have areas greater than this threshold. &lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;</pythonReference></param><param name="nuMF" displayname="Number of times to apply Majority Filter" type="Required" direction="Input" datatype="Long" expression="nuMF"><dialogReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;The number of time to apply Majority Filter. &lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;&lt;/DIV&gt;</dialogReference><pythonReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;The number of time to apply Majority Filter. &lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;</pythonReference></param><param name="tempWS" displayname="Temporary Workspace" type="Required" direction="Input" datatype="Workspace" expression="tempWS"><dialogReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;This is the location of the temporary workspace to store the intermediate datasets.&lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;&lt;/DIV&gt;</dialogReference><pythonReference>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;This is the location of the temporary workspace to store the intermediate datasets.&lt;/SPAN&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;</pythonReference></param></parameters><summary>&lt;DIV STYLE="text-align:Left;"&gt;&lt;DIV&gt;&lt;DIV&gt;&lt;P&gt;&lt;SPAN&gt;This tool classifies an area into three "surface" categories: Plane, Slope and Escarpment from a &lt;/SPAN&gt;&lt;SPAN&gt;slope gradient grid&lt;/SPAN&gt;&lt;SPAN&gt;.&lt;/SPAN&gt;&lt;SPAN&gt; The three "surface" categories are classified based on the values of slope gradient. &lt;/SPAN&gt;&lt;SPAN&gt;The followings are the key steps&lt;/SPAN&gt;&lt;SPAN&gt; of this tool&lt;/SPAN&gt;&lt;SPAN&gt;.&lt;/SPAN&gt;&lt;/P&gt;&lt;OL&gt;&lt;LI&gt;&lt;P&gt;&lt;SPAN&gt;Reclassify the slope gradient raster into a three-class raster based on the following criteria:&lt;/SPAN&gt;&lt;SPAN&gt; &lt;/SPAN&gt;&lt;SPAN&gt;If slope gradient &amp;lt; 2, class = 1 (Plane)&lt;/SPAN&gt;&lt;SPAN&gt;; &lt;/SPAN&gt;&lt;SPAN&gt;If 2 &amp;lt; slope gradient &amp;lt; 10, class = 2 (Slope)&lt;/SPAN&gt;&lt;SPAN&gt;; &lt;/SPAN&gt;&lt;SPAN&gt;If slope gradient &amp;gt; 10, class = 3 (Escarpment)&lt;/SPAN&gt;&lt;SPAN&gt; &lt;/SPAN&gt;&lt;/P&gt;&lt;/LI&gt;&lt;LI&gt;&lt;P&gt;&lt;SPAN&gt;Apply Majority FIlter to the reclassified raster a number of time using the "number_neighbors" option of "Eight" and the "majority_definition" option of "Half"&lt;/SPAN&gt;&lt;SPAN&gt;.&lt;/SPAN&gt;&lt;SPAN&gt; The number of time is defined by the "nuMF" input parameter.&lt;/SPAN&gt;&lt;/P&gt;&lt;/LI&gt;&lt;LI&gt;&lt;P&gt;&lt;SPAN&gt;Convert the &lt;/SPAN&gt;&lt;SPAN&gt;filterred raster &lt;/SPAN&gt;&lt;SPAN&gt;into polygons.&lt;/SPAN&gt;&lt;/P&gt;&lt;/LI&gt;&lt;LI&gt;&lt;P&gt;&lt;SPAN&gt;Select&lt;/SPAN&gt;&lt;SPAN&gt; &lt;/SPAN&gt;&lt;SPAN&gt;the polygons with areas smaller than the "Area Threshold" parameter&lt;/SPAN&gt;&lt;SPAN&gt; &lt;/SPAN&gt;&lt;SPAN&gt; and merge them into their largest neighbours &lt;/SPAN&gt;&lt;SPAN&gt;to obtain the final &lt;/SPAN&gt;&lt;SPAN&gt;"surface"&lt;/SPAN&gt;&lt;SPAN&gt; features as output&lt;/SPAN&gt;&lt;SPAN&gt;.&lt;/SPAN&gt;&lt;/P&gt;&lt;/LI&gt;&lt;/OL&gt;&lt;P&gt;&lt;SPAN&gt;Note that the slope gradient grid can be generated from software other than ArcGIS using a neighbourhood size othe than 3 by 3. &lt;/SPAN&gt;&lt;SPAN&gt;The "surface" classification method is based on the seabed morphology scheme published in&lt;/SPAN&gt;&lt;SPAN&gt; &lt;/SPAN&gt;&lt;SPAN&gt;Dove, D., Nanson, R., Bjarnadóttir, L., Guinan, J., Gafeira, J., Post, A., Dolan, M.; Stewart, H.; Arosio, R, Scott, G.. (2020). A two-part seabed geomorphology classification scheme (v.2); &lt;/SPAN&gt;&lt;SPAN STYLE="font-weight:bold;"&gt;Part 1: morphology features glossary&lt;/SPAN&gt;&lt;SPAN&gt;. Zenodo. &lt;/SPAN&gt;&lt;A href="https://protect-au.mimecast.com/s/ktheCr81nyt8NqOmyT7NRTV?domain=doi.org" STYLE="text-decoration:underline;"&gt;&lt;SPAN STYLE="text-decoration:underline;"&gt;http://doi.org/10.5281/zenodo.4075248&lt;/SPAN&gt;&lt;/A&gt;&lt;SPAN&gt;. .&lt;/SPAN&gt;&lt;/P&gt;&lt;P&gt;&lt;SPAN /&gt;&lt;/P&gt;&lt;/DIV&gt;&lt;/DIV&gt;&lt;/DIV&gt;</summary><scriptExamples><scriptExample><title>Python script code sample</title><code>import arcpy
+from arcpy import env
+from arcpy.sa import *
+arcpy.CheckOutExtension("Spatial")
+
+# import the python toolbox
+arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/Surface.pyt")
+
+env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+env.overwriteOutput = True
+
+# specify input and output parameters of the tool
+inSlope = 'gifford_slope'
+outFeat = 'gifford_surface1'
+areaT = '1 SquareKilometers'
+numMajorityFilter = 3
+tempWorkspace = 'C:/Users/u56061/Documents/ArcGIS/Projects/UserGuide/UserGuide.gdb'
+
+
+# execute the tool with user-defined parameters
+arcpy.Surface.SurfaceToolSlope(inSlope,outFeat,areaT,numMajorityFilter,tempWorkspace)
+
+</code></scriptExample></scriptExamples></tool><dataIdInfo><idCitation><resTitle>Morphological Surface Tool Slope</resTitle></idCitation><searchKeys><keyword>This tool classifies an area into three "surface" categories: Plane</keyword><keyword>Slope and Escarpment from a slope gradient grid.</keyword></searchKeys></dataIdInfo><distInfo><distributor><distorFormat><formatName>ArcToolbox Tool</formatName></distorFormat></distributor></distInfo><mdHrLv><ScopeCd value="005"/></mdHrLv><mdDateSt Sync="TRUE">20211202</mdDateSt><Binary><Thumbnail><Data EsriPropertyType="PictureX">/9j/4AAQSkZJRgABAQEAeAB4AAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsK
+CwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQU
+FBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCACJAVIDASIA
+AhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA
+AAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3
+ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm
+p6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA
+AwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx
+BhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK
+U1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3
+uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9U6KK
+KACiiigAooooAazquNzAfU0GRRtywG7pz1r5S/bOsbbXPit8BNI1HQrrxVpV5rOpC40O1ZN13t0y
+4ZRiSSNDtYB/mYfd45wKl8E+Gte8GXnwO0zWrW70nd4u12Wz0q8vBdTWVi9nqL2tvJKHcMUiMYwG
+YLgKGIANAH1QzKgyxCj3NLuAIBPJ6V8X/t1eKtK17xpoXgq+1vUdKGkaLeeJohp1pdzltUIMOlb/
+ALPGxCLItzIQxCkwr17ct8WPHmtfHT4hfBDx/wDDCe4fWIvBuqeJdM0zzyiXc0VxYCeyl5AJeNri
+Ak/dZs/w5oA++DIqnBZQfrSqwbkEH6V+Znjr4hWfxe8F+PNf0aKfVtH1/wCK/hUx6XPIbczxyWWm
+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</Data></Thumbnail></Binary></metadata>
