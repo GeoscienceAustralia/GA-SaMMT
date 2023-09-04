@@ -192,7 +192,7 @@ class Classify_Bathymetric_Low_Features_Tool(object):
                 raise arcpy.ExecuteError
 
         # check the 'Morphological_Feature' field exists    
-        field = "Morphological_Feature"
+        field = "Morphology_feature"
         fieldType = "TEXT"
         fieldLength = 200
         if field in field_names:
@@ -446,7 +446,7 @@ class Classify_Bathymetric_High_Features_Tool(object):
                 messages.addErrorMessage('The input featureclass does not have ' + attribute + ' attribute. You have to calculate the attribute using the Attributes Tool!')
                 raise arcpy.ExecuteError
         # check the 'Morphological_Feature' field exists    
-        field = "Morphological_Feature"
+        field = "Morphology_feature"
         fieldType = "TEXT"
         fieldLength = 200
         if field in field_names:
