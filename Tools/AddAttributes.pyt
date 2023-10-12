@@ -176,6 +176,9 @@ class Add_Shape_Attributes_High_Tool(object):
         helper.calculateCircularity_Convexity_Solidity(inFeatClass)
         # calculate sinuosity, length to width ratio, and other shape attributes
         helper.calculateSinuosity_LwR(workspaceName,tempFolder,inFeatClass,inBathy)
+        # compact the geodatabase to reduce its size
+        arcpy.Compact_management(workspaceName)
+        arcpy.AddMessage("Compacted the geodatabase")
   
 
         return
@@ -342,7 +345,7 @@ class Add_Shape_Attributes_Low_Tool(object):
             messages.addErrorMessage("The output foot featureclass must be nominated as a feature class in a File GeoDatabase!")
             raise arcpy.ExecuteError
         
-        workspaceName = inFeatClass[0:inFeatClass.rfind("/")] 
+        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]        
         env.workspace=workspaceName
         env.overwriteOutput = True
         
@@ -361,6 +364,9 @@ class Add_Shape_Attributes_Low_Tool(object):
         helper.calculateCircularity_Convexity_Solidity(inFeatClass)
         # calculate sinuosity, length to width ratio, width to depth ratio, and other shape attributes
         helper.calculateSinuosity_LwR_WdR_Slopes(workspaceName,tempFolder,inFeatClass,inBathy,headFeatClass,footFeatClass,additionalOption)
+        # compact the geodatabase to reduce its size
+        arcpy.Compact_management(workspaceName)
+        arcpy.AddMessage("Compacted the geodatabase")
   
 
         return
@@ -612,7 +618,9 @@ class Add_Topographic_Attributes_High_Tool(object):
         arcpy.AddMessage("All attributes added")
         # delete intermediate files
         helper.deleteDataItems(itemList)  
-  
+        # compact the geodatabase to reduce its size
+        arcpy.Compact_management(workspaceName)
+        arcpy.AddMessage("Compacted the geodatabase")  
 
         return
 
@@ -1007,7 +1015,9 @@ class Add_Topographic_Attributes_Low_Tool(object):
         arcpy.AddMessage("All attributes added")
 
         helper.deleteDataItems(itemList)  
-  
+        # compact the geodatabase to reduce its size
+        arcpy.Compact_management(workspaceName)
+        arcpy.AddMessage("Compacted the geodatabase")  
 
         return
     
@@ -1229,8 +1239,12 @@ class Add_Profile_Attributes_High_Tool(object):
         cursor = arcpy.SearchCursor(inFeatClass)
         # to catch the failed feature(s)
         failedIDList = []
-        
+        k = 1
         for row in cursor:
+            # only do this every 100 iterations
+            if k%100 == 1:
+                arcpy.Compact_management(workspaceName) # compact the geodatabase to reduce its size and potentially improve the performance
+                arcpy.AddMessage("Compacted the geodatabase")
             try:
                 itemList = []
                 featID = row.getValue("featID")
@@ -1384,7 +1398,7 @@ class Add_Profile_Attributes_High_Tool(object):
                 arcpy.AddMessage("failed on " + str(featID))
                 failedIDList.append(featID)
                 continue
-                    
+            k += 1        
 
 
         del cursor, row
@@ -1415,7 +1429,10 @@ class Add_Profile_Attributes_High_Tool(object):
             arcpy.AddMessage("Failed on the following featID(s):" + str(failedIDList))
             arcpy.AddMessage("You may want to re-run only these features")
   
-
+        # compact the geodatabase to reduce its size
+        arcpy.Compact_management(workspaceName)
+        arcpy.AddMessage("Compacted the geodatabase")
+        
         return
 
 class Add_Profile_Attributes_Low_Tool(object):
@@ -1630,8 +1647,12 @@ class Add_Profile_Attributes_Low_Tool(object):
         cursor = arcpy.SearchCursor(inFeatClass)
         failedIDList = []
         # loop through each feature
-        
+        k = 1
         for row in cursor:
+            # only do this every 100 iterations
+            if k%100 == 1:
+                arcpy.Compact_management(workspaceName) # compact the geodatabase to reduce its size and potentially improve the performance
+                arcpy.AddMessage("Compacted the geodatabase")
             try:
                 itemList = []
                 featID = row.getValue("featID")
@@ -1782,8 +1803,8 @@ class Add_Profile_Attributes_Low_Tool(object):
             except:
                 arcpy.AddMessage("failed on " + str(featID))
                 failedIDList.append(featID)
-                continue            
-
+                continue
+            k += 1
 
         del cursor, row
         # merge all individual features together
@@ -1811,7 +1832,10 @@ class Add_Profile_Attributes_Low_Tool(object):
             arcpy.AddMessage("Failed on the following featID(s):" + str(failedIDList))
             arcpy.AddMessage("You may want to re-run only these features")
           
-
+        # compact the geodatabase to reduce its size
+        arcpy.Compact_management(workspaceName)
+        arcpy.AddMessage("Compacted the geodatabase")
+        
         return
 
 # All the helper functions are defined here                                                                    
@@ -1835,7 +1859,11 @@ class helpers(object):
         itemList.append(fishnetFeat)          
         # loop through each polygon    
         cursor1 = arcpy.SearchCursor(inFeatClass)
-        for row1 in cursor1:            
+        i = 1
+        for row1 in cursor1:
+            if i%100 == 1:
+                arcpy.Compact_management(workspace)
+                arcpy.AddMessage("Compacted the geodatabase")
             time1 = datetime.now()
             featID = row1.getValue("featID")
             MbrL = row1.getValue("rectangle_Length")
@@ -1910,7 +1938,8 @@ class helpers(object):
             time2 = datetime.now()
             diff = time2 - time1
             arcpy.AddMessage("took "+str(diff)+" to split this polygon.")
-            
+
+            i += 1
  
         del cursor1, row1
 
@@ -3297,7 +3326,12 @@ class helpers(object):
         # using update cursor because we are going to assign new values to these attributes for each feature
         cursor = arcpy.UpdateCursor(inFeatClass)
         # loop through each feature
+        i = 1
         for row in cursor:
+            # only do this every 100 iterations
+            if i%100 == 1:
+                arcpy.Compact_management(workspace) # compact the geodatabase to reduce its size and potentially improve the performance
+                arcpy.AddMessage("Compacted the geodatabase")
             featID = row.getValue("featID")
             lwRatio = float(row.getValue("LengthWidthRatio"))
             arcpy.AddMessage('lwRatio: ' + str(lwRatio))
@@ -3370,6 +3404,7 @@ class helpers(object):
                 row.setValue("mean_segment_slope",meanSlope)          
 
             cursor.updateRow(row)
+            i += 1
 
         
         del cursor, row
