@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "Geoscience Australia's Semi-automated Morphological Mapping Tools (GA-SaMMT)"
+project = "GA-SaMMT"
 copyright = "2023, Geoscience Australia"
 author = "Marine and Coastal Geoscience Team"
 
@@ -24,6 +24,10 @@ exclude_patterns = []
 
 # -- Options for LaTeX output -------------------------------------------------
 # latex_logo = "images/test-image.png"
+latex_elements = {
+    'fncychap': '\\usepackage[Bjornstrup]{fncychap}',
+    # ...
+}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
