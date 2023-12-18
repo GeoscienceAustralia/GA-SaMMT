@@ -10,6 +10,14 @@ Welcome to GA-SaMMT's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   accessory
+   add_attributes
+   bathymetric_high
+   bathymetric_low
+   classification_feature
+   surface
+   bibliography
+
 
 
 Indices and tables
