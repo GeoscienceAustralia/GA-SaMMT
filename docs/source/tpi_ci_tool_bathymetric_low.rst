@@ -11,8 +11,8 @@ The followings are the key steps of this tool:
 1. Calculate the Aspect raster from the input bathymetry raster
 2. Calculate CI from the Aspect raster
 3. Calculate TPI from the input bathymetry raster using the *TPI Circle Radius* parameter
-4. Calculate the CI threshold using equation :eq:`ci-threshold-low`, where *c* is the *CI STD Scale* parameter, *mean_CI* and *STD_CI* are the mean and standard deviation statistics of the CI raster. The CI threshold should always have a negative value
-5. Calculate the TPI threshold using equation :eq:`tpi-threshold`, where *c* is the *TPI STD Scale* parameter, *mean_TPI* and *STD_TPI* are the mean and standard deviation statistics of the TPI raster. The TPI threshold should always have a negative value
+4. Calculate the CI threshold using equation :eq:`ci-threshold`, where *c* is the *CI STD Scale* parameter, *mean_CI* and *STD_CI* are the mean and standard deviation statistics of the CI raster. The CI threshold should always have a negative value
+5. Calculate the TPI threshold using equation :eq:`tpi-threshold-low`, where *c* is the *TPI STD Scale* parameter, *mean_TPI* and *STD_TPI* are the mean and standard deviation statistics of the TPI raster. The TPI threshold should always have a negative value
 6. Select the first set of areas that have CI values smaller than the CI threshold
 7. Select the second set of areas that have TPI values smaller than the TPI threshold
 8. Mosaic the two sets of areas together to form a set of bathymetric low features
