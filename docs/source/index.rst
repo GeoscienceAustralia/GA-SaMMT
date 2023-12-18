@@ -12,8 +12,7 @@ Welcome to GA-SaMMT's documentation!
 
    accessory
    add_attributes
-   bathymetric_high
-   bathymetric_low
+   bathymetric_features
    classification_feature
    surface
    bibliography
