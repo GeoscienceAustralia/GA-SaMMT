@@ -16,4 +16,3 @@ They can also be used to classify or assign each feature into a feature type bas
     add_shape_attributes_low
     add_topographic_attributes_high
     add_topographic_attributes_low
-    add_attributes_equations

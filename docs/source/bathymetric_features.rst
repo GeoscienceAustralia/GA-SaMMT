@@ -14,4 +14,3 @@ This toolset contains several tools that are used to map both high and low bathy
     tpi_ci_tool_bathymetric_low
     openness_tool_bathymetric_high
     openness_tool_bathymetric_low
-    bathymetric_features_equations
