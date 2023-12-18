@@ -20,12 +20,10 @@ This tool classifies each bathymetric high feature into one of these 10 feature 
 
 Based on the attibutes calculated using **AddAttributes** Toolset.
 
-The classification scheme is based on this publication [Dove2020]_
+The classification scheme is based on this publication :cite:`dove_2020_4075248`.
 
-.. `Dove, D., Nanson, R., Bjarnadóttir, L., Guinan, J., Gafeira, J., Post, A., Dolan, M.; Stewart, H.; Arosio, R, Scott, G.. (2020). A two-part seabed geomorphology classification scheme (v.2); Part 1: morphology features glossary. Zenodo. <http://doi.org/10.5281/zenodo.4075248>`_.
-.. [Dove2020] Dove, D., Nanson, R., Bjarnadóttir, L., Guinan, J., Gafeira, J., Post, A., Dolan, M.; Stewart, H.; Arosio, R, Scott, G.. (2020). A two-part seabed geomorphology classification scheme (v.2); Part 1: morphology features glossary. Zenodo. http://doi.org/10.5281/zenodo.4075248 
 
-The classification rules largely follow the *Dove et al. (2020)* scheme, with some modifications. They are as follows:
+The classification rules largely follow the :cite:`dove_2020_4075248` scheme, with some modifications. They are as follows:
 
 .. code-block:: python
     :linenos:
@@ -69,3 +67,4 @@ Note that a range of default values have been set for those threshold values.
 
 
 .. image:: images/highs.png
+   :align: center

@@ -42,3 +42,4 @@ When there are a large number of features in the dataset, the *Area Threshold* a
 Note that the output *featureclasses* from the **Merge Connected Features Tool** can be used as the input to this tool. 
 
 .. image:: images/connect.png
+   :align: center

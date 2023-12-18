@@ -51,3 +51,4 @@ The following attributes are calculated to describe the cross-section profile(s)
 
 
 .. image:: images/profile_attributes2.png
+   :align: center

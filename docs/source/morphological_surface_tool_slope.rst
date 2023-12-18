@@ -6,7 +6,7 @@ This tool classifies an area into three **surface** categories: *Plane*, *Slope*
 The three **surface** categories are classified based on the values of slope gradient.
 Note that the slope gradient grid can be generated from software other than ArcGIS using a neighbourhood size othe than 3 by 3.
 
-The *surface* classification method is based on the seabed morphology scheme published in `Dove, D., Nanson, R., Bjarnadóttir, L., Guinan, J., Gafeira, J., Post, A., Dolan, M.; Stewart, H.; Arosio, R, Scott, G.. (2020). A two-part seabed geomorphology classification scheme (v.2); Part 1: morphology features glossary. Zenodo. <http://doi.org/10.5281/zenodo.4075248>`_.
+The *surface* classification method is based on the seabed morphology scheme published in :cite:`dove_2020_4075248`.
 
 The followings are the key steps of this tool.
 
@@ -22,3 +22,4 @@ The followings are the key steps of this tool.
 
 
 .. image:: images/surface.png
+   :align: center

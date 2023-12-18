@@ -2,7 +2,7 @@ Openness Tool Bathymetric High
 ------------------------------
 
 
-This tool maps bathymetric high features from a bathymetric data using an openness based method [Yokoyama2002]_.
+This tool maps bathymetric high features from a bathymetric data using an openness based method :cite:`Yokoyama-2002`.
 
 Smaller negative openness (NO) usually indicates bathymetric high location.
 
@@ -24,7 +24,6 @@ The openness radius should be large enough to capture the largest bathymetric hi
 For example, for a 5m resolution bathymetry raster, a radius of 50 cells should be used to capture any bathymetric high features that is smaller than 500m in length.
 Users should also experiment the *NO STD Scale Large*, the *NO STD Scale Small* and the *Area Threshold* parameters to obtain an optimal output solution. 
 
-.. [Yokoyama2002] Yokoyama, R., Shirasawa, M., Pike, R.J., 2002. Visualising topography by openness: a new application of image processing to digital elevation models, Photogrammetric Engineering and Remote Sensing, 68, 257-265.
-
 
 .. image:: images/openness.png
+   :align: center

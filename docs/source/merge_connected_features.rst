@@ -12,3 +12,4 @@ The new *featureclass* can also be directly used as input to the **AddAttributes
 Note that this tool can be used for both bathymetric high and bathymetric low features.
 
 .. image:: images/merge.png
+   :align: center

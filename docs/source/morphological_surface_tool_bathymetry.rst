@@ -5,9 +5,8 @@ Morphological Surface Tool Bathymetry
 This tool classifies an area into three **surface** categories: *Plane*, *Slope* and *Escarpment* from a bathymetric data.
 The three **surface** categories are classified based on the values of slope gradient.
 
-The *surface* classification method is based on the seabed morphology scheme published in [Dove2020]_.
+The *surface* classification method is based on the seabed morphology scheme published in :cite:`dove_2020_4075248`.
 
-.. [Dove2020] Dove, D., Nanson, R., Bjarnadóttir, L., Guinan, J., Gafeira, J., Post, A., Dolan, M.; Stewart, H.; Arosio, R, Scott, G.. (2020). A two-part seabed geomorphology classification scheme (v.2); Part 1: morphology features glossary. Zenodo. http://doi.org/10.5281/zenodo.4075248 
 
 The followings are the key steps of this tool.
 

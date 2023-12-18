@@ -34,3 +34,4 @@ In addition, a number of intermediate attributes are also calculated:
 
 
 .. image:: images/shape_attributes3_4.png
+   :align: center

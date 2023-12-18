@@ -14,3 +14,4 @@ The followings are the steps:
 Note that this accessory tool is clearner than ArcGIS *Update* tool because the duplicates have been removed. In addition, this tool can update feature boundary for more than two input datasets.
 
 .. image:: images/update.png
+   :align: center

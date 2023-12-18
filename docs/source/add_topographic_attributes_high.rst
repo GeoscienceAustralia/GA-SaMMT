@@ -19,3 +19,4 @@ The following attributes are calculated from the bathymetry and slope-gradient r
 
 
 .. image:: images/topographic_attributes1.png
+   :align: center
