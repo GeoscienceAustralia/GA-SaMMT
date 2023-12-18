@@ -9,6 +9,12 @@ The followings are the key steps of this tool:
 
 1. Calculate TPI from the input bathymetry raster using the *TPI Circle Radius* parameter
 2. Calculate the TPI threshold using this equation :eq:`tpi-threshold-low`, where *c* is the *TPI STD Scale* parameter, *mean_TPI* and *STD_TPI* are the mean and standard deviation statistics of the TPI raster. The TPI threshold should always have a negative value
+
+   .. math::
+     :label: tpi-threshold-low
+ 
+     TPI\_threshold = mean\_TPI - c * STD\_TPI
+
 3. Select locations that have TPI values smaller than the TPI threshold
 4. Convert the selected areas into polygons
 5. Remove the polygons with areas smaller than the *Area Threshold* parameter to obtain the final set of bathymetric low features as output

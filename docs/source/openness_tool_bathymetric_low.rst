@@ -10,6 +10,12 @@ The followings are the key steps of this tool:
 1. Calculate PO from the input bathymetry raster using the *Openness Circle Radius* parameter
 2. Identify the possible *bottoms* of the bathymetric low features from the bathymetry raster based on ArcGIS's *Sink* function
 3. Calculate the PO threshold by equation :eq:`po-threshold`, where *c* is the *PO STD Scale Large* parameter or the *PO STD Scale Small* parameter, *mean_PO* and *STD_PO* are the mean and standard deviation statistics of the PO raster
+
+   .. math::
+     :label: po-threshold
+   
+     PO\_threshold = mean\_PO - c * STD\_PO
+
 4. Select the first set of areas that have PO values smaller than the *PO STD Scale Large* threshold
 5. Select the second set of areas that have PO values smaller than the *PO STD Scale Small* threshold
 6. Further select from the two sets of areas only those areas that contain *bottoms*
