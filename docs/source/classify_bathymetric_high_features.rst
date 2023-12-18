@@ -29,26 +29,26 @@ The classification rules largely follow the :cite:`dove_2020_4075248` scheme, wi
     :linenos:
 
     if LengthWidthRatio >= ridge_lwRationT:
-        feature_type = Ridge
+        feature_type = "Ridge"
     elif depthRange >= 1000:  # metres
-        feature_type = Seamount
+        feature_type = "Seamount"
     elif depthRange >= meanWidth:
-        feature_type = Pinnacle
-    elif (profileShape == Triangle) and ((profileSideSlope == Moderate) or (profileSideSlope == Steep)) and (polygonCircularity >= cone_circularityT):
-        feature_type = Cone
-    elif (profileSlope == Flat) and (minDepth <= bank_minDepth) and (polygonArea >= bank_areaT):
-        feature_type = Bank
-    elif (profileSlope == Flat) and (polygonArea > plateau_areaT) and ((one_profileSideSlope == Moderate) or (one_profileSideSlope == Steep)):
-        feature_type = Plateau
+        feature_type = "Pinnacle"
+    elif (profileShape == "Triangle") and ((profileSideSlope == "Moderate") or (profileSideSlope == "Steep")) and (polygonCircularity >= cone_circularityT):
+        feature_type = "Cone"
+    elif (profileSlope == "Flat") and (minDepth <= bank_minDepth) and (polygonArea >= bank_areaT):
+        feature_type = "Bank"
+    elif (profileSlope == "Flat") and (polygonArea > plateau_areaT) and ((one_profileSideSlope == "Moderate") or (one_profileSideSlope == "Steep")):
+        feature_type = "Plateau"
     elif depthRange >= 500:  # metres
-        if profileShape == Regular:
-            feature_type = Knoll
+        if profileShape == "Regular":
+            feature_type = "Knoll"
         else:
-           feature_type = Hill
+           feature_type = "Hill"
     elif (depthRange <= hummock_depthRangeT) and (polygonArea <= hummock_areaT):
-        feature_type = Hummock
+        feature_type = "Hummock"
     else:
-        feature_type = Mound
+        feature_type = "Mound"
 
 
 Where:

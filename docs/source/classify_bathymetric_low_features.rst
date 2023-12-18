@@ -28,20 +28,20 @@ The classification rules largely follow the :cite:`dove_2020_4075248` scheme, wi
 
     if lwRatio >= lwRatioT:
         if headDepth >= headDepthT:
-            if (profileSymmetry == asymmetric) and ((profileSlope == steep) or (profileSlope == moderate)):
-                feature_type = Trench
+            if (profileSymmetry == asymmetric) and ((profileSlope == "Steep") or (profileSlope == "Moderate")):
+                feature_type = "Trench"
             else:
-                feature_type = Trough
-        elif (meanSegmentSlope >= meanSegmentSlopeT1) and ((profileSide == steep) or (profileSide == moderate)):
-            feature_type = Gully
+                feature_type = "Trough"
+        elif (meanSegmentSlope >= meanSegmentSlopeT1) and ((profileSide == "Steep") or (profileSide == "Moderate")):
+            feature_type = "Gully"
         elif (hfDepthRange >= hfDepthRangeT) and (meanSegmentSlope >= meanSegmentSlopeT2):
-            fetature_type = Canyon
+            fetature_type = "Canyon"
         else:
-            feature_type = Valley  # or Channel; TODO; confirm logic
-    elif (polygonCircularity >= circularityT) and (profileSide is steep):
-        feature_type = Hole
+            feature_type = "Valley"  # or Channel; TODO; confirm logic
+    elif (polygonCircularity >= circularityT) and (profileSide is "Steep"):
+        feature_type = "Hole"
     else:
-        feature_type = Depression
+        feature_type = "Depression"
 
 
 Where:
