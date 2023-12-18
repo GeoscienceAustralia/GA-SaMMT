@@ -54,3 +54,26 @@ The following attributes are calculated to describe the cross-section profile(s)
 
 .. image:: images/profile_attributes2.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/AddAttributes.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inFeat = 'test_BH'
+   inBathy = 'gifford_bathy'
+   areaT = '300000 SquareMeters'
+   tempFolder = 'C:/semi_automation_tools/temp4'
+   
+   # execute the tool
+   arcpy.AddAttributes.Add_Profile_Attributes_High_Tool(inFeat,inBathy,areaT,tempFolder)

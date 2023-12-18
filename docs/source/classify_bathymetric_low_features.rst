@@ -61,3 +61,31 @@ Also note that *meanSegmentSlopeT2* must be smaller than *meanSegmentSlopeT1*.
 
 .. image:: images/lows.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/ClassificationFeature.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inFeat = 'test_BL'
+   LWR = 8.0
+   hfDR = 600.0 # in meters
+   hD = 4000.0 # in meters
+   shapeC = 0.5
+   segmentS1 = 7.0 # degree
+   segmentS2 = 2.0 # degree
+   
+   ### execute the tool with default parameters
+   ##arcpy.ClassifyFeatures.Classify_Bathymetric_Low_Features_Tool(inFeat)
+   # execute the tool with user-defined parameters
+   arcpy.ClassifyFeatures.Classify_Bathymetric_Low_Features_Tool(inFeat,LWR,hD,segmentS1,hfDR,segmentS2,shapeC)

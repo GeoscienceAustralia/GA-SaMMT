@@ -20,3 +20,29 @@ Users should also experiment the *TPI STD Scale* and the *Area Threshold* parame
 
 .. image:: images/TPI.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/BathymetricLow.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inBathy = 'gifford_bathy'
+   outTPI = 'gifford_tpi10'
+   outFeat = 'tpi10_1std_300000m2_BL'
+   areaT = '300000 SquareMeters'
+   tpiRadius = 10
+   tpiSTD = 1.0
+   tempWorkspace = 'C:/Users/u56061/Documents/ArcGIS/Projects/UserGuide/UserGuide.gdb' 
+   
+   # execute the tool
+   arcpy.BathymetricLow.TPIToolLow(inBathy,outTPI,outFeat,areaT,tpiRadius,tpiSTD,tempWorkspace)

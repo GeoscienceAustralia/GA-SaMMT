@@ -27,3 +27,30 @@ Users should also experiment the *NO STD Scale Large*, the *NO STD Scale Small* 
 
 .. image:: images/openness.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/BathymetricHigh.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inBathy = 'gifford_bathy'
+   outNO = 'gifford_no10'
+   outFeat = 'no10_1std_300000m2_BH'
+   areaT = '300000 SquareMeters'
+   noRadius = 10
+   noSTDLarge = 2.0
+   noSTDSmall = 1.0
+   tempWorkspace = 'C:/Users/u56061/Documents/ArcGIS/Projects/UserGuide/UserGuide.gdb' 
+   
+   # execute the tool
+   arcpy.BathymetricHigh.Openness_High_Tool(inBathy,outNO,outFeat,areaT,noRadius,noSTDLarge,noSTDSmall,tempWorkspace)

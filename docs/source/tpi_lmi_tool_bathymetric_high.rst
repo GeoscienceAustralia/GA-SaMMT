@@ -26,3 +26,32 @@ Users should also experiment the *TPI STD Scale Large*, the *TPI STD Scale Small
 
 .. image:: images/TPI_LMI.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/BathymetricHigh.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inBathy = 'gifford_bathy'
+   outTPI = 'gifford_tpi100'
+   outFeat = 'tpi100_1_05std_lmi_1std_30km2_BH'
+   areaT = '30 SquareKilometers'
+   tpiRadius = 100
+   tpiSTDLarge = 1.0
+   tpiSTDSmall = 0.5
+   weightFile = 'C:/semi_automation_tools/User_Guide/Tools/weight_3.txt'
+   lmiSTD = 1.0
+   tempWorkspace = 'C:/Users/u56061/Documents/ArcGIS/Projects/UserGuide/UserGuide.gdb' 
+   
+   # execute the tool
+   arcpy.BathymetricHigh.TPI_LMITool(inBathy,outTPI,outFeat,areaT,tpiRadius,tpiSTDLarge,tpiSTDSmall,weightFile,lmiSTD,tempWorkspace)

@@ -23,3 +23,29 @@ The followings are the key steps of this tool.
 
 .. image:: images/surface.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   import arcpy
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/Surface.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inSlope = 'gifford_slope'
+   outFeat = 'gifford_surface1'
+   areaT = '1 SquareKilometers'
+   numMajorityFilter = 3
+   tempWorkspace = 'C:/Users/u56061/Documents/ArcGIS/Projects/UserGuide/UserGuide.gdb'
+   
+   
+   # execute the tool with user-defined parameters
+   arcpy.Surface.SurfaceToolSlope(inSlope,outFeat,areaT,numMajorityFilter,tempWorkspace)

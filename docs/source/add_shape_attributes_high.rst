@@ -26,3 +26,25 @@ In addition, a number of intermediate attributes are also calculated.
 
 .. image:: images/shape_attributes3.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/AddAttributes.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inFeat = 'test_BH'
+   inBathy = 'gifford_bathy'
+   tempFolder = 'C:/semi_automation_tools/temp4'
+   
+   # execute the tool
+   arcpy.AddAttributes.Add_Shape_Attributes_High_Tool(inFeat,inBathy,tempFolder)

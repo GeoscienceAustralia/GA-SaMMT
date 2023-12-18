@@ -26,3 +26,30 @@ Users should also experiment the *PO STD Scale Large*, the *PO STD Scale Small* 
 
 .. image:: images/openness.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/BathymetricLow.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inBathy = 'gifford_bathy'
+   outPO = 'gifford_po10'
+   outFeat = 'po10_1_05std_300000m2_BL'
+   areaT = '300000 SquareMeters'
+   poRadius = 10
+   poSTDLarge = 1.0
+   poSTDSmall = 0.5
+   tempWorkspace = 'C:/Users/u56061/Documents/ArcGIS/Projects/UserGuide/UserGuide.gdb' 
+   
+   # execute the tool
+   arcpy.BathymetricLow.Openness_Low_Tool(inBathy,outPO,outFeat,areaT,poRadius,poSTDLarge,poSTDSmall,tempWorkspace)

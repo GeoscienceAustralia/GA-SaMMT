@@ -13,3 +13,25 @@ Note that this tool can be used for both bathymetric high and bathymetric low fe
 
 .. image:: images/merge.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/Accessory_Tools.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inFeat = 'po10_1_05std_300000m2_BL'
+   mergedFeatPoint = 'po10_1_05std_300000m2_BL_joinedPoint'
+   
+   
+   # execute the tool with user-defined parameters
+   arcpy.AccessoryTools.Merge_Connected_Features_Tool(inFeat,mergedFeatPoint)

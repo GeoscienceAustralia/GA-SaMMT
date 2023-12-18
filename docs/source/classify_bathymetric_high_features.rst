@@ -68,3 +68,32 @@ Note that a range of default values have been set for those threshold values.
 
 .. image:: images/highs.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/ClassificationFeature.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inFeat = 'test_BH'
+   ridge_LWR = 5.0
+   bank_MD = 200.0 # in meters
+   bank_areaT = 1.0 # in km2
+   plateau_areaT = 100.0 # in km2
+   hummock_DR = 10.0 # in meters
+   hummock_areaT = 1000.0 # in m2
+   cone_C = 0.75
+   
+   ### execute the tool with default parameters
+   ##arcpy.ClassifyFeatures.Classify_Bathymetric_High_Features_Tool(inFeat)
+   # execute the tool with user-defined parameters
+   arcpy.ClassifyFeatures.Classify_Bathymetric_High_Features_Tool(inFeat,ridge_LWR,bank_MD,bank_areaT,plateau_areaT,hummock_DR,hummock_areaT,cone_C)

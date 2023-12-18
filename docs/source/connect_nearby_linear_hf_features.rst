@@ -54,3 +54,31 @@ Note that the output featureclasses from the *Merge Connected Features Tool* can
 
 .. image:: images/connectHF.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/accessory_tools/Accessory_Tools.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Point_Cloates.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inFeat = 'pc_tpi10_075std_45m2'
+   inBathy = 'pc_bathy'
+   distT = '200 Meters'
+   angleT = 20
+   distW = 2
+   angleW = 1
+   conOption = 'Mid points on Minimum Bounding Rectangle'
+   outFeat = 'pc_tpi10_075std_45m2_connected'
+   tempFolder = 'C:/semi_automation_tools/temp'
+   
+   # execute the tool with user-defined parameters
+   arcpy.AccessoryTools.Connect_Nearby_Linear_HF_Features_Tool(inFeat,inBathy,distT,angleT,distW,angleW,conOption,'#','#',outFeat,tempFolder)

@@ -24,3 +24,28 @@ The following attributes are calculated from the bathymetry and slope-gradient r
 
 .. image:: images/topographic_attributes1_2.png
    :align: center
+
+
+.. code-block:: python
+   :linenos:
+
+   import arcpy
+   from arcpy import env
+   from arcpy.sa import *
+   arcpy.CheckOutExtension("Spatial")
+   
+   # import the python toolbox
+   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/AddAttributes.pyt")
+   
+   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
+   env.overwriteOutput = True
+   
+   # specify input and output parameters of the tool
+   inFeat = 'test_BL'
+   inBathy = 'gifford_bathy'
+   inSlope = 'gifford_slope'
+   headFeat = 'test_BL_head'
+   footFeat = 'test_BL_foot'
+   
+   # execute the tool
+   arcpy.AddAttributes.Add_Topographic_Attributes_Low_Tool(inFeat,inBathy,inSlope,headFeat,footFeat)
