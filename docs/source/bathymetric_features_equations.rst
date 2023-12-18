@@ -3,9 +3,15 @@ Bathymetry Features Equations
 
 
 .. math::
-   :label: tpi-threshold
+   :label: tpi-threshold-high
 
     TPI\_threshold = mean\_TPI + c * STD\_TPI
+
+
+.. math::
+   :label: tpi-threshold-low
+
+    TPI\_threshold = mean\_TPI - c * STD\_TPI
 
 
 .. math::
@@ -29,4 +35,4 @@ Bathymetry Features Equations
 .. math::
    :label: ci-threshold
 
-   CI\_threshold = mean\_CI + c * STD\_CI
+   CI\_threshold = mean\_CI - c * STD\_CI

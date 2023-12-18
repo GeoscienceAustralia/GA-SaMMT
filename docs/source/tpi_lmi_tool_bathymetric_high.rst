@@ -8,7 +8,7 @@ Positive TPI usually indicates bathymetric high location. Positive LMI usually i
 The followings are the key steps of this tool:
 
 1. Calculate TPI from the input bathymetry raster using the *TPI Circle Radius* parameter
-2. Calculate the TPI thresholds using equation :eq:`tpi-threshold`, where *c* is the *TPI STD Scale Large* parameter or the *TPI STD Scale Small* parameter, *mean_TPI* and *STD_TPI* are the mean and standard deviation statistics of the TPI raster
+2. Calculate the TPI thresholds using equation :eq:`tpi-threshold-high`, where *c* is the *TPI STD Scale Large* parameter or the *TPI STD Scale Small* parameter, *mean_TPI* and *STD_TPI* are the mean and standard deviation statistics of the TPI raster
 3. Select the first set of areas that have TPI values greater than the *TPI STD Scale Large* threshold
 4. Select the second set of areas that have TPI values greater than the *TPI STD Scale Small* threshold
 5. These two sets of areas and the bathymetry data are used together to select the 'core' areas of bathymetric high features, through GIS overlay and selection analyses
