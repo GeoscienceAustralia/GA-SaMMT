@@ -23,9 +23,5 @@ For example, for a 5m resolution bathymetry raster, a radius of 50 cells should 
 Users should also experiment the *TPI STD Scale*, the *CI STD Scale* and the *Area Threshold* parameters to obtain an optimal output solution. 
 
 
-.. math::
-   :label: ci-threshold
-
-
 .. image:: images/TPI_CI.png
    :align: center

@@ -24,47 +24,5 @@ In addition, a number of intermediate attributes are also calculated.
 5. *convexhull_Perimeter*: the perimeter of the convex hull that bounds the feature polygon
 
 
-.. math::
-   :label: compactness
-
-   4 * \pi * A / P^2
-
-
-.. math::
-   :label: sinuosity
-
-   sinuous\_length / head\_foot\_length
-
-
-.. math::
-   :label: length-width-ratio
-
-   sinuous\_length / mean\_width
-
-
-.. math::
-   :label: circularity
-
-   4 * \pi / A / Pc^2
-
-
-.. math::
-   :label: circularity2
-
-   \frac{4 * \pi * A}{Pc^2}
-
-
-.. math::
-   :label: convexity
-
-   Pc / P
-
-
-.. math::
-   :label: solidity
-
-   A / Ac
-
-
 .. image:: images/shape_attributes3.png
    :align: center

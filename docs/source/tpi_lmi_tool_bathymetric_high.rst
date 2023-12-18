@@ -24,11 +24,5 @@ For example, for a 5m resolution bathymetry raster, a radius of 50 cells should 
 Users should also experiment the *TPI STD Scale Large*, the *TPI STD Scale Small*, the *LMI STD Scale* and the *Area Threshold* parameters to obtain an optimal output solution. 
 
 
-.. math::
-   :label: lmi-threshold
-
-    LMI\_threshold = mean\_LMI + c * STD\_LMI
-
-
 .. image:: images/TPI_LMI.png
    :align: center

@@ -25,11 +25,5 @@ For example, for a 5m resolution bathymetry raster, a radius of 50 cells should 
 Users should also experiment the *NO STD Scale Large*, the *NO STD Scale Small* and the *Area Threshold* parameters to obtain an optimal output solution. 
 
 
-.. math::
-   :label: no-threshold
-
-   NO\_threshold = mean\_NO - c * STD\_NO
-
-
 .. image:: images/openness.png
    :align: center

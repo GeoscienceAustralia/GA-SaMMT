@@ -22,23 +22,5 @@ The following attributes are calculated from the bathymetry and slope-gradient r
 14. *stdGradient*: the standard deviation of the slope-gradients within the feature polygon
 
 
-.. math::
-   :label: slope-gradient
-
-    \arctan(\frac{head\_foot\_depthRange}{head\_foot\_length})
-
-
-.. math::
-   :label: depth-range
-
-    (maxDepth - minDepth)
-
-
-.. math::
-   :label: gradient-range
-
-    (maxGradient - minGradient)
-
-
 .. image:: images/topographic_attributes1_2.png
    :align: center

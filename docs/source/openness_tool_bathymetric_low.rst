@@ -24,11 +24,5 @@ For example, for a 5m resolution bathymetry raster, a radius of 50 cells should 
 Users should also experiment the *PO STD Scale Large*, the *PO STD Scale Small* and the *Area Threshold* parameters to obtain an optimal output solution. 
 
 
-.. math::
-   :label: po-threshold
-
-   PO\_threshold = mean\_PO - c * STD\_PO
-
-
 .. image:: images/openness.png
    :align: center
