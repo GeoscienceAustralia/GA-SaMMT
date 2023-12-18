@@ -10,7 +10,7 @@ The followings are the key steps of this tool:
 
 1. Calculate NO from the input bathymetry raster using the *Openness Circle Radius* parameter
 2. Identify the possible *tops* of the bathymetric high features from the bathymetry raster based on ArcGIS's *Sink* function
-3. Calculate the NO threshold using this equation: NO threshold = mean_NO - c * STD_NO, where c is the *NO STD Scale Large* parameter or the *NO STD Scale Small* parameter, *mean_NO* and *STD_NO* are the mean and standard deviation statistics of the NO raster
+3. Calculate the NO threshold by using equation: :eq:`no-threshold`, where c is the *NO STD Scale Large* parameter or the *NO STD Scale Small* parameter, *mean_NO* and *STD_NO* are the mean and standard deviation statistics of the NO raster
 4. Select the first set of areas that have NO values smaller than the *NO STD Scale Large* threshold
 5. Select the second set of areas that have NO values smaller than the *NO STD Scale Small* threshold
 6. Further select from the two sets of areas only those areas that contain *tops*
@@ -23,6 +23,12 @@ The followings are the key steps of this tool:
 The openness radius should be large enough to capture the largest bathymetric high features in the dataset.
 For example, for a 5m resolution bathymetry raster, a radius of 50 cells should be used to capture any bathymetric high features that is smaller than 500m in length.
 Users should also experiment the *NO STD Scale Large*, the *NO STD Scale Small* and the *Area Threshold* parameters to obtain an optimal output solution. 
+
+
+.. math::
+   :label: no-threshold
+
+   NO\_threshold = mean\_NO - c * STD\_NO
 
 
 .. image:: images/openness.png
