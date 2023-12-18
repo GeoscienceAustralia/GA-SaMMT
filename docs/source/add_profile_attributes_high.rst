@@ -4,7 +4,9 @@ Add Profile Attributes High
 
 This tool add a number of profile attributes to the input feature class.
 This tool requires the **LengthWidthRatio** attribute to be calculated first using the Add Shape Attributes High Tool.
+
 For each bathymetric high feature, if its area is larger than a user-defined threshold, five cross-section profiles passing through the polygon centre with an equal angle-interval are generated; otherwise only one cross-section profile passing through the polygon centre is generated.
+
 The following attributes are calculated to describe the cross-section profile(s). Note that a complex cross-section is simplified by identifying and linking knick points. The start and end points of a cross-section profile are always selected as knick points.
 
 1. **profieShape**: Describe the shape of the cross-section profile
