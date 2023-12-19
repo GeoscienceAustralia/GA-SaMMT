@@ -35,6 +35,8 @@ The ESRI [toolboxes](./Tools) contains six Python toolboxes:
 * Accessory_Tools is used to help the mapping processes and contains:
     * Merge Connected Features Tool
     * Connect Nearby Linear Features Tool
+    * Connect Nearby Linear HF Features Tool
+    * Update Feature Boundary
 * Surface is used to map three-class morophological surface and contains:
     * Morphological Surface Tool Bathymetry
     * Morphological Surface Tool Slope
