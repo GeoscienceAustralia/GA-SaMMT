@@ -9,7 +9,7 @@ Seabed characterisation requires the measurement, description and classification
 A key first step in this process is the identification of morphological forms, as derived from bathymetric data.
 To facilitate rapid and consistent morphological mapping, Geoscience Australia has developed several semi-automated ArcGIS toolboxes that:
 
-* Generate polygons from bathymetry surfaces that represent *bathymetric high* and *bathynmetric low* seabed features
+* Generate polygons from bathymetry surfaces that represent *bathymetric high* and *bathymetric low* seabed features
 * Calculate metrics/attributes to describe the characteristics of the polygons
 * Classify individual polygons into one of the bathymetric *high* or *low* seabed morphological features
 
