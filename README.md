@@ -1,4 +1,6 @@
 # GA-SaMMT
+[![Documentation Status](https://readthedocs.org/projects/ga-sammt/badge/?version=latest)](https://ga-sammt.readthedocs.io/en/latest/?badge=latest)
+
 Geoscience Australia's Semi-automated Morphological Mapping Tools (GA-SaMMT) for Seabed Characterisation
 
 Seabed characterisation requires the measurement, description and classification of physical features on the seabed.
@@ -10,6 +12,15 @@ To facilitate rapid and consistent morphological mapping, Geoscience Australia h
 * Classify individual polygons into one of the bathymetric *high* or *low* seabed morphological features
 
 The toolboxes adopt the suite of terms as presented in the glossary of seabed morphology deatures defined by [Dove, D., Nanson, R., Bjarnadóttir, L., Guinan, J., Gafeira, J., Post, A., Dolan, M.; Stewart, H.; Arosio, R, Scott, G.. (2020). A two-part seabed geomorphology classification scheme (v.2); Part 1: morphology features glossary. Zenodo.](http://doi.org/10.5281/zenodo.4075248).
+
+## Documentation
+
+### User guide
+See the [user guide](./User_Guide/GA-SaMMT_v1p2_user_guide.pdf) for a tutorial and walkthrough of the toolsets.
+
+### Toolbox details
+For more detailed information on the individual toolboxes see https://ga-sammt.readthedocs.io/en/latest/ 
+
 
 ## Toolboxes
 The ESRI [toolboxes](./Tools) contains six Python toolboxes:
@@ -40,9 +51,6 @@ The ESRI [toolboxes](./Tools) contains six Python toolboxes:
 * Surface is used to map three-class morophological surface and contains:
     * Morphological Surface Tool Bathymetry
     * Morphological Surface Tool Slope
-
-## User guide
-See the [user guide](./User_Guide/GA-SaMMT_v1p2_user_guide.pdf) for a tutorial and walkthrough of the toolsets.
 
 
 ## Publication and sample data
