@@ -1,5 +1,6 @@
 # GA-SaMMT
 [![Documentation Status](https://readthedocs.org/projects/ga-sammt/badge/?version=latest)](https://ga-sammt.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4075248.svg)](https://doi.org/10.5281/zenodo.4075248)
 
 Geoscience Australia's Semi-automated Morphological Mapping Tools (GA-SaMMT) for Seabed Characterisation
 
