@@ -2,7 +2,7 @@ Classify Bathymetric Low Features
 ---------------------------------
 
 
-This tool classifies each bathymetric low feature into one of these 8 feature types:
+This tool classifies each bathymetric low feature into one of these 8 morphology feature types:
 
 .. hlist::
    :columns: 2

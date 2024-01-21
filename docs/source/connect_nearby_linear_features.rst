@@ -4,18 +4,18 @@ Connect Nearby Linear Features
 
 A linear bathymetric high or low feature (e.g., ridge or valley/channel) is sometimes broken into multiple smaller and disconnected features due to several possible reasons: 
 
-* dificiency in the bathymetric data
+* deficiency in the bathymetric data
 * deficiency in the mapping method
-* natural local processes such as ersosion and desposition
+* natural local processes such as erosion and deposition
 
 Ideally, these disconnected features should be merged to form a single integrated linear feature to facilitate the subsequent attribute generation and classification.
-This tool is used to connect (or merge) two or multiple bathymetric high or low features that satitifying a number of conditions based on distance and orientation.
+This tool is used to connect (or merge) two or multiple bathymetric high or low features that satisfying a number of conditions based on distance and orientation.
 The first step of the process is to identify the potential connection points for each feature.
 There are three algorithms available for this step. 
 
 1. The *Mid points to Minimum Bounding Rectangle* algorithm identifies the connection points as the middle points on the correponding sides of the minimum bounding rectangle. Based on the orientation of the feature, these sides could either be *North and South* sides or *East and West* sides
 2. The *Most distant points on feature* algorithm identifies the connection points as the intercepted locations between the feature and the corresponding sides of the minimum bounding rectangle
-3. The *Mid points and Most distant points* algorithm identifies two sets of connection points
+3. The *Mid points and Most distant points* algorithm identifies two sets of connection points using the above two algorithms
 
     * The *Mid points* algorithm
     * The *Most distant points* algorithm

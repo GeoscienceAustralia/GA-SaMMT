@@ -2,7 +2,7 @@ Bathymetric Features
 ====================
 
 
-This toolset contains several tools that are used to map both high and low bathymtric features from a bathymetric data.
+This toolset contains several tools that are used to map both high and low bathymetric features from bathymetry data.
 
 
 .. toctree::
