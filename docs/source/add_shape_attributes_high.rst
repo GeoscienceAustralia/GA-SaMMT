@@ -30,13 +30,8 @@ The following attributes are calculated to describe the polygon shape of each ba
   
      \frac{sinuous\_length}{mean\_width}
 
-7. *Circularity*: Describe how close the feature polygon is to a circle. Larger the value closer to a circle the feature polygon is. It is calculated by equation :eq:`circularity-high-1`, where *Pc* is the perimeter of the convex hull polygon that bounds the feature polygon. **TODO**: confirm that it should instead be equation :eq:`circularity-high-2`
+7. *Circularity*: Describe how close the feature polygon is to a circle. Larger the value closer to a circle the feature polygon is. It is calculated by equation :eq:`circularity-high-2`, where *Pc* is the perimeter of the convex hull polygon that bounds the feature polygon.
 
-   .. math::
-     :label: circularity-high-1
-  
-     \frac{4 * \pi / A}{Pc^2}
-   
    .. math::
      :label: circularity-high-2
   
