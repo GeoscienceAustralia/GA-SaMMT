@@ -61,5 +61,5 @@ The ESRI [toolboxes](./Tools) contains six Python toolboxes:
 
 ## Publication and sample data
 
-See [here](https://dx.doi.org/10.26186/146832) for additional details including sample datasets.
-See [here](https://doi.org/10.3389/fmars.2023.1236788) for the detailed description of GA-SaMMT.
+* See [here](https://dx.doi.org/10.26186/146832) for additional details including sample datasets.
+* See [here](https://doi.org/10.3389/fmars.2023.1236788) for the detailed description of GA-SaMMT.
