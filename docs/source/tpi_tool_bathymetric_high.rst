@@ -2,7 +2,7 @@ TPI Tool Bathymetric High
 -------------------------
 
 
-This tool maps bathymetric high features from a bathymetric data using a Topographic Position Index (TPI) :cite:`Weiss2001TopographicPA` based method.
+This tool maps bathymetric high features from bathymetry data using a Topographic Position Index (TPI) :cite:`Weiss2001TopographicPA` based method.
 
 Positive TPI usually indicates bathymetric high location.    
 

@@ -2,7 +2,7 @@ TPI LMI Tool Bathymetric High
 -----------------------------
 
 
-This tool maps bathymetric high features from a bathymetric data using a combination of Topographic Position Index (TPI) :cite:`Weiss2001TopographicPA` and Local Moran's I (LMI) :cite:`Moran-10.1093/biomet/37.1-2.17` method.
+This tool maps bathymetric high features from bathymetry data using a combination of Topographic Position Index (TPI) :cite:`Weiss2001TopographicPA` and Local Moran's I (LMI) :cite:`Moran-10.1093/biomet/37.1-2.17` method.
 Positive TPI usually indicates bathymetric high location. Positive LMI usually indicates a spatial pattern of positive (higher than average) local autocorrelation (e.g., in this case a similar local pattern of higher bathymetry values).
 
 The followings are the key steps of this tool:

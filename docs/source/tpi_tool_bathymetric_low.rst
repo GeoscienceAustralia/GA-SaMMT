@@ -2,7 +2,7 @@ TPI Tool Bathymetric Low
 ------------------------
 
 
-This tool maps bathymetric low features from a bathymetric data using a Topographic Position Index (TPI) :cite:`Weiss2001TopographicPA` based method.
+This tool maps bathymetric low features from bathymetry data using a Topographic Position Index (TPI) :cite:`Weiss2001TopographicPA` based method.
 Negative TPI usually indicates bathymetric low location.
 
 The followings are the key steps of this tool:
