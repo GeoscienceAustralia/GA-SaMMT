@@ -21,3 +21,6 @@ The detailed description of the GA-SaMMT and its applications to serveral real-w
 
 `Huang Z, Nanson R, McNeil M, Wenderlich M, Gafeira J, Post A and Nichol S (2023) Rule-based semiautomated tools for
 mapping seabed morphology from bathymetry data. Front. Mar. Sci. 10:1236788. doi: 10.3389/fmars.2023.1236788 <https://doi.org/10.3389/fmars.2023.1236788>`_.
+
+.. image:: images/fig1.jpg
+   :align: center
