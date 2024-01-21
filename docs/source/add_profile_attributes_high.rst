@@ -18,8 +18,8 @@ The following attributes are calculated to describe the cross-section profile(s)
 
 2. **profileSymmetry**: Describe the symmetry of the cross-section profile
 
-    * *Symmetric*: when profile's skewness is < 0.2
-    * *Asymmetic*: when profile's skewness is >= 0.2
+    * *Symmetric*: when the profile's skewness is < 0.2
+    * *Asymmetic*: when the profile's skewness is >= 0.2
     * *NA*: when the profileShape attribute is Flat
 
 3. **profileConcavity**: Describe the concavity of the cross-section profile
@@ -28,7 +28,7 @@ The following attributes are calculated to describe the cross-section profile(s)
     * *Convex*: when the polygon formed by the knick points of the profile or simplified profile does not have any angles > 180°
     * *NA*: when the proileShape attribute is Flat
 
-4. **profile_top_SlopeClass**: Describe the category of the slope-gradient of the top of the profile or simplified profile, which is calculated as the mean of the slope-gradients of all profile's non-side segments
+4. **profile_top_SlopeClass**: Describe the category of the slope-gradient of the top of the profile or simplified profile, which is calculated as the mean of the slope-gradients of all of the profile's non-side segments
 
     * *Flat*: slope-gradient < 5
     * *Gentle*: slope-gradient 5-10
@@ -52,7 +52,7 @@ The following attributes are calculated to describe the cross-section profile(s)
 8. **profileLength**: Describe the length of the profile or simplified profile, which is calculated as the distance between the start point and end point of the profile
 
 
-.. image:: images/profile_attributes2.png
+.. image:: images/profile_attributes3.png
    :align: center
 
 
