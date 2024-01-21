@@ -13,6 +13,10 @@ To facilitate rapid and consistent morphological mapping, Geoscience Australia h
 * Calculate metrics/attributes to describe the characteristics of the feature polygons
 * Classify individual polygons into one of the bathymetric *high* or *low* seabed morphological feature types
 
+.. image:: images/fig1.jpg
+   :align: center
+   :scale: 60 %
+
 The toolboxes adopt the suite of terms as presented in the glossary of seabed morphology deatures defined by :cite:`dove_2020_4075248`.
 
 `Dove, D., Nanson, R., Bjarnadóttir, L., Guinan, J., Gafeira, J., Post, A., Dolan, M.; Stewart, H.; Arosio, R, Scott, G.. (2020). A two-part seabed geomorphology classification scheme (v.2); Part 1: morphology features glossary. Zenodo. <http://doi.org/10.5281/zenodo.4075248>`_.
@@ -21,6 +25,3 @@ The detailed description of the GA-SaMMT and its applications to serveral real-w
 
 `Huang Z, Nanson R, McNeil M, Wenderlich M, Gafeira J, Post A and Nichol S (2023) Rule-based semiautomated tools for
 mapping seabed morphology from bathymetry data. Front. Mar. Sci. 10:1236788. doi: 10.3389/fmars.2023.1236788 <https://doi.org/10.3389/fmars.2023.1236788>`_.
-
-.. image:: images/fig1.jpg
-   :align: center
