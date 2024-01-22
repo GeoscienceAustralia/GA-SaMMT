@@ -14,6 +14,11 @@ To facilitate rapid and consistent morphological mapping, Geoscience Australia h
 
 The toolboxes adopt the suite of terms as presented in the glossary of seabed morphology deatures defined by [Dove, D., Nanson, R., Bjarnadóttir, L., Guinan, J., Gafeira, J., Post, A., Dolan, M.; Stewart, H.; Arosio, R, Scott, G.. (2020). A two-part seabed geomorphology classification scheme (v.2); Part 1: morphology features glossary. Zenodo.](http://doi.org/10.5281/zenodo.4075248).
 
+The detailed description of the GA-SaMMT and its applications to several real-world case studies are presented in [Huang Z, Nanson R, McNeil M, Wenderlich M, Gafeira J, Post A and Nichol S (2023) Rule-based semiautomated tools for
+mapping seabed morphology from bathymetry data. Front. Mar. Sci. 10:1236788. doi: 10.3389/fmars.2023.1236788](https://doi.org/10.3389/fmars.2023.1236788).
+
+![Flow Chart of the Geoscience Australia semi-automated mapping tools](docs/source/images/fig1.jpg)
+
 ## Documentation
 
 ### User guide
@@ -56,4 +61,5 @@ The ESRI [toolboxes](./Tools) contains six Python toolboxes:
 
 ## Publication and sample data
 
-See [here](https://dx.doi.org/10.26186/146832) for additional details including sample datasets.
+* See [here](https://dx.doi.org/10.26186/146832) for additional details including sample datasets.
+* See [here](https://doi.org/10.3389/fmars.2023.1236788) for the detailed description of GA-SaMMT.

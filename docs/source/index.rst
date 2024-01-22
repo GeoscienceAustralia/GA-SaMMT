@@ -11,11 +11,11 @@ Welcome to GA-SaMMT's documentation!
    :caption: Contents:
 
    overview
-   accessory
-   add_attributes
    bathymetric_features
+   add_attributes
    classification_feature
    surface
+   accessory
    bibliography
 
 

@@ -2,7 +2,7 @@ Classification Feature
 ======================
 
 
-The tools in this toolset are used to classify each bathymetric high or low features into a feature type.
+The tools in this toolset are used to classify each bathymetric high or low features into a seabed morphology feature type.
 
 The classification scheme is based on this publication :cite:`dove_2020_4075248`
 

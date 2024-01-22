@@ -2,7 +2,6 @@ Accessory
 =========
 
 
-Aids the mapping processes.
 
 .. toctree::
     :maxdepth: 4

@@ -13,10 +13,10 @@ The following attributes are calculated to describe the polygon shape of each ba
 5. *mean_width_thickness_ratio*: the mean width to thickness ratio of the feature polygon, calculated from a number of cross-sections perpendicular to the orientation of the feature polygon. The width to thickness ratio of each cross-section is calculated as width/thickness
 6. *std_width_thickness_ratio*: the standard deviation of width to thickness ratio of the feature polygon, calculated from a number of cross-sections perpendicular to the orientation of the feature polygon. The width to thickness ratio of each cross-section is calculated as width/thickness
 7. *mean_segment_slope*: the mean slope gradient of thalweg segments of the feature polygon. The thalweg segments are the line segments linking the deepest points of the cross-sections perpendicular to the orientation of the feature
-8. *width_distance_slope*: the slope of the linear regression line between two variables: the widths of cross-sections and the distances of the cross-sections to the head of the feature polygon
-9. *width_distance_correlation*: the Pearson correlation coefficient between two variables: the widths of cross-sections and the distances of the cross-sections to the head of the feature polygon
-10. *thick_distance_slope*: the slope of the linear regression line between two variables: the thicknesses of cross-sections and the distances of the cross-sections to the head of the feature polygon
-11. *thick_distance_correlation*: the Pearson correlation coefficient between two variables: the thicknesses of cross-sections and the distances of the cross-sections to the head of the feature polygon
+8. *width_distance_slope*: the slope of the linear regression line between two variables: the widths of the cross-sections and the distances of the cross-sections to the head of the feature polygon
+9. *width_distance_correlation*: the Pearson correlation coefficient between two variables: the widths of the cross-sections and the distances of the cross-sections to the head of the feature polygon
+10. *thick_distance_slope*: the slope of the linear regression line between two variables: the thicknesses of the cross-sections and the distances of the cross-sections to the head of the feature polygon
+11. *thick_distance_correlation*: the Pearson correlation coefficient between two variables: the thicknesses of the cross-sections and the distances of the cross-sections to the head of the feature polygon
 12. *Compactness*: Describe how compact the feature polygon is. More complex polygon shape has a lower compactness. It is calculated by equation :eq:`compactness-low`, where *A* is the area of the polygon, *P* is the perimeter of the polygon
 
    .. math::
@@ -38,13 +38,8 @@ The following attributes are calculated to describe the polygon shape of each ba
   
      \frac{sinuous\_length}{mean\_width}
 
-15. *Circularity*: Describe how close the feature polygon is to a circle. Larger the value closer to a circle the feature polygon is. It is calculated by equation :eq:`circularity-low-1`, where *Pc* is the perimeter of the convex hull polygon that bounds the feature polygon. **TODO**: confirm that it should instead be equation :eq:`circularity-low-2`
+15. *Circularity*: Describe how close the feature polygon is to a circle. Larger the value closer to a circle the feature polygon is. It is calculated by equation :eq:`circularity-low-2`, where *Pc* is the perimeter of the convex hull polygon that bounds the feature polygon.
 
-   .. math::
-     :label: circularity-low-1
-  
-     \frac{4 * \pi / A}{Pc^2}
-   
    .. math::
      :label: circularity-low-2
   

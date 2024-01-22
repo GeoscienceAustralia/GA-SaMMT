@@ -2,7 +2,7 @@ Classify Bathymetric High Features
 ----------------------------------
 
 
-This tool classifies each bathymetric high feature into one of these 10 feature types:
+This tool classifies each bathymetric high feature into one of these 10 morphology feature types:
 
 .. hlist::
    :columns: 2
