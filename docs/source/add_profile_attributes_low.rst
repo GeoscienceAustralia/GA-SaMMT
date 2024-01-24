@@ -18,8 +18,8 @@ The following attributes are calculated to describe the cross-section profile(s)
 
 2. **profileSymmetry**: Describe the symmetry of the cross-section profile
 
-    * *Symmetric*: the when profile's skewness is < 0.2
-    * *Asymmetic*: the when profile's skewness is >= 0.2
+    * *Symmetric*: when the profile's skewness is < 0.2
+    * *Asymmetic*: when the profile's skewness is >= 0.2
     * *NA*: when the profileShape attribute is Flat
 
 3. **profileConcavity**: Describe the concavity of the cross-section profile
