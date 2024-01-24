@@ -2,7 +2,7 @@ TPI CI Tool Bathymetric Low
 ---------------------------
 
 
-This tool maps bathymetric low features from bathymetrc data using a combination of Topographic Position Index (TPI) :cite:`Weiss2001TopographicPA` and Convergence Index (CI) :cite:`Thommeret-hess-14-1527-2010` method.
+This tool maps bathymetric low features from bathymetry data using a combination of Topographic Position Index (TPI) :cite:`Weiss2001TopographicPA` and Convergence Index (CI) :cite:`Thommeret-hess-14-1527-2010` method.
 Negative TPI usually indicates bathymetric low location.
 Negative CI usually indicates location of convergence (or bathymetric low).
 
