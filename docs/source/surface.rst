@@ -2,7 +2,7 @@ Surface
 =======
 
 
-The tools in the toolset are used to classify a bathymetry grid or a slope-gradient grid into three **surface** categories: *Plane*, *Slope* and *Escarpment*.
+The tools in this toolset are used to classify a bathymetry grid or a slope-gradient grid into three morphology **surface** categories: *Plane*, *Slope* and *Escarpment*.
 
 
 .. toctree::
