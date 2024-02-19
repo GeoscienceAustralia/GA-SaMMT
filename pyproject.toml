@@ -1,5 +1,5 @@
 [tool.black]
-line-length = 90
+line-length = 88
 target-version = ['py36', 'py37', 'py38']
 include = '\.py[it]?$'
 exclude = '''
@@ -20,3 +20,6 @@ exclude = '''
   | versioneer.py
 )
 '''
+
+[tool.isort]
+profile = "black"
