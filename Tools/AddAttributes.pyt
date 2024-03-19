@@ -4085,7 +4085,12 @@ class helpers:
                 mergeFCList.append(pointFC1)
                 # set dist parameter depending on the profile length
                 # the dist parameter is used in the densify function next
-                if lineLength > 10000:
+                # modified on 20240308, to limit the number of vertices generated for a very long profile
+                if lineLength > 100000:
+                    dist = int(lineLength / 300)
+                elif lineLength > 40000:
+                    dist = int(lineLength / 200)
+                elif lineLength > 10000:
                     dist = 100
                 elif lineLength > 1000:
                     dist = 50
@@ -4095,7 +4100,6 @@ class helpers:
                     dist = lineLength / 2
                     if dist > 10:
                         dist = 10
-
                 # densify the vertices of the profile lines, effectively adding a vertice at each dist
                 arcpy.Densify_edit(lineFC1, "DISTANCE", str(dist) + " Meters")
                 # add a ID field
@@ -4238,14 +4242,18 @@ class helpers:
 
                     del cursor2, row2
                     lineLength = max(lineLengthList)
-
                     pointFC = "pointFC_" + str(oID)
                     pointFC1 = "pointFC_sorted_" + str(oID)
                     itemList.append(pointFC1)
                     mergeFCList.append(pointFC1)
                     # set dist parameter depending on the profile length
                     # the dist parameter is used in the densify function next
-                    if lineLength > 10000:
+                    # modified on 20240308, to limit the number of vertices generated for a very long profile
+                    if lineLength > 100000:                        
+                        dist = int(lineLength / 300)
+                    elif lineLength > 40000:
+                        dist = int(lineLength / 200)
+                    elif lineLength > 10000:
                         dist = 100
                     elif lineLength > 1000:
                         dist = 50
@@ -4419,7 +4427,12 @@ class helpers:
             mergeFCList.append(pointFC1)
             # set dist parameter depending on the profile length
             # the dist parameter is used in the densify function next
-            if lineLength > 10000:
+            # modified on 20240308, to limit the number of vertices generated for a very long profile
+            if lineLength > 100000:
+                dist = int(lineLength / 300)
+            elif lineLength > 40000:
+                dist = int(lineLength / 200)
+            elif lineLength > 10000:
                 dist = 100
             elif lineLength > 1000:
                 dist = 50
@@ -4429,7 +4442,6 @@ class helpers:
                 dist = lineLength / 2
                 if dist > 10:
                     dist = 10
-
             # densify the vertices of the profile lines, effectively adding a vertice at each dist
             arcpy.Densify_edit(lineFC1, "DISTANCE", str(dist) + " Meters")
             # add a ID field
