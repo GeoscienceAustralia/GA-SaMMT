@@ -1,9 +1,10 @@
-#### Author: Zhi Huang
-#### Organisation: Geoscience Australia
-#### Email: Zhi.Huang@ga.gov.au
-#### Date: August 15, 2022
-#### Python version: 3+
-#### ArcGIS Pro: 2.6.4 and above
+"""
+Author: Zhi Huang
+Organisation: Geoscience Australia
+Email: Zhi.Huang@ga.gov.au
+Last update: May 22, 2024
+Python version: 3+
+ArcGIS Pro: 2.6.4 and above """
 
 import math
 import os
@@ -26,8 +27,10 @@ class Toolbox:
         self.alias = "AddAttributes"
 
         # List of tool classes associated with this toolbox
-        # There are six tools. Three for generating attributes for Bathymetric High features. The other three for Bathymetric Low features.
-        # The three tools are used to add three sets of attributes: shape attributes, topographic attributes and profile attributes, in that order.
+        # There are six tools. Three for generating attributes for Bathymetric High features.
+        # The other three for Bathymetric Low features.
+        # The three tools are used to add three sets of attributes: shape attributes, topographic attributes
+        # and profile attributes, in that order.
         self.tools = [
             Add_Shape_Attributes_High_Tool,
             Add_Shape_Attributes_Low_Tool,
@@ -76,7 +79,7 @@ class Add_Shape_Attributes_High_Tool:
             direction="Input",
         )
 
-        # fourth parameter, used to hold temporaray files
+        # fourth parameter, used to hold temporary files
         param3 = arcpy.Parameter(
             displayName="Temporary Folder",
             name="tempFolder",
@@ -114,10 +117,10 @@ class Add_Shape_Attributes_High_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslach_forwardslach(inFeatClass)
-        inBathy = helper.convert_backslach_forwardslach(inBathy)
+        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
+        inBathy = helper.convert_backslash_forwardslash(inBathy)
 
-        tempFolder = helper.convert_backslach_forwardslach(tempFolder)
+        tempFolder = helper.convert_backslash_forwardslash(tempFolder)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -127,7 +130,7 @@ class Add_Shape_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslach_forwardslach(
+                        inFeatClass = helper.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
 
@@ -139,7 +142,7 @@ class Add_Shape_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -175,7 +178,7 @@ class Add_Shape_Attributes_High_Tool:
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
 
@@ -307,11 +310,11 @@ class Add_Shape_Attributes_Low_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslach_forwardslach(inFeatClass)
-        inBathy = helper.convert_backslach_forwardslach(inBathy)
-        headFeatClass = helper.convert_backslach_forwardslach(headFeatClass)
-        footFeatClass = helper.convert_backslach_forwardslach(footFeatClass)
-        tempFolder = helper.convert_backslach_forwardslach(tempFolder)
+        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
+        inBathy = helper.convert_backslash_forwardslash(inBathy)
+        headFeatClass = helper.convert_backslash_forwardslash(headFeatClass)
+        footFeatClass = helper.convert_backslash_forwardslash(footFeatClass)
+        tempFolder = helper.convert_backslash_forwardslash(tempFolder)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -321,7 +324,7 @@ class Add_Shape_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslach_forwardslach(
+                        inFeatClass = helper.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
@@ -332,7 +335,7 @@ class Add_Shape_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -382,7 +385,7 @@ class Add_Shape_Attributes_Low_Tool:
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
 
@@ -492,9 +495,9 @@ class Add_Topographic_Attributes_High_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslach_forwardslach(inFeatClass)
-        inBathy = helper.convert_backslach_forwardslach(inBathy)
-        inSlope = helper.convert_backslach_forwardslach(inSlope)
+        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
+        inBathy = helper.convert_backslash_forwardslash(inBathy)
+        inSlope = helper.convert_backslash_forwardslash(inSlope)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -504,7 +507,7 @@ class Add_Topographic_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslach_forwardslach(
+                        inFeatClass = helper.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
@@ -515,7 +518,7 @@ class Add_Topographic_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
         # if the input slope raster is selected from a drop-down list, the inSlope does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if inSlope.rfind("/") < 0:
@@ -524,7 +527,7 @@ class Add_Topographic_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inSlope == lyr.name:
-                        inSlope = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inSlope = helper.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -577,7 +580,7 @@ class Add_Topographic_Attributes_High_Tool:
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
         itemList = []
@@ -794,11 +797,11 @@ class Add_Topographic_Attributes_Low_Tool:
         footFeatClass = parameters[5].valueAsText
 
         helper = helpers()
-        inFeatClass = helper.convert_backslach_forwardslach(inFeatClass)
-        inBathy = helper.convert_backslach_forwardslach(inBathy)
-        inSlope = helper.convert_backslach_forwardslach(inSlope)
-        headFeatClass = helper.convert_backslach_forwardslach(headFeatClass)
-        footFeatClass = helper.convert_backslach_forwardslach(footFeatClass)
+        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
+        inBathy = helper.convert_backslash_forwardslash(inBathy)
+        inSlope = helper.convert_backslash_forwardslash(inSlope)
+        headFeatClass = helper.convert_backslash_forwardslash(headFeatClass)
+        footFeatClass = helper.convert_backslash_forwardslash(footFeatClass)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -808,7 +811,7 @@ class Add_Topographic_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslach_forwardslach(
+                        inFeatClass = helper.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
@@ -819,7 +822,7 @@ class Add_Topographic_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
         # if the input slope raster is selected from a drop-down list, the inSlope does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if inSlope.rfind("/") < 0:
@@ -828,7 +831,7 @@ class Add_Topographic_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inSlope == lyr.name:
-                        inSlope = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inSlope = helper.convert_backslash_forwardslash(lyr.dataSource)
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if headFeatClass.rfind("/") < 0:
@@ -837,7 +840,7 @@ class Add_Topographic_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if headFeatClass == lyr.name:
-                        headFeatClass = helper.convert_backslach_forwardslach(
+                        headFeatClass = helper.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
@@ -848,7 +851,7 @@ class Add_Topographic_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if footFeatClass == lyr.name:
-                        footFeatClass = helper.convert_backslach_forwardslach(
+                        footFeatClass = helper.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
 
@@ -937,7 +940,7 @@ class Add_Topographic_Attributes_Low_Tool:
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
         itemList = []
@@ -971,7 +974,8 @@ class Add_Topographic_Attributes_Low_Tool:
         if "head_foot_length" not in field_names:
             messages.addErrorMessage(
                 inFeatClass
-                + " does not have the head_foot_length attribute. Please use the Add_Shape_Attribute_Tool to calculate the attribute."
+                + " does not have the head_foot_length attribute. Please use the Add_Shape_Attribute_Tool to"
+                + " calculate the attribute."
             )
             raise arcpy.ExecuteError
         # check the depth attributes field exist in the headFeatClass
@@ -980,7 +984,9 @@ class Add_Topographic_Attributes_Low_Tool:
         if ("depth" not in field_names1) | ("depth1" not in field_names1):
             messages.addErrorMessage(
                 headFeatClass
-                + " does not have the required depth attributes. Please use the Add_Shape_Attribute_Tool to generate the head featureclass with the required depth attributes."
+                + " does not have the required depth attributes."
+                + " Please use the Add_Shape_Attribute_Tool to generate the head featureclass"
+                + " with the required depth attributes."
             )
             raise arcpy.ExecuteError
 
@@ -989,7 +995,9 @@ class Add_Topographic_Attributes_Low_Tool:
         if ("depth" not in field_names2) | ("depth1" not in field_names2):
             messages.addErrorMessage(
                 footFeatClass
-                + " does not have the required depth attributes. Please use the Add_Shape_Attribute_Tool to generate the foot featureclass with the required depth attributes."
+                + " does not have the required depth attributes."
+                + " Please use the Add_Shape_Attribute_Tool to generate the foot featureclass"
+                + " with the required depth attributes."
             )
             raise arcpy.ExecuteError
 
@@ -1134,14 +1142,10 @@ class Add_Topographic_Attributes_Low_Tool:
         helper.addField(inFeatClass, mergedFeat2, field, inID, joinID, expression)
 
         field = "head_foot_depthRange"
-        inID = "featID"
-        joinID = "featID"
         expression = "!headDepth! - !footDepth!"
         arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON_9.3")
 
         field = "head_foot_gradient"
-        inID = "featID"
-        joinID = "featID"
         expression = (
             "math.degrees(math.atan(!head_foot_depthRange! / !head_foot_length!))"
         )
@@ -1234,7 +1238,8 @@ class Add_Profile_Attributes_High_Tool:
     def execute(self, parameters, messages):
         """The source code of the tool."""
 
-        # the code below turns off theSettingwithCopyWarning related to pandas dataframe procesing which would cause arcpy to throw exceptions
+        # the code below turns off theSettingwithCopyWarning related to pandas dataframe processing
+        # which would cause arcpy to throw exceptions
         # pd.set_option('mode.chained_assignment',None)
 
         inFeatClass = parameters[0].valueAsText
@@ -1245,9 +1250,9 @@ class Add_Profile_Attributes_High_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslach_forwardslach(inFeatClass)
-        tempFolder = helper.convert_backslach_forwardslach(tempFolder)
-        inBathy = helper.convert_backslach_forwardslach(inBathy)
+        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
+        tempFolder = helper.convert_backslash_forwardslash(tempFolder)
+        inBathy = helper.convert_backslash_forwardslash(inBathy)
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if inFeatClass.rfind("/") < 0:
@@ -1256,7 +1261,7 @@ class Add_Profile_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslach_forwardslach(
+                        inFeatClass = helper.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
@@ -1267,7 +1272,7 @@ class Add_Profile_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -1303,7 +1308,7 @@ class Add_Profile_Attributes_High_Tool:
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
         # areaThreshold input has two components: the threshold value and the area unit
@@ -1311,7 +1316,7 @@ class Add_Profile_Attributes_High_Tool:
         areaUnit = areaThreshold.split(" ")[1]
 
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You can't provide an unknown area unit.")
             raise arcpy.ExecuteError
 
         fields = arcpy.ListFields(inFeatClass)
@@ -1326,7 +1331,8 @@ class Add_Profile_Attributes_High_Tool:
         # check the 'LengthWidthRatio' field exists
         if "LengthWidthRatio" not in field_names:
             messages.addErrorMessage(
-                "Error! The input features need to have the LengthWidthRatio attribute before the tool can run. Please use Add Shape Attribute Tool to calculate the attribute"
+                "Error! The input features need to have the LengthWidthRatio attribute before the tool can run."
+                + " Please use Add Shape Attribute Tool to calculate the attribute"
             )
             raise arcpy.ExecuteError
 
@@ -1387,13 +1393,13 @@ class Add_Profile_Attributes_High_Tool:
         arcpy.MinimumBoundingGeometry_management(
             inFeatClass, MbrFeatClass, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
         )
-        arcpy.AddMessage("bouning rectangle generated")
+        arcpy.AddMessage("bounding rectangle generated")
         noFeat = int(arcpy.GetCount_management(inFeatClass).getOutput(0))
         noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
         arcpy.AddMessage("noFeat: " + str(noFeat))
         arcpy.AddMessage("noRectangle: " + str(noRectangle))
         # Number of features in the bounding rectangle is expected to be the same as in the input featureclass
-        # if not, regenerate the bounding rectanlge up to three times
+        # if not, regenerate the bounding rectangle up to three times
         if noRectangle < noFeat:
             arcpy.MinimumBoundingGeometry_management(
                 inFeatClass,
@@ -1430,7 +1436,7 @@ class Add_Profile_Attributes_High_Tool:
                         arcpy.AddMessage(
                             "noRectangle: "
                             + str(noRectangle)
-                            + " doesnot equal to noFeat: "
+                            + " does not equal to noFeat: "
                             + str(noFeat)
                         )
 
@@ -1483,7 +1489,7 @@ class Add_Profile_Attributes_High_Tool:
                     arcpy.AddMessage("took " + str(diff) + " to create profile3.")
                 elif (
                     LwR <= 5.0
-                ):  # for a polygon feature that is not elongated, create five profiles passing through the polygon centre
+                ):  # for a feature that is not elongated, create five profiles passing through the polygon centre
                     time1 = datetime.now()
                     helper.create_profiles1(
                         inFeat, boundFeat, profilePointFC, tempFolder
@@ -1733,7 +1739,8 @@ class Add_Profile_Attributes_Low_Tool:
     def execute(self, parameters, messages):
         """The source code of the tool."""
 
-        # the code below turns off theSettingwithCopyWarning related to pandas dataframe procesing which would cause arcpy to throw exceptions
+        # the code below turns off theSettingwithCopyWarning related to pandas dataframe processing
+        # which would cause arcpy to throw exceptions
         # pd.set_option('mode.chained_assignment',None)
 
         inFeatClass = parameters[0].valueAsText
@@ -1744,9 +1751,9 @@ class Add_Profile_Attributes_Low_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslach_forwardslach(inFeatClass)
-        tempFolder = helper.convert_backslach_forwardslach(tempFolder)
-        inBathy = helper.convert_backslach_forwardslach(inBathy)
+        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
+        tempFolder = helper.convert_backslash_forwardslash(tempFolder)
+        inBathy = helper.convert_backslash_forwardslash(inBathy)
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if inFeatClass.rfind("/") < 0:
@@ -1755,7 +1762,7 @@ class Add_Profile_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslach_forwardslach(
+                        inFeatClass = helper.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
@@ -1766,7 +1773,7 @@ class Add_Profile_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -1802,7 +1809,7 @@ class Add_Profile_Attributes_Low_Tool:
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
 
@@ -1810,7 +1817,7 @@ class Add_Profile_Attributes_Low_Tool:
         areaUnit = areaThreshold.split(" ")[1]
 
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You can't provide an unknown area unit.")
             raise arcpy.ExecuteError
 
         fields = arcpy.ListFields(inFeatClass)
@@ -1822,10 +1829,11 @@ class Add_Profile_Attributes_Low_Tool:
             arcpy.AddMessage("Adding an unique featID...")
             helper.addIDField(inFeatClass, "featID")
 
-        # checck the 'LengthWidthRatio' field exists
+        # check the 'LengthWidthRatio' field exists
         if "LengthWidthRatio" not in field_names:
             messages.addErrorMessage(
-                "Error! The input features need to have the LengthWidthRatio attribute before the tool can be run. Please use Add Shape Attribute Tool to calculate the attribute"
+                "Error! The input features need to have the LengthWidthRatio attribute before the tool can be run."
+                + " Please use Add Shape Attribute Tool to calculate the attribute."
             )
             raise arcpy.ExecuteError
 
@@ -1890,7 +1898,7 @@ class Add_Profile_Attributes_Low_Tool:
         arcpy.AddMessage("noFeat: " + str(noFeat))
         arcpy.AddMessage("noRectangle: " + str(noRectangle))
         # Number of features in the bounding rectangle is expected to be the same as in the input featureclass
-        # if not, regenerate the bounding rectanlge up to three times
+        # if not, regenerate the bounding rectangle up to three times
         if noRectangle < noFeat:
             arcpy.MinimumBoundingGeometry_management(
                 inFeatClass,
@@ -1927,7 +1935,7 @@ class Add_Profile_Attributes_Low_Tool:
                         arcpy.AddMessage(
                             "noRectangle: "
                             + str(noRectangle)
-                            + " doesnot equal to noFeat: "
+                            + " does not equal to noFeat: "
                             + str(noFeat)
                         )
         cursor = arcpy.SearchCursor(inFeatClass)
@@ -1977,7 +1985,7 @@ class Add_Profile_Attributes_Low_Tool:
                     arcpy.AddMessage("took " + str(diff) + " to create profile3.")
                 elif (
                     LwR <= 5.0
-                ):  # for a polygon feature that is not elongated, create five profiles passing through the polygon centre
+                ):  # for a feature that is not elongated, create five profiles passing through the polygon centre
                     time1 = datetime.now()
                     helper.create_profiles1(
                         inFeat, boundFeat, profilePointFC, tempFolder
@@ -2149,11 +2157,11 @@ class Add_Profile_Attributes_Low_Tool:
 
 # All the helper functions are defined here
 class helpers:
-    # This function splits each polygon in the featureclass into mutiple sub-polygons along its long axis
+    # This function splits each polygon in the featureclass into multiple sub-polygons along its long axis
     def splitPolygon(self, workspace, inFeatClass, MbrFeatClass, splitFeatClass):
         # workspace: location of workspace
         # inFeatClass: input Bathymetric High (Low) features
-        # MbrFeatClass: input bounding recentagle featureclass
+        # MbrFeatClass: input bounding rectangle featureclass
         # splitFeatClass: output featureclass containing the splitted features
 
         mergeList = []
@@ -2177,7 +2185,6 @@ class helpers:
             featID = row1.getValue("featID")
             MbrL = row1.getValue("rectangle_Length")
             MbrW = row1.getValue("rectangle_Width")
-            MbrO = row1.getValue("rectangle_Orientation")
             whereClause = '"featID" = ' + str(featID)
             arcpy.AddMessage("working on featID: " + str(featID))
             # select one polygon and its bounding polygon
@@ -2212,7 +2219,7 @@ class helpers:
             # Set the orientation
             yAxisCoordinate = str(end_x) + " " + str(end_y)
             # Set the number of rows and columns together with origin and opposite corner
-            # determine the size of each cell (sub-polygon) based on the length of bounding recentagle (unit: metre)
+            # determine the size of each cell (sub-polygon) based on the length of bounding rectangle (unit: metre)
             if MbrL > 10000:
                 numRows = int(MbrL / 200) + 1
             elif MbrL > 1000:
@@ -2226,7 +2233,7 @@ class helpers:
             cellSizeHeight = MbrL / numRows
             numColumns = 1
 
-            oppositeCoorner = "#"
+            oppositeCorner = "#"
             # Create a point label feature class
             labels = "NO_LABELS"
             # Extent is set by origin and opposite corner - no need to use a template fc
@@ -2241,7 +2248,7 @@ class helpers:
                 cellSizeHeight,
                 numRows,
                 numColumns,
-                oppositeCoorner,
+                oppositeCorner,
                 labels,
                 templateExtent,
                 geometryType,
@@ -2300,8 +2307,8 @@ class helpers:
 
         return converter
 
-    # This function converts backslach (accepted through the ArcGIS tool) to forwardslach (needed in python script) in a path
-    def convert_backslach_forwardslach(self, inText):
+    # This function converts backslash (accepted in the ArcGIS tool) to forwardslash (needed in python script) in a path
+    def convert_backslash_forwardslash(self, inText):
         # inText: input path
         inText = rf"{inText}"
         if inText.find("\t"):
@@ -2536,7 +2543,7 @@ class helpers:
                     + "!"
                 )
             elif fieldName == "Solidity":
-                # Solidiy equation
+                # Solidity equation
                 expression = (
                     "!" + "SHAPE_AREA" + "!" + "/" + "!" + "convexhull_Area" + "!"
                 )
@@ -2547,7 +2554,8 @@ class helpers:
         arcpy.AddMessage(" Circularity, Convexity and Solidity added and calculated")
         self.deleteDataItems(itemList)
 
-    # This functions calculates sinuosity, length to width ratio, and other shape attributes for the Bathymetric High features
+    # This functions calculates sinuosity, length to width ratio,
+    # and other shape attributes for the Bathymetric High features
     def calculateSinuosity_LwR(self, workspace, tempFolder, inFeatClass, inBathy):
         # workspace: the location of the workspace
         # tempFolder: the location of the temporary folder
@@ -2606,7 +2614,7 @@ class helpers:
         lineFeatClass1 = workspace + "/" + "lineFeatClass1"
         itemList.append(lineFeatClass1)
         arcpy.PolygonToLine_management(splitFeatClass, lineFeatClass1)
-        arcpy.AddMessage("ploygon to line done")
+        arcpy.AddMessage("polygon to line done")
         # selection
         lineFeatClass2 = workspace + "/" + "lineFeatClass2"
         itemList.append(lineFeatClass2)
@@ -2671,7 +2679,7 @@ class helpers:
         arcpy.CopyRows_management(inFeatVertices, csvFile1)
         arcpy.AddMessage("export to first csv done")
         # read the csv file as a pandas data frame, add dtype parameter (2023-06-20)
-        # this is to prevent mix type warning and potentially improve efficency in reading a large csv file
+        # this is to prevent mix type warning and potentially improve efficiency in reading a large csv file
         dtypeD = {
             "OBJECTID": np.int64,
             "featID": np.int64,
@@ -2684,7 +2692,8 @@ class helpers:
         headfootList = []
         ids = np.unique(testDF1.featID)
         # loop through each feature which contains a number of points
-        # The idea is to find a point representing 'head' (or first) and a point representing 'foot' (or last) of the feature
+        # The idea is to find a point representing 'head' (or first)
+        # and a point representing 'foot' (or last) of the feature
         for id in ids:
             x = testDF1.loc[testDF1.featID == id]
             angle = round(x.rectangle_Orientation.values[0], 2)
@@ -2857,6 +2866,11 @@ class helpers:
         sortField = "OBJECTID"
         # Execute PointsToLine
         arcpy.PointsToLine_management(mergedFeat1_1, lineFeat1_1, lineField, sortField)
+        # If the above function fails silently, call my own replicated function
+        if arcpy.Exists(lineFeat1_1):
+            arcpy.AddMessage(lineFeat1_1 + " exists")
+        else:
+            self.myPointsToLine(mergedFeat1_1, lineFeat1_1, lineField, tempFolder)
 
         lineFeat1_2 = "curveLine2"
         itemList.append(lineFeat1_2)
@@ -2864,11 +2878,17 @@ class helpers:
         sortField = "OBJECTID"
         # Execute PointsToLine
         arcpy.PointsToLine_management(mergedFeat1_2, lineFeat1_2, lineField, sortField)
+        # If the above function fails silently, call my own replicated function
+        if arcpy.Exists(lineFeat1_2):
+            arcpy.AddMessage(lineFeat1_2 + " exists")
+        else:
+            self.myPointsToLine(mergedFeat1_2, lineFeat1_2, lineField, tempFolder)
+
         arcpy.AddMessage("points to curve line done")
 
         # merge curvelines
-        # We donot know which curveline is the true curveline connecting the points in correct order.
-        # Thus we merge the two curvelines together and select the one with shorter length, which is the correct one
+        # We do not know which curveline is the true curveline connecting the points in correct order.
+        # Thus we merge the two curvelines together and select the one with shorter length, which is the correct one.
         mergedFeats = [lineFeat1_1, lineFeat1_2]
         mergedCurveFeat = workspace + "/" + "merged_curves"
         itemList.append(mergedCurveFeat)
@@ -2883,7 +2903,8 @@ class helpers:
         caseField = ["featID"]
         arcpy.Statistics_analysis(mergedCurveFeat, outTab3, statsField, caseField)
 
-        # merge to create a straight line connecting the first and last point in order to calculate the straight length (head to foot length)
+        # merge to create a straight line connecting the first and last point
+        # in order to calculate the straight length (head to foot length)
         mergedFeats = [firstFeatClass, lastFeatClass]
         mergedFeat2 = workspace + "/" + "merged_points2"
         itemList.append(mergedFeat2)
@@ -2897,6 +2918,12 @@ class helpers:
         sortField = "OBJECTID"
         # Execute PointsToLine
         arcpy.PointsToLine_management(mergedFeat2, lineFeat2, lineField, sortField)
+        # If the above function fails silently, call my own replicated function
+        if arcpy.Exists(lineFeat2):
+            arcpy.AddMessage(lineFeat2 + " exists")
+        else:
+            self.myPointsToLine(mergedFeat2, lineFeat2, lineField, tempFolder)
+
         arcpy.AddMessage("points to straight line done")
 
         # add sinuous_length field
@@ -2916,7 +2943,7 @@ class helpers:
         field = "Sinuosity"
         expression = "!sinuous_length! / !head_foot_length!"
         arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON_9.3")
-        arcpy.AddMessage("caculate Sinuosity field done")
+        arcpy.AddMessage("calculate Sinuosity field done")
         field = "LengthWidthRatio"
         expression = "!sinuous_length! / !mean_width!"
         arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON_9.3")
@@ -2928,17 +2955,19 @@ class helpers:
         arcpy.AddMessage("took " + str(diff) + " to have all attributes generated.")
 
     # This function calculates mean_segment_slope attribute.
-    # mean_segment_slope: A number of linear segments are created by connecting the head, each point of minimum depth on a profile, and the foot.
+    # mean_segment_slope: A number of linear segments are created by connecting the head,
+    # each point of minimum depth on a profile, and the foot.
     # The slopes of the segments are calculated and averaged as this mean_segment_slope value.
     def calculate_segmentSlope(
         self, inFeat, inTab, dissolveLineFeat, headFeat, footFeat, outFeat
     ):
-        # inFeat: input point featureclass represents points along the cross-feature profiles, each point must have a depth value
+        # inFeat: input featureclass represents points along the cross-feature profiles,
+        # each point must have a depth value
         # inTab: input table that has some statistical values calculated from inFeat
         # dissolveLineFeat: the name of the line featureclass resulted from dissolving the inLineFeat
         # headFeat: input head feature
         # footFeat: input foot feature
-        # outFeat: output point featureclass represents the start and end points of line segements
+        # outFeat: output point featureclass represents the start and end points of line segments
 
         itemList = []
         # for each profile, select a point with the minimum depth
@@ -2976,16 +3005,16 @@ class helpers:
             # calculate slope between head and foot as the mean_segment_slope
             meanSlope = abs(self.calculateSlope(footDepth, headDepth, distance))
         else:
-            # each feature in outFeat2 represents one or multiple points that have the minimum depth along a profile
-            # multiple points along a profile may have the same depth value as the minimum depth
-            # in this case, only one point is selected by compiling a ids_tobeDeleted list
+            """ each feature in outFeat2 represents one or multiple points that have the minimum depth along a profile
+            multiple points along a profile may have the same depth value as the minimum depth
+            in this case, only one point is selected by compiling a ids_tobeDeleted list"""
             # add and calculate field
             # sort
             outFeat3 = "outFeat2_sorted"
             itemList.append(outFeat3)
             sortField = [["RIGHT_FID", "Descending"]]
             arcpy.Sort_management(outFeat2, outFeat3, sortField)
-            ## get a list of ids and fids
+            # get a list of ids and fids
             cursor = arcpy.SearchCursor(outFeat3)
             idList = []
             fidList = []
@@ -2998,7 +3027,6 @@ class helpers:
             ids_tobeDeleted = []
             i = 0
             while i < len(idList):
-                idV = idList[i]
                 fidV = fidList[i]
                 if i == len(idList) - 1:
                     break
@@ -3026,7 +3054,6 @@ class helpers:
             # note that the end point of the first segment is the start point of the second segment, and so on
             arcpy.AddXY_management(outFeat)
             cursor = arcpy.SearchCursor(outFeat)
-            idList = []
             startXList = []
             startYList = []
             endXList = []
@@ -3074,17 +3101,26 @@ class helpers:
         self.deleteDataItems(itemList)
         return meanSlope
 
-    # This function calculats 8 additional attributes: mean_width_thickness_ratio, std_width_thickness_ratio, mean_thickness, mean_segment_slope,
-    # width_distance_slope, width_distance_correlation, thick_distance_slope, and thick_distance_correlation. These attributes are used to
-    # classify Gully, Valley and Channel, and Canyon features.
-    # mean_thickness: calculated as the mean feature thickness (top depth minus bottom depth) of a number of cross-feature profiles
+    """ This function calculates 8 additional attributes: mean_width_thickness_ratio, std_width_thickness_ratio,
+    # mean_thickness, mean_segment_slope,width_distance_slope, width_distance_correlation, thick_distance_slope,
+    # and thick_distance_correlation. These attributes are used to classify Gully, Valley and Channel,
+    # and Canyon features."""
+
+    # mean_thickness: the mean feature thickness (top depth minus bottom depth) of a number of cross-feature profiles
     # mean_width_thickness_ratio: mean ratio between the width and the thickness of five profiles
-    # std_width_thickness_ratio: standard deviation of the ratios between the width and the thickness of a number of profiles
-    # mean_segment_slope: A number of linear segments are created by connecting the head, each point of minimum depth on a profile, and the foot. The slopes of the segments are calculated and averaged as this value.
-    # width_distance_slope: The slope of the linear fitting line between the widths of the sub-polygons and the distances of the sub-polygons to the feature head
-    # width_distance_correlation: The correlation coefficient between the widths of the sub-polygons and the distances of the sub-polygons to the feature head
-    # thick_distance_slope: The slope of the linear fitting line between the thicknesses of the sub-polygons and the distances of the sub-polygons to the feature head
-    # thick_distance_correlation: The correlation coefficient between the thicknesses of the sub-polygons and the distances of the sub-polygons to the feature head
+    # std_width_thickness_ratio: standard deviation of the ratios between the width and the thickness
+    # of a number of profiles
+    # mean_segment_slope: A number of linear segments are created by connecting the head,
+    # each point of minimum depth on a profile, and the foot. The slopes of the segments
+    # are calculated and averaged as this value.
+    # width_distance_slope: The slope of the linear fitting line between the widths of the sub-polygons
+    # and the distances of the sub-polygons to the feature head
+    # width_distance_correlation: The correlation coefficient between the widths of the sub-polygons
+    # and the distances of the sub-polygons to the feature head
+    # thick_distance_slope: The slope of the linear fitting line between the thicknesses of the sub-polygons
+    # and the distances of the sub-polygons to the feature head
+    # thick_distance_correlation: The correlation coefficient between the thicknesses of the sub-polygons
+    # and the distances of the sub-polygons to the feature head
     def calculate_Ratio_Slopes(
         self, inLineFeat, inBathy, dissolveLineFeat, headFeat, footFeat
     ):
@@ -3118,7 +3154,8 @@ class helpers:
         ExtractValuesToPoints(outVerticeFeat1, inBathy, depthFeat1)
 
         # summary statistics
-        # This calculates the minimum depth of the start and end points of the profile, which represents the surface depth of the feature
+        # This calculates the minimum depth of the start and end points of the profile,
+        # which represents the surface depth of the feature
         outTab1 = "outFeat_min1"
         itemList.append(outTab1)
         statField = [["RASTERVALU", "MIN"]]
@@ -3221,7 +3258,7 @@ class helpers:
         # loop through each profile
         for row in cursor:
             ratio = row.getValue("widthThicknessRatio")
-            if ratio == None:  # caused by thickness = 0
+            if ratio is None:  # caused by thickness = 0
                 ratioList.append(np.nan)
             else:
                 ratioList.append(ratio)
@@ -3306,9 +3343,11 @@ class helpers:
             thickDistCor,
         )
 
-    # This function calculats the mean segment slope attribute. This attribute is used to
+    # This function calculates the mean segment slope attribute. This attribute is used to
     # classify Gully, Valley and Channel, and Canyon features.
-    # mean_segment_slope: A number of linear segments are created by connecting the head, each point of minimum depth on a profile, and the foot. The slopes of the segments are calculated and averaged as this value.
+    # mean_segment_slope: A number of linear segments are created by connecting the head,
+    # each point of minimum depth on a profile, and the foot.
+    # The slopes of the segments are calculated and averaged as this value.
     def calculate_meansegment_Slopes(
         self, inLineFeat, inBathy, dissolveLineFeat, headFeat, footFeat
     ):
@@ -3342,7 +3381,8 @@ class helpers:
         ExtractValuesToPoints(outVerticeFeat1, inBathy, depthFeat1)
 
         # summary statistics
-        # This calculates the minimum depth of the start and end points of the profile, which represents the surface depth of the feature
+        # This calculates the minimum depth of the start and end points of the profile,
+        # which represents the surface depth of the feature
         outTab1 = "outFeat_min1"
         itemList.append(outTab1)
         statField = [["RASTERVALU", "MIN"]]
@@ -3383,7 +3423,8 @@ class helpers:
         self.deleteDataItems(itemList)
         return meanSlope
 
-    # This function calculates sinuosity, length to width ratio, width to depth (thickness) ratio, and a number of other attributes for the Bathymetric Low features
+    # This function calculates sinuosity, length to width ratio, width to depth (thickness) ratio,
+    # and a number of other attributes for the Bathymetric Low features
     def calculateSinuosity_LwR_WdR_Slopes(
         self,
         workspace,
@@ -3449,7 +3490,7 @@ class helpers:
                 "thick_distance_correlation",
             ]
         else:
-            arcpy.AddMessage("Wonot calculate additional attributes")
+            arcpy.AddMessage("Won't calculate additional attributes")
             fieldList = [
                 "head_foot_length",
                 "sinuous_length",
@@ -3475,7 +3516,7 @@ class helpers:
         lineFeatClass1 = workspace + "/" + "lineFeatClass1"
         itemList.append(lineFeatClass1)
         arcpy.PolygonToLine_management(splitFeatClass, lineFeatClass1)
-        arcpy.AddMessage("ploygon to line done")
+        arcpy.AddMessage("polygon to line done")
         # selection
         lineFeatClass2 = workspace + "/" + "lineFeatClass2"
         itemList.append(lineFeatClass2)
@@ -3553,7 +3594,8 @@ class helpers:
         headfootList = []
         ids = np.unique(testDF1.featID)
         # loop through each feature which contains a number of points
-        # The idea is to find a point representing 'head' (first) and a point representing 'foot' (last) of the Bathymetric Low feature
+        # The idea is to find a point representing 'head' (first)
+        # and a point representing 'foot' (last) of the Bathymetric Low feature
         for id in ids:
             x = testDF1.loc[testDF1.featID == id]
             angle = round(x.rectangle_Orientation.values[0], 2)
@@ -3762,6 +3804,11 @@ class helpers:
         sortField = "OBJECTID"
         # Execute PointsToLine
         arcpy.PointsToLine_management(mergedFeat1_1, lineFeat1_1, lineField, sortField)
+        # If the above function fails silently, call my own replicated function
+        if arcpy.Exists(lineFeat1_1):
+            arcpy.AddMessage(lineFeat1_1 + " exists")
+        else:
+            self.myPointsToLine(mergedFeat1_1, lineFeat1_1, lineField, tempFolder)
 
         lineFeat1_2 = "curveLine2"
         itemList.append(lineFeat1_2)
@@ -3769,11 +3816,17 @@ class helpers:
         sortField = "OBJECTID"
         # Execute PointsToLine
         arcpy.PointsToLine_management(mergedFeat1_2, lineFeat1_2, lineField, sortField)
+        # If the above function fails silently, call my own replicated function
+        if arcpy.Exists(lineFeat1_2):
+            arcpy.AddMessage(lineFeat1_2 + " exists")
+        else:
+            self.myPointsToLine(mergedFeat1_2, lineFeat1_2, lineField, tempFolder)
+
         arcpy.AddMessage("points to curve line done")
 
         # merge curvelines
-        # We donot know which curveline is the true curveline connecting the points in correct order.
-        # Thus we merge the two curvelines together and select the one with shorter length, which is the correct one
+        # We do not know which curveline is the true curveline connecting the points in correct order.
+        # Thus we merge the two curvelines together and select the one with shorter length, which is the correct one.
         mergedFeats = [lineFeat1_1, lineFeat1_2]
         mergedCurveFeat = workspace + "/" + "merged_curves"
         itemList.append(mergedCurveFeat)
@@ -3788,7 +3841,8 @@ class helpers:
         caseField = ["featID"]
         arcpy.Statistics_analysis(mergedCurveFeat, outTab3, statsField, caseField)
 
-        # merge to create a straight line connecting the first and last point in order to calculate the straight length (head to foot length)
+        # merge to create a straight line connecting the first and last point
+        # in order to calculate the straight length (head to foot length)
         mergedFeats = [firstFeatClass, lastFeatClass]
         mergedFeat2 = workspace + "/" + "merged_points2"
         itemList.append(mergedFeat2)
@@ -3802,6 +3856,12 @@ class helpers:
         sortField = "OBJECTID"
         # Execute PointsToLine
         arcpy.PointsToLine_management(mergedFeat2, lineFeat2, lineField, sortField)
+        # If the above function fails silently, call my own replicated function
+        if arcpy.Exists(lineFeat2):
+            arcpy.AddMessage(lineFeat2 + " exists")
+        else:
+            self.myPointsToLine(mergedFeat2, lineFeat2, lineField, tempFolder)
+
         arcpy.AddMessage("points to straight line done")
 
         # add sinuous_length field
@@ -3821,7 +3881,7 @@ class helpers:
         field = "Sinuosity"
         expression = "!sinuous_length! / !head_foot_length!"
         arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON_9.3")
-        arcpy.AddMessage("caculate Sinuosity field done")
+        arcpy.AddMessage("calculate Sinuosity field done")
         field = "LengthWidthRatio"
         expression = "!sinuous_length! / !mean_width!"
         arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON_9.3")
@@ -3847,12 +3907,14 @@ class helpers:
             arcpy.AddMessage("lwRatio: " + str(lwRatio))
 
             if additionalOption == "true":  # calculate all 8 attributes
-                # These 8 attributes: mean_width_thickness_ratio, std_width_thickness_ratio, mean_thickness, mean_segment_slope,
-                # width_distance_slope, width_distance_correlation, thick_distance_slope, and thick_distance_correlation are used to
-                # classify Gully, Valley and Channel features. These three types of features are elongated features with large LengthWidthRatio.
+                # These 8 attributes: mean_width_thickness_ratio, std_width_thickness_ratio, mean_thickness,
+                # mean_segment_slope, width_distance_slope, width_distance_correlation, thick_distance_slope,
+                # and thick_distance_correlation are used to classify Gully, Valley and Channel features.
+                # These three types of features are elongated features with large LengthWidthRatio.
                 if (
                     lwRatio < 5
-                ):  # skipping the non-elongated features and assigning them default values. This saves a lot time calulating these attributes.
+                ):  # skipping the non-elongated features and assigning them default values.
+                    # This saves a lot of time calculating these attributes.
                     arcpy.AddMessage("skipping " + str(featID))
                     meanRatio = -999
                     stdRatio = -999
@@ -3909,7 +3971,8 @@ class helpers:
             else:  # calculate only the mean_segment slope attribute
                 if (
                     lwRatio < 5
-                ):  # skipping the non-elongated features and assigning them default values. This saves a lot time calulating these attributes.
+                ):  # skipping the non-elongated features and assigning them default values.
+                    # This saves a lot of time calculating these attributes.
                     arcpy.AddMessage("skipping " + str(featID))
                     meanSlope = -999
                 else:  # only calculate this attribute for elongated features
@@ -3969,7 +4032,8 @@ class helpers:
         tempLayer = "tempLayer"
         itemList.append(tempLayer)
         arcpy.MakeFeatureLayer_management(centreFeat, tempLayer)
-        # if the centre point is not inside the polygon (e.g., in case of a multipart feature after using the connection tools)
+        # if the centre point is not inside the polygon
+        # (e.g., in case of a multipart feature after using the connection tools)
         # we need to force it
         arcpy.SelectLayerByLocation_management(tempLayer, "WITHIN", inFeat)
 
@@ -4063,7 +4127,8 @@ class helpers:
 
             # convert profile line to profile points along the line
             # normally, the lineFC1 should only have one feature,
-            # but occasionally it has 2 or more features due to the default cluster tolerance setting in the above intersect analysis
+            # but occasionally it has 2 or more features due to the default cluster tolerance setting
+            # in the above intersect analysis
             # the following codes obtain the length of the main line
             nuLines = int(arcpy.GetCount_management(lineFC1).getOutput(0))
             if nuLines < 1:  # if lineFC1 has no feature, skip this profile
@@ -4102,7 +4167,7 @@ class helpers:
                         dist = 10
                 # densify the vertices of the profile lines, effectively adding a vertice at each dist
                 arcpy.Densify_edit(lineFC1, "DISTANCE", str(dist) + " Meters")
-                # add a ID field
+                # add an ID field
                 fieldType = "LONG"
                 fieldPrecision = 10
                 fieldName = "profileID"
@@ -4139,7 +4204,6 @@ class helpers:
         itemList = []
         cursor = arcpy.SearchCursor(rectangleFeat)
         row = cursor.next()
-        MbrA = row.getValue("MBG_Orientation")
         MbrL = row.getValue("MBG_Length")
         MbrW = row.getValue("MBG_Width")
         del cursor, row
@@ -4181,7 +4245,7 @@ class helpers:
         cellSizeHeight = MbrL / numRows
         numColumns = 1
 
-        oppositeCoorner = "#"
+        oppositeCorner = "#"
 
         # Create a point label feature class
         labels = "NO_LABELS"
@@ -4200,7 +4264,7 @@ class helpers:
             cellSizeHeight,
             numRows,
             numColumns,
-            oppositeCoorner,
+            oppositeCorner,
             labels,
             templateExtent,
             geometryType,
@@ -4223,8 +4287,9 @@ class helpers:
 
                 arcpy.Intersect_analysis(fcList, lineFC1, "ALL", "", "LINE")
 
-                # normally, the lineFC1 should only have one feature,
-                # but occasionally it has 0 feature due to intersecting with a point (or does not intersect the feature at all, e.g., in case of the feature is linearly connected multipart feature)
+                # normally, the lineFC1 should only have one feature, but
+                # occasionally it has 0 feature due to intersecting with a point or not intersecting the feature at all
+                # (e.g., in case of the feature is linearly connected multipart feature)
                 # or >=2 features due to the default cluster tolerance setting in the above intersect analysis
                 # the following codes obtain the length of the main line
                 nuLines = int(arcpy.GetCount_management(lineFC1).getOutput(0))
@@ -4266,7 +4331,7 @@ class helpers:
                     # densify the vertices of the profile lines, effectively adding a vertice at each dist
                     arcpy.Densify_edit(lineFC1, "DISTANCE", str(dist) + " Meters")
 
-                    # add a ID field
+                    # add an ID field
                     fieldType = "LONG"
                     fieldPrecision = 10
                     fieldName = "profileID"
@@ -4297,10 +4362,12 @@ class helpers:
             )
             arcpy.Merge_management(mergeFCList, outPointFeat)
             arcpy.AddMessage("merge done")
-        # when none of the five cross-section profiles cross the input feature, we force it to generate one profile passing through the centre point
+        # when none of the five cross-section profiles cross the input feature,
+        # we force it to generate one profile passing through the centre point
         else:
             arcpy.AddMessage(
-                "None of the five cross-section profiles cross the input feature. Instead, we are creating one profile passing through the centre point."
+                "None of the five cross-section profiles cross the input feature. "
+                + "Instead, we are creating one profile passing through the centre point."
             )
             self.create_profiles3(inFeat, rectangleFeat, outPointFeat, tempFolder)
 
@@ -4322,7 +4389,8 @@ class helpers:
         tempLayer = "tempLayer"
         itemList.append(tempLayer)
         arcpy.MakeFeatureLayer_management(centreFeat, tempLayer)
-        # if the centre point is not inside the polygon (e.g., in case of a multipart feature after using the connection tools)
+        # if the centre point is not inside the polygon
+        # (e.g., in case of a multipart feature after using the connection tools)
         # we need to force it
         arcpy.SelectLayerByLocation_management(tempLayer, "WITHIN", inFeat)
 
@@ -4409,8 +4477,8 @@ class helpers:
             arcpy.Intersect_analysis(fcList, lineFC1, "ALL", "", "LINE")
 
             # convert profile line to profile points along the line
-            # normally, the lineFC1 should only have one feature,
-            # but occasionally it has 2 or more features due to the default cluster tolerance setting in the above intersect analysis
+            # normally, the lineFC1 should only have one feature, but occasionally
+            # it has 2 or more features due to the default cluster tolerance setting in the above intersect analysis
             # the following codes obtain the length of the main line
             lineLengthList = []
             cursor2 = arcpy.SearchCursor(lineFC1)
@@ -4444,7 +4512,7 @@ class helpers:
                     dist = 10
             # densify the vertices of the profile lines, effectively adding a vertice at each dist
             arcpy.Densify_edit(lineFC1, "DISTANCE", str(dist) + " Meters")
-            # add a ID field
+            # add an ID field
             fieldType = "LONG"
             fieldPrecision = 10
             fieldName = "profileID"
@@ -4471,7 +4539,7 @@ class helpers:
         arcpy.AddMessage("merge done")
         self.deleteDataItems(itemList)
 
-    # This function calculates eucliean distance between two points
+    # This function calculates Euclidean distance between two points
     def calculateDistance(self, x1, y1, x2, y2):
         # x1,y1: coordinates of the start point
         # x2,y2: coordinates of the end point
@@ -4482,7 +4550,7 @@ class helpers:
     def calculateSlope(self, e1, e2, d):
         # e1: elevation of the end point
         # e2: elevation of the start point
-        # d: eucliean distance between the two point
+        # d: Euclidean distance between the two point
         if d == 0:
             slope = 90.0
         else:
@@ -4490,8 +4558,9 @@ class helpers:
             slope = np.degrees(np.arctan(slope))  # slope as degree
         return slope
 
-    # This function calculates a slope threshold from a elevation (depth) profile
-    # the slope threshold is the slope between the point with the maximum elevation and the point with the minimum elevation
+    # This function calculates a slope threshold from an elevation (depth) profile
+    # the slope threshold is the slope between the point with the maximum elevation
+    # and the point with the minimum elevation
     def calculateSlopeThreshold(self, profileDF, depthCol, xCol, yCol):
         # profileDF: profile data as a pandas dataframe
         # depthCol: the name of the depth column in the profileDF
@@ -4518,7 +4587,7 @@ class helpers:
         # xCol: the name of the x coordinate column in the profileDF
         # yCol: the name of the y coordinate column in the profileDF
         # idArr: the id array
-        # slopeThreshold: the desinated slope threshold
+        # slopeThreshold: the designated slope threshold
         s1List = []
         s2List = []
         # loop through each point in the profile
@@ -4573,16 +4642,19 @@ class helpers:
 
         # select the row(s) (knick point(s))that satisfying the following criteria from the profile data
         # 1. must be larger than the 99th percentile of the diffSlope;
-        # 2. must be larger than the desinated slope threshold;
+        # 2. must be larger than the designated slope threshold;
         # 3. must be at least larger than 1.0 degree (to remove very flat profile).
-        # selectedID = profileDF[profileDF.diffSlope>=max(profileDF.diffSlope.mean()+2*profileDF.diffSlope.std(),slopeThreshold,1)].index.values
+        # selectedID = profileDF.loc[
+        # profileDF.diffSlope>=max(profileDF.diffSlope.mean()+2*profileDF.diffSlope.std(),slopeThreshold,1)
+        # ].index.values
         selectedID = profileDF.loc[
             profileDF.diffSlope
             >= max(profileDF.diffSlope.quantile(0.99), slopeThreshold, 1)
         ].index.values
 
         # removing the above row(s) from the profile data
-        # profileDF = profileDF[profileDF.diffSlope<max(profileDF.diffSlope.mean()+2*profileDF.diffSlope.std(),slopeThreshold,1)]
+        # profileDF = profileDF.loc[
+        # profileDF.diffSlope<max(profileDF.diffSlope.mean()+2*profileDF.diffSlope.std(),slopeThreshold,1)]
         profileDF = profileDF.loc[
             profileDF.diffSlope
             < max(profileDF.diffSlope.quantile(0.99), slopeThreshold, 1)
@@ -4719,7 +4791,6 @@ class helpers:
         # gap: the maximum gap allowed between knick points to form the group
         xColIndex = np.where(profileDF.columns.values == xCol)[0][0]
         yColIndex = np.where(profileDF.columns.values == yCol)[0][0]
-        dColIndex = np.where(profileDF.columns.values == depthCol)[0][0]
         distL = []
         x = profileDF.iloc[0, xColIndex]
         y = profileDF.iloc[0, yColIndex]
@@ -4745,9 +4816,9 @@ class helpers:
             profileDF_copy, depthCol, xCol, yCol, idArr, slopeThreshold
         )
 
-        # conduct the follwoing round(s) of profile analysis using the diffSlope_95 as the slopeThreshold
-        # stop the loop when there is no element to be appended into the new array, thus the size of the input id array equals
-        # the size of the updated id array
+        # conduct the following round(s) of profile analysis using the diffSlope_95 as the slopeThreshold
+        # stop the loop when there is no element to be appended into the new array,
+        # thus the size of the input id array equals the size of the updated id array
         while idArr2.size > idArr1.size:
             profileDF_copy, idArr1, idArr2, dumy_95 = self.profileAnalysis(
                 profileDF_copy, depthCol, xCol, yCol, idArr2, diffSlope_95
@@ -4799,10 +4870,10 @@ class helpers:
             # the index of the minimum value in the list
             indexX = z1_1.index(min(z1_1))
             # select the minimum value from the id list and append it into the temporary list
-            # the minimum value indeicates the id of the knick point
+            # the minimum value indicates the id of the knick point
             z2.append(z_1[indexX])
             i += 1
-        # select the key profileDF from the profile data to form a simplied profile (profileDF1)
+        # select the key profileDF from the profile data to form a simplified profile (profileDF1)
         z2.insert(0, profileDF.index[0])
         z2.insert(len(z2), profileDF.index[-1])
         profileDF1 = profileDF.loc[z2].copy()
@@ -4816,15 +4887,16 @@ class helpers:
         angleList = self.profileAngle(profileDF1, "slope")
         profileDF1.loc[:, "polygonAngle"] = angleList
 
-        ## calculate profile attributes
-        ## topSlopeClass: the slope class of the top of a bathymetic high; 'no top' indicates a triangle shape without top
-        ## sideSlopeClass: the slope class of the sides of a bathmetric high
-        ## shape: profile shape
-        ## concave: profile concavity
-        ## symmetry: profile symmetry
-        ## topDepth: the depth of the top of a bathymetric high
-        ## height: the height of the profile
-        ## length: the length of the profile
+        # calculate profile attributes
+        # topSlopeClass: the slope class of the top of a bathymetric high;
+        # 'no top' indicates a triangle shape without top
+        # sideSlopeClass: the slope class of the sides of a bathymetric high
+        # shape: profile shape
+        # concave: profile concavity
+        # symmetry: profile symmetry
+        # topDepth: the depth of the top of a bathymetric high
+        # height: the height of the profile
+        # length: the length of the profile
 
         sColIndex = np.where(profileDF1.columns.values == "slope")[0][0]
         dColIndex = np.where(profileDF1.columns.values == "dist")[0][0]
@@ -4931,7 +5003,6 @@ class helpers:
 
         xColIndex = np.where(profileDF.columns.values == xCol)[0][0]
         yColIndex = np.where(profileDF.columns.values == yCol)[0][0]
-        dColIndex = np.where(profileDF.columns.values == depthCol)[0][0]
         distL = []
         x = profileDF.iloc[0, xColIndex]
         y = profileDF.iloc[0, yColIndex]
@@ -4953,9 +5024,9 @@ class helpers:
         profileDF_copy, idArr1, idArr2, diffSlope_95 = self.profileAnalysis(
             profileDF_copy, depthCol, xCol, yCol, idArr, slopeThreshold
         )
-        # conduct the follwoing round(s) of profile analysis using the diffSlope_95 as the slopeThreshold
-        # stop the loop when there is no element to be appended into the new array, thus the size of the input id array equals
-        # the size of the updated id array
+        # conduct the following round(s) of profile analysis using the diffSlope_95 as the slopeThreshold
+        # stop the loop when there is no element to be appended into the new array,
+        # thus the size of the input id array equals the size of the updated id array
         while idArr2.size > idArr1.size:
             profileDF_copy, idArr1, idArr2, dumy_95 = self.profileAnalysis(
                 profileDF_copy, depthCol, xCol, yCol, idArr2, diffSlope_95
@@ -5007,10 +5078,10 @@ class helpers:
             # the index of the minimum value in the list
             indexX = z1_1.index(min(z1_1))
             # select the minimum value from the id list and append it into the temporary list
-            # the minimum value indeicates the id of the knick point
+            # the minimum value indicates the id of the knick point
             z2.append(z_1[indexX])
             i += 1
-        # select the key profileDF from the profile data to form a simplied profile (profileDF1)
+        # select the key profileDF from the profile data to form a simplified profile (profileDF1)
         z2.insert(0, profileDF.index[0])
         z2.insert(len(z2), profileDF.index[-1])
         profileDF1 = profileDF.loc[z2].copy()
@@ -5024,17 +5095,19 @@ class helpers:
         angleList = self.profileAngle(profileDF1, "slope")
         profileDF1.loc[:, "polygonAngle"] = angleList
 
-        ## calculate profile attributes
-        ## bottomSlopeClass: the slope class of the bottom of a bathymetic low; 'no bottom' indicates a triangle shape without bottom
-        ## sideSlopeClass: the slope class of the sides of a bathmetric high
-        ## shape: profile shape
-        ## concave: profile concavity
-        ## symmetry: profile symmetry
-        ## bottomDepth: the depth of the bottom of a bathymetric low
-        ## height: the relief of the profile
-        ## length: the length of the profile
+        # calculate profile attributes
+        # bottomSlopeClass: the slope class of the bottom of a bathymetric low;
+        # 'no bottom' indicates a triangle shape without bottom
+        # sideSlopeClass: the slope class of the sides of a bathymetric low
+        # shape: profile shape
+        # concave: profile concavity
+        # symmetry: profile symmetry
+        # bottomDepth: the depth of the bottom of a bathymetric low
+        # height: the relief of the profile
+        # length: the length of the profile
 
         sColIndex = np.where(profileDF1.columns.values == "slope")[0][0]
+        dColIndex = np.where(profileDF1.columns.values == "dist")[0][0]
         # use profile skewness to determine shape symmetry
         # add 'numeric_only = True' option to deal with the new Pandas version (2023-04-06)
         skewness = profileDF.skew(axis=0, numeric_only=True)[depthCol]
@@ -5128,3 +5201,73 @@ class helpers:
             height,
             length,
         )
+
+    # This function is a replicate of the PointsToLine_management function in ArcGIS.PointsToLine_management.
+    # It is only used when the PointsToLine_management function fails silently for some unknown reasons,
+    # in case of implementing multiprocessing using a python script.
+    def myPointsToLine(self, inPoints, outLines, lineField, tempFolder):
+        # inPoints: input point featureclass
+        # outLines: output line featureclass
+        # tempFolder: temporary folder to store temporary data/file
+
+        # sort the inPoints first
+        sortFeat = "inPoints_sorted"
+        sortField = [[lineField, "ASCENDING"]]
+        arcpy.Sort_management(inPoints, sortFeat, sortField)
+        # loop through the sortFeat and populate these three lists for the information we need
+        idList = []
+        xList = []
+        yList = []
+        cursor = arcpy.SearchCursor(sortFeat)
+        for row in cursor:
+            featID = row.getValue(lineField)
+            idList.append(featID)
+            x = row.getValue("POINT_X")
+            xList.append(x)
+            y = row.getValue("POINT_Y")
+            yList.append(y)
+        del row, cursor
+        # convert the lists to a data frame
+        pointsPD = pd.DataFrame()
+        pointsPD['id'] = idList
+        pointsPD['x'] = xList
+        pointsPD['y'] = yList
+        # group the data frame
+        pointsGroup = pointsPD.groupby("id")
+        # loop through the data frame and write the id, x and y to a csv file
+        csvFile = tempFolder + "/" + "pointToLineTemp.csv"
+        fil = open(csvFile, "w")
+        fil.write(str(lineField) + ",from_x,from_y,to_x,to_y" + "\n")
+        for pts in pointsGroup.groups:
+            points = pointsGroup.get_group(pts)
+            i = 0
+            while i < points.id.size - 1:
+                fid = points.iloc[i].id
+                from_x = points.iloc[i].x
+                from_y = points.iloc[i].y
+                to_x = points.iloc[i+1].x
+                to_y = points.iloc[i+1].y
+                fil.write(str(fid) + "," + str(from_x) + "," + str(from_y) + "," + str(to_x) + "," + str(to_y) + "\n")
+                i += 1
+
+        fil.close()
+        # convert XY table (the csv file) to lines, then dissolve
+        lineFeat = "xyLines"
+        arcpy.XYToLine_management(
+            csvFile,
+            lineFeat,
+            "from_x",
+            "from_y",
+            "to_x",
+            "to_y",
+            "GEODESIC",
+            lineField,
+            inPoints,
+        )
+
+        arcpy.Dissolve_management(lineFeat, outLines, lineField)
+        arcpy.Delete_management(sortFeat)
+        arcpy.Delete_management(csvFile)
+        arcpy.Delete_management(lineFeat)
+
+        return
