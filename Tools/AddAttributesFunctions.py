@@ -2,7 +2,7 @@
 Author: Zhi Huang
 Organisation: Geoscience Australia
 Email: Zhi.Huang@ga.gov.au
-Last update: May 22, 2024
+Last update: June 04, 2024
 Python version: 3+
 ArcGIS Pro: 2.6.4 and above """
 
@@ -1096,7 +1096,7 @@ def calculate_segmentSlope(
 # mean_thickness, mean_segment_slope, width_distance_slope, width_distance_correlation, thick_distance_slope,
 # and thick_distance_correlation. These attributes are used to classify Gully, Valley and Channel, and Canyon features.
 # mean_thickness: the mean feature thickness (top depth minus bottom depth) of a number of cross-feature profiles
-# mean_width_thickness_ratio: mean ratio between the width and the thickness of five profiles
+# mean_width_thickness_ratio: mean ratio between the width and the thickness of a number of profiles
 # std_width_thickness_ratio: standard deviation of the ratios between the width
 # and the thickness of a number of profiles
 # mean_segment_slope: A number of linear segments are created by connecting the head,
@@ -1234,9 +1234,18 @@ def calculate_Ratio_Slopes(
     )
 
     field = "widthThicknessRatio"
-    expression = "abs(!Shape_Length! / !thickness!)"
+    # need to handle in rare case of thickness = 0; added on 20240604
+    codeblock = """
+import numpy as np
+def divisionZero(a, b):
+    if b == 0:
+        return np.nan
+    else:
+        return a / b
+            """
+    expression = "divisionZero(!Shape_Length!, !thickness!)"
     arcpy.CalculateField_management(
-        dissolveLineFeat, field, expression, "PYTHON_9.3"
+        dissolveLineFeat, field, expression, "PYTHON_9.3", codeblock
     )
 
     ratioList = []
