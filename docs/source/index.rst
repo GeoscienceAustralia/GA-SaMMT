@@ -13,6 +13,7 @@ Welcome to GA-SaMMT's documentation!
    overview
    bathymetric_features
    add_attributes
+   add_attributes_fast
    classification_feature
    surface
    accessory
