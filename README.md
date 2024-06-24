@@ -22,14 +22,14 @@ mapping seabed morphology from bathymetry data. Front. Mar. Sci. 10:1236788. doi
 ## Documentation
 
 ### User guide
-See the [user guide](./User_Guide/GA-SaMMT_v1p2_user_guide.pdf) for a tutorial and walkthrough of the toolsets.
+See the [user guide](./User_Guide/GA-SaMMT_v2p0_user_guide.pdf) for a tutorial and walkthrough of the toolsets.
 
 ### Toolbox details
 For more detailed information on the individual toolboxes see https://ga-sammt.readthedocs.io/en/latest/ 
 
 
 ## Toolboxes
-The ESRI [toolboxes](./Tools) contains six Python toolboxes:
+The ESRI [toolboxes](./Tools) contains seven Python toolboxes:
 
 * BathymetricHigh is used to map bathymetric high features and contains:
     * TPI Tool Bathymetric High
@@ -44,6 +44,11 @@ The ESRI [toolboxes](./Tools) contains six Python toolboxes:
     * Add Shape Attributes Low Tool
     * Add Topographic Attributes High Tool
     * Add Topographic Attributes Low Tool
+    * Add Profile Attributes High Tool
+    * Add Profile Attributes Low Tool
+* AddAttributesFast is used to calculate attributes for bathymetric high and low features using multiprocessing and contains:
+    * Add Shape Attributes High Tool
+    * Add Shape Attributes Low Tool
     * Add Profile Attributes High Tool
     * Add Profile Attributes Low Tool
 * ClassificationFeature is used to classify bathymetric high and low features into morphological categories as defined by [Dove et al](http://doi.org/10.5281/zenodo.4075248) and contains:
