@@ -47,10 +47,10 @@ The ESRI [toolboxes](./Tools) contains seven Python toolboxes:
     * Add Profile Attributes High Tool
     * Add Profile Attributes Low Tool
 * AddAttributesFast is used to calculate attributes for bathymetric high and low features using multiprocessing and contains:
-    * Add Shape Attributes High Tool
-    * Add Shape Attributes Low Tool
-    * Add Profile Attributes High Tool
-    * Add Profile Attributes Low Tool
+    * Add Shape Attributes High Tool Fast
+    * Add Shape Attributes Low Tool Fast
+    * Add Profile Attributes High Tool Fast
+    * Add Profile Attributes Low Tool Fast
 * ClassificationFeature is used to classify bathymetric high and low features into morphological categories as defined by [Dove et al](http://doi.org/10.5281/zenodo.4075248) and contains:
     * Classify Bathymetric High Features
     * Classify Bathymetric Low Features
