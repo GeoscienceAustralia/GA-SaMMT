@@ -3,7 +3,7 @@ Add Profile Attributes Low
 
 
 This tool add a number of profile attributes to the input feature class.
-This tool requires the **LengthWidthRatio** attribute to be calculated first using the Add Shape Attributes Low Tool.
+This tool requires the **LengthWidthRatio** attribute to be calculated first using either the Add Shape Attributes Low Add Shape Attribute Low Fast Tool.
 
 For each bathymetric low feature, if its area is larger than a user-defined threshold, five cross-section profiles perpendicular to the orientation of the feature, with an equal distance-interval are generated; otherwise only one cross-section profile perpendicular to the orientation of the feature is generated.
 

@@ -3,7 +3,7 @@ Add Profile Attributes High
 
 
 This tool add a number of profile attributes to the input feature class.
-This tool requires the **LengthWidthRatio** attribute to be calculated first using the Add Shape Attributes High Tool.
+This tool requires the **LengthWidthRatio** attribute to be calculated first using either the Add Shape Attributes High or the Add Shape Attributes High Fast Tool.
 
 For each bathymetric high feature, if its area is larger than a user-defined threshold, five cross-section profiles passing through the polygon centre with an equal angle-interval are generated; otherwise only one cross-section profile passing through the polygon centre is generated.
 
