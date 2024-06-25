@@ -1,9 +1,11 @@
-Add Profile Attributes Low
---------------------------
+Add Profile Attributes Low Fast
+-------------------------------
 
+
+This tool incorporates multiprocessing capability to speed up the calculation performance. It is thus more efficient in generating profile attributes for each bathymetric low feature. Essentially, this tool opens multiple Python windows depending on the *Number of CPU processors* parameter. Each of these Python windows processes a subset of input features. After completing the multiprocessing, the results are merged as the final output.
 
 This tool add a number of profile attributes to the input feature class.
-This tool requires the **LengthWidthRatio** attribute to be calculated first using either the Add Shape Attributes Low Add Shape Attribute Low Fast Tool.
+This tool requires the **LengthWidthRatio** attribute to be calculated first using either the Add Shape Attributes Low or the Add Shape Attributes Low Fast Tool.
 
 For each bathymetric low feature, if its area is larger than a user-defined threshold, five cross-section profiles perpendicular to the orientation of the feature, with an equal distance-interval are generated; otherwise only one cross-section profile perpendicular to the orientation of the feature is generated.
 
@@ -54,25 +56,3 @@ The following attributes are calculated to describe the cross-section profile(s)
 
 .. image:: images/profile_attributes1.png
    :align: center
-
-
-.. code-block:: python
-   :linenos:
-
-   from arcpy import env
-   from arcpy.sa import *
-   arcpy.CheckOutExtension("Spatial")
-   
-   # import the python toolbox
-   arcpy.ImportToolbox("C:/semi_automation_tools/User_Guide/Tools/AddAttributes.pyt")
-   
-   env.workspace = 'C:/semi_automation_tools/testSampleCode/Gifford.gdb'
-   env.overwriteOutput = True
-   
-   # specify input and output parameters of the tool
-   inFeat = 'test_BL'
-   inBathy = 'gifford_bathy'
-   areaT = '20000 SquareMeters'
-   tempFolder = 'C:/semi_automation_tools/temp4'
-   # execute the tool
-   arcpy.AddAttributes.Add_Profile_Attributes_Low_Tool(inFeat,inBathy,areaT,tempFolder)
