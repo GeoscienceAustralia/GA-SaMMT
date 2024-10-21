@@ -7,24 +7,22 @@ Python version: 3+
 ArcGIS Pro: 2.6.4 and above
 """
 
-import math
+import multiprocessing
 import os
 import sys
-from datetime import datetime
+from importlib import reload
 
 import arcpy
-import numpy as np
-import pandas as pd
 from arcpy import env
 from arcpy.sa import *
 
-import multiprocessing
-from importlib import reload
 import AddAttributesFunctions
-from AddAttributesFunctions import execute_shape_BH
-from AddAttributesFunctions import execute_shape_BL
-from AddAttributesFunctions import execute_profile_BH
-from AddAttributesFunctions import execute_profile_BL
+from AddAttributesFunctions import (
+    execute_profile_BH,
+    execute_profile_BL,
+    execute_shape_BH,
+    execute_shape_BL,
+)
 
 arcpy.CheckOutExtension("Spatial")
 
@@ -193,12 +191,14 @@ class Add_Shape_Attributes_High_Tool:
             raise arcpy.ExecuteError
         elif nCPU > multiprocessing.cpu_count():
             messages.addErrorMessage(
-                "The number of CPU processors used for multiprocessing must not be greater than the maximum " +
-                "that is available: " + str(multiprocessing.cpu_count()) + "!"
+                "The number of CPU processors used for multiprocessing must not be greater than the maximum "
+                + "that is available: "
+                + str(multiprocessing.cpu_count())
+                + "!"
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
 
@@ -214,30 +214,33 @@ class Add_Shape_Attributes_High_Tool:
         # this will make sure the multiprocessing opens multiple python windows for processing
         # without this line of code, the tool will open ArcGIS Pro applications (e.g., ArcGISPro.exe),
         # which would not process the task as expected.
-        multiprocessing.set_executable(os.path.join(sys.exec_prefix, 'python.exe'))
+        multiprocessing.set_executable(os.path.join(sys.exec_prefix, "python.exe"))
         # call the splitFeat() to split the input featureclass into nCPU subsets, and create separate geodatabases and
         # temporary folders for multiprocessing
         workspaceList, tempfolderList, featList, bathyList = helper.splitFeat_BH(
-            workspaceName, inFeatClass, inBathy, nCPU)
+            workspaceName, inFeatClass, inBathy, nCPU
+        )
         # generate the argument list
         argList = []
         i = 0
         while i < len(featList):
-            argList.append([workspaceList[i], tempfolderList[i], featList[i], bathyList[i]])
+            argList.append(
+                [workspaceList[i], tempfolderList[i], featList[i], bathyList[i]]
+            )
             i += 1
 
         # important, need to reload the module so that we use the most up-to-date coding in the module
         reload(AddAttributesFunctions)
 
-        arcpy.AddMessage('Starting multiprocessing...')
+        arcpy.AddMessage("Starting multiprocessing...")
         # call the execute() from the AddAttributesFunctions module
         # the function is the entry point for the multiprocessing
         execute_shape_BH(argList, nCPU)
-        arcpy.AddMessage('multiprocessing Done.')
+        arcpy.AddMessage("multiprocessing Done.")
         # merge individual featureclass
         outFeatClass = "mergedFeat"
         arcpy.Merge_management(featList, outFeatClass)
-        arcpy.AddMessage('merged done')
+        arcpy.AddMessage("merged done")
         # copy the merged features and replace the input featureclass
         arcpy.Copy_management(outFeatClass, inFeatClass)
         arcpy.Delete_management(outFeatClass)
@@ -449,12 +452,14 @@ class Add_Shape_Attributes_Low_Tool:
             raise arcpy.ExecuteError
         elif nCPU > multiprocessing.cpu_count():
             messages.addErrorMessage(
-                "The number of CPU processors used for multiprocessing must not be greater than the maximum " +
-                "that is available: " + str(multiprocessing.cpu_count()) + "!"
+                "The number of CPU processors used for multiprocessing must not be greater than the maximum "
+                + "that is available: "
+                + str(multiprocessing.cpu_count())
+                + "!"
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
 
@@ -471,28 +476,43 @@ class Add_Shape_Attributes_Low_Tool:
         # this will make sure the multiprocessing opens multiple python windows for processing
         # without this line of code, the tool will open ArcGIS Pro applications (e.g., ArcGISPro.exe),
         # which would not process the task as expected.
-        multiprocessing.set_executable(os.path.join(sys.exec_prefix, 'python.exe'))
+        multiprocessing.set_executable(os.path.join(sys.exec_prefix, "python.exe"))
 
         # call the splitFeat() to split the input featureclass into nCPU subsets, and create separate geodatabases and
         # temporary folders for multiprocessing
-        workspaceList, tempfolderList, featList, headFeatList, footFeatList, bathyList = helper.splitFeat_BL(
-            workspaceName, inFeatClass, inBathy, nCPU)
+        (
+            workspaceList,
+            tempfolderList,
+            featList,
+            headFeatList,
+            footFeatList,
+            bathyList,
+        ) = helper.splitFeat_BL(workspaceName, inFeatClass, inBathy, nCPU)
         # generate the argument list
         argList = []
         i = 0
         while i < len(featList):
-            argList.append([workspaceList[i], tempfolderList[i], featList[i], headFeatList[i],
-                            footFeatList[i], bathyList[i], additionalOption])
+            argList.append(
+                [
+                    workspaceList[i],
+                    tempfolderList[i],
+                    featList[i],
+                    headFeatList[i],
+                    footFeatList[i],
+                    bathyList[i],
+                    additionalOption,
+                ]
+            )
             i += 1
 
         # important, need to reload the module so that we use the most up-to-date coding in the module
         reload(AddAttributesFunctions)
 
-        arcpy.AddMessage('Starting multiprocessing...')
+        arcpy.AddMessage("Starting multiprocessing...")
         # call the execute() from the AddAttributesFunctions module
         # the function is the entry point for the multiprocessing
         execute_shape_BL(argList, nCPU)
-        arcpy.AddMessage('multiprocessing Done.')
+        arcpy.AddMessage("multiprocessing Done.")
 
         # merge individual featureclass
         outFeatClass = "mergedFeat"
@@ -501,12 +521,12 @@ class Add_Shape_Attributes_Low_Tool:
         arcpy.Merge_management(headFeatList, outFeatClass1)
         outFeatClass2 = "mergedFeat2"
         arcpy.Merge_management(footFeatList, outFeatClass2)
-        arcpy.AddMessage('final merged done')
+        arcpy.AddMessage("final merged done")
         # copy the merged features and replace the input featureclass
         arcpy.Copy_management(outFeatClass, inFeatClass)
         arcpy.Copy_management(outFeatClass1, headFeatClass)
         arcpy.Copy_management(outFeatClass2, footFeatClass)
-        arcpy.AddMessage('final copied done')
+        arcpy.AddMessage("final copied done")
         arcpy.Delete_management(outFeatClass)
         arcpy.Delete_management(outFeatClass1)
         arcpy.Delete_management(outFeatClass2)
@@ -683,12 +703,14 @@ class Add_Profile_Attributes_High_Tool:
             raise arcpy.ExecuteError
         elif nCPU > multiprocessing.cpu_count():
             messages.addErrorMessage(
-                "The number of CPU processors used for multiprocessing must not be greater than the maximum " +
-                "that is available: " + str(multiprocessing.cpu_count()) + "!"
+                "The number of CPU processors used for multiprocessing must not be greater than the maximum "
+                + "that is available: "
+                + str(multiprocessing.cpu_count())
+                + "!"
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0: inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
         # areaThreshold input has two components: the threshold value and the area unit
@@ -719,30 +741,39 @@ class Add_Profile_Attributes_High_Tool:
         # this will make sure the multiprocessing opens multiple python windows for processing
         # without this line of code, the tool will open ArcGIS Pro applications (e.g., ArcGISPro.exe),
         # which would not process the task as expected.
-        multiprocessing.set_executable(os.path.join(sys.exec_prefix, 'python.exe'))
+        multiprocessing.set_executable(os.path.join(sys.exec_prefix, "python.exe"))
         # call the splitFeat() to split the input featureclass into nCPU subsets, and create separate geodatabases and
         # temporary folders for multiprocessing
-        workspaceList, tempfolderList, featList, bathyList = helper.splitFeat_BH(workspaceName, inFeatClass, inBathy,
-                                                                                 nCPU)
+        workspaceList, tempfolderList, featList, bathyList = helper.splitFeat_BH(
+            workspaceName, inFeatClass, inBathy, nCPU
+        )
         # generate the argument list
         argList = []
         i = 0
         while i < len(featList):
-            argList.append([workspaceList[i], tempfolderList[i], featList[i], bathyList[i], areaThreshold])
+            argList.append(
+                [
+                    workspaceList[i],
+                    tempfolderList[i],
+                    featList[i],
+                    bathyList[i],
+                    areaThreshold,
+                ]
+            )
             i += 1
 
         # important, need to reload the module so that we use the most up-to-date coding in the module
         reload(AddAttributesFunctions)
 
-        arcpy.AddMessage('Starting multiprocessing...')
+        arcpy.AddMessage("Starting multiprocessing...")
         # call the execute() from the AddAttributesFunctions module
         # the function is the entry point for the multiprocessing
         execute_profile_BH(argList, nCPU)
-        arcpy.AddMessage('multiprocessing Done.')
+        arcpy.AddMessage("multiprocessing Done.")
         # merge individual featureclass
         outFeatClass = "mergedFeat"
         arcpy.Merge_management(featList, outFeatClass)
-        arcpy.AddMessage('merged done')
+        arcpy.AddMessage("merged done")
         # copy the merged features and replace the input featureclass
         arcpy.Copy_management(outFeatClass, inFeatClass)
         arcpy.Delete_management(outFeatClass)
@@ -931,12 +962,14 @@ class Add_Profile_Attributes_Low_Tool:
             raise arcpy.ExecuteError
         elif nCPU > multiprocessing.cpu_count():
             messages.addErrorMessage(
-                "The number of CPU processors used for multiprocessing must not be greater than the maximum " +
-                "that is available: " + str(multiprocessing.cpu_count()) + "!"
+                "The number of CPU processors used for multiprocessing must not be greater than the maximum "
+                + "that is available: "
+                + str(multiprocessing.cpu_count())
+                + "!"
             )
             raise arcpy.ExecuteError
 
-        workspaceName = inFeatClass[0: inFeatClass.rfind("/")]
+        workspaceName = inFeatClass[0 : inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
 
@@ -967,30 +1000,44 @@ class Add_Profile_Attributes_Low_Tool:
         # this will make sure the multiprocessing opens multiple python windows for processing
         # without this line of code, the tool will open ArcGIS Pro applications (e.g., ArcGISPro.exe),
         # which would not process the task as expected.
-        multiprocessing.set_executable(os.path.join(sys.exec_prefix, 'python.exe'))
+        multiprocessing.set_executable(os.path.join(sys.exec_prefix, "python.exe"))
         # call the splitFeat() to split the input featureclass into nCPU subsets, and create separate geodatabases and
         # temporary folders for multiprocessing
-        workspaceList, tempfolderList, featList, headFeatList, footFeatList, bathyList = helper.splitFeat_BL(
-            workspaceName, inFeatClass, inBathy, nCPU)
+        (
+            workspaceList,
+            tempfolderList,
+            featList,
+            headFeatList,
+            footFeatList,
+            bathyList,
+        ) = helper.splitFeat_BL(workspaceName, inFeatClass, inBathy, nCPU)
         # generate the argument list
         argList = []
         i = 0
         while i < len(featList):
-            argList.append([workspaceList[i], tempfolderList[i], featList[i], bathyList[i], areaThreshold])
+            argList.append(
+                [
+                    workspaceList[i],
+                    tempfolderList[i],
+                    featList[i],
+                    bathyList[i],
+                    areaThreshold,
+                ]
+            )
             i += 1
 
         # important, need to reload the module so that we use the most up-to-date coding in the module
         reload(AddAttributesFunctions)
 
-        arcpy.AddMessage('Starting multiprocessing...')
+        arcpy.AddMessage("Starting multiprocessing...")
         # call the execute() from the AddAttributesFunctions module
         # the function is the entry point for the multiprocessing
         execute_profile_BL(argList, nCPU)
-        arcpy.AddMessage('multiprocessing Done.')
+        arcpy.AddMessage("multiprocessing Done.")
         # merge individual featureclass
         outFeatClass = "mergedFeat"
         arcpy.Merge_management(featList, outFeatClass)
-        arcpy.AddMessage('merged done')
+        arcpy.AddMessage("merged done")
         # copy the merged features and replace the input featureclass
         arcpy.Copy_management(outFeatClass, inFeatClass)
         arcpy.Delete_management(outFeatClass)
@@ -1077,29 +1124,29 @@ class helpers:
         bathyList = []
         tempfolderList = []
         workspaceList = []
-        path = workspace.rstrip(workspace.split('/')[-1])
-        path = path.rstrip('/')
-        baseName = workspace.split('/')[-1]
-        baseName = baseName.split('.')[0]
-        inBathy = inBathy.split('/')[-1]
-        inFeat = inFeat.split('/')[-1]
+        path = workspace.rstrip(workspace.split("/")[-1])
+        path = path.rstrip("/")
+        baseName = workspace.split("/")[-1]
+        baseName = baseName.split(".")[0]
+        inBathy = inBathy.split("/")[-1]
+        inFeat = inFeat.split("/")[-1]
         arcpy.AddMessage(inBathy)
 
         i = 1
         while i <= noSplit:
             # create a File Geodatabase
-            gdbName = baseName + str(i) + '.gdb'
+            gdbName = baseName + str(i) + ".gdb"
             arcpy.CreateFileGDB_management(path, gdbName)
-            arcpy.AddMessage(gdbName + ' created')
+            arcpy.AddMessage(gdbName + " created")
 
-            workspace = path + '/' + gdbName
+            workspace = path + "/" + gdbName
             workspaceList.append(workspace)
 
             # copy inBathy
-            data1 = path + '/' + gdbName + '/' + inBathy
+            data1 = path + "/" + gdbName + "/" + inBathy
             bathyList.append(data1)
             arcpy.Copy_management(inBathy, data1)
-            arcpy.AddMessage(inBathy + ' copied')
+            arcpy.AddMessage(inBathy + " copied")
 
             # select a subset of inFeat depending on the number of splits
             startID = (i - 1) * featCount
@@ -1107,17 +1154,23 @@ class helpers:
                 endID = noFeat
             else:
                 endID = i * featCount
-            whereClause = '((OBJECTID > ' + str(startID) + ') And (OBJECTID <= ' + str(endID) + '))'
-            outFeat = path + '/' + gdbName + '/' + inFeat + '_' + str(i)
+            whereClause = (
+                "((OBJECTID > "
+                + str(startID)
+                + ") And (OBJECTID <= "
+                + str(endID)
+                + "))"
+            )
+            outFeat = path + "/" + gdbName + "/" + inFeat + "_" + str(i)
             arcpy.analysis.Select(inFeat, outFeat, whereClause)
-            arcpy.AddMessage(outFeat + ' generated')
+            arcpy.AddMessage(outFeat + " generated")
             featList.append(outFeat)
 
             # create temp folder
-            folderName = 'temp' + str(i)
+            folderName = "temp" + str(i)
             arcpy.CreateFolder_management(path, folderName)
-            arcpy.AddMessage(folderName + ' created')
-            tempFolder = path + '/' + folderName
+            arcpy.AddMessage(folderName + " created")
+            tempFolder = path + "/" + folderName
             tempfolderList.append(tempFolder)
             i += 1
         return workspaceList, tempfolderList, featList, bathyList
@@ -1142,29 +1195,29 @@ class helpers:
         tempfolderList = []
         workspaceList = []
 
-        path = workspace.rstrip(workspace.split('/')[-1])
-        path = path.rstrip('/')
-        baseName = workspace.split('/')[-1]
-        baseName = baseName.split('.')[0]
-        inBathy = inBathy.split('/')[-1]
-        inFeat = inFeat.split('/')[-1]
+        path = workspace.rstrip(workspace.split("/")[-1])
+        path = path.rstrip("/")
+        baseName = workspace.split("/")[-1]
+        baseName = baseName.split(".")[0]
+        inBathy = inBathy.split("/")[-1]
+        inFeat = inFeat.split("/")[-1]
 
         # loop through subsets
         i = 1
         while i <= noSplit:
             # create a File Geodatabase
-            gdbName = baseName + str(i) + '.gdb'
+            gdbName = baseName + str(i) + ".gdb"
             arcpy.CreateFileGDB_management(path, gdbName)
-            arcpy.AddMessage(gdbName + ' created')
+            arcpy.AddMessage(gdbName + " created")
 
-            workspace = path + '/' + gdbName
+            workspace = path + "/" + gdbName
             workspaceList.append(workspace)
 
             # copy inBathy
-            data1 = path + '/' + gdbName + '/' + inBathy
+            data1 = path + "/" + gdbName + "/" + inBathy
             bathyList.append(data1)
             arcpy.Copy_management(inBathy, data1)
-            arcpy.AddMessage(inBathy + ' copied')
+            arcpy.AddMessage(inBathy + " copied")
 
             # select a subset of inFeat depending on the number of splits
             startID = (i - 1) * featCount
@@ -1172,23 +1225,36 @@ class helpers:
                 endID = noFeat
             else:
                 endID = i * featCount
-            whereClause = '((OBJECTID > ' + str(startID) + ') And (OBJECTID <= ' + str(endID) + '))'
-            outFeat = path + '/' + gdbName + '/' + inFeat + '_' + str(i)
+            whereClause = (
+                "((OBJECTID > "
+                + str(startID)
+                + ") And (OBJECTID <= "
+                + str(endID)
+                + "))"
+            )
+            outFeat = path + "/" + gdbName + "/" + inFeat + "_" + str(i)
             arcpy.analysis.Select(inFeat, outFeat, whereClause)
-            arcpy.AddMessage(outFeat + ' generated')
+            arcpy.AddMessage(outFeat + " generated")
             featList.append(outFeat)
 
             # create temp folder
-            folderName = 'temp' + str(i)
+            folderName = "temp" + str(i)
             arcpy.CreateFolder_management(path, folderName)
-            arcpy.AddMessage(folderName + ' created')
-            tempFolder = path + '/' + folderName
+            arcpy.AddMessage(folderName + " created")
+            tempFolder = path + "/" + folderName
             tempfolderList.append(tempFolder)
             # specify head and foot featureclass variables
-            headFeat = outFeat + '_head'
+            headFeat = outFeat + "_head"
             headFeatList.append(headFeat)
-            footFeat = outFeat + '_foot'
+            footFeat = outFeat + "_foot"
             footFeatList.append(footFeat)
 
             i += 1
-        return workspaceList, tempfolderList, featList, headFeatList, footFeatList, bathyList
+        return (
+            workspaceList,
+            tempfolderList,
+            featList,
+            headFeatList,
+            footFeatList,
+            bathyList,
+        )
