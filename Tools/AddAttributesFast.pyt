@@ -1081,7 +1081,8 @@ class helpers:
         path = path.rstrip('/')
         baseName = workspace.split('/')[-1]
         baseName = baseName.split('.')[0]
-        inBathy = inBathy.split('/')[-1]
+		# modified on 20250522 to fix the issue when inBathy and inFeat are not in the same FileGeodatabase 
+        inBathy1 = inBathy.split('/')[-1]
         inFeat = inFeat.split('/')[-1]
         arcpy.AddMessage(inBathy)
 
@@ -1096,7 +1097,8 @@ class helpers:
             workspaceList.append(workspace)
 
             # copy inBathy
-            data1 = path + '/' + gdbName + '/' + inBathy
+			# modified on 20250522; inBathy is not neccessary from the same FileGeodatabase of the inFeat
+            data1 = path + '/' + gdbName + '/' + inBathy1
             bathyList.append(data1)
             arcpy.Copy_management(inBathy, data1)
             arcpy.AddMessage(inBathy + ' copied')
@@ -1146,7 +1148,8 @@ class helpers:
         path = path.rstrip('/')
         baseName = workspace.split('/')[-1]
         baseName = baseName.split('.')[0]
-        inBathy = inBathy.split('/')[-1]
+		# modified on 20250522 to fix the issue when inBathy and inFeat are not in the same FileGeodatabase
+        inBathy1 = inBathy.split('/')[-1]
         inFeat = inFeat.split('/')[-1]
 
         # loop through subsets
@@ -1161,7 +1164,8 @@ class helpers:
             workspaceList.append(workspace)
 
             # copy inBathy
-            data1 = path + '/' + gdbName + '/' + inBathy
+			# modified on 20250522; inBathy is not neccessary from the same FileGeodatabase of the inFeat
+            data1 = path + '/' + gdbName + '/' + inBathy1
             bathyList.append(data1)
             arcpy.Copy_management(inBathy, data1)
             arcpy.AddMessage(inBathy + ' copied')
