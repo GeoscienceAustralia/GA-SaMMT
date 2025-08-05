@@ -2746,8 +2746,13 @@ class helpers:
         if os.path.isfile(schemaFile):
             os.remove(schemaFile)
 
-        arcpy.CopyRows_management(pointFeat1, csvFile2)
+        # modified the codes as below to fix a weird error when running the tools in ArcGIS Pro Python command window
+        pointFeat2 = workspace + "/" + "pointFeat2"
+        itemList.append(pointFeat2)
+        arcpy.Copy_management(pointFeat1, pointFeat2)
+        arcpy.CopyRows_management(pointFeat2, csvFile2)
         arcpy.AddMessage("export to second csv done")
+        
         # read the csv file as a pandas data frame, add dtype parameter (2023-06-20)
         dtypeD = {
             "OBJECTID": np.int64,
