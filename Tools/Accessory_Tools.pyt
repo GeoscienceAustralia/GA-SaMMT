@@ -13,6 +13,8 @@ import pandas as pd
 from arcpy import env
 from arcpy.sa import *
 from pandas.core.common import flatten
+import HelperFunctions
+
 
 arcpy.CheckOutExtension("Spatial")
 
@@ -92,7 +94,7 @@ class Update_Features_Tool:
         # enable the helper functions
         helper = helpers()
 
-        dissolvedFeat = helper.convert_backslach_forwardslach(dissolvedFeat)
+        dissolvedFeat = HelperFunctions.convert_backslash_forwardslash(dissolvedFeat)
         inputs = []
         # loop through the input datasets and get their full path
         for inFeat in inFeats:
@@ -104,7 +106,7 @@ class Update_Features_Tool:
                 for lyr in m.listLayers():
                     if lyr.isFeatureLayer:
                         if inFeat == lyr.name:
-                            inFeat = helper.convert_backslach_forwardslach(
+                            inFeat = HelperFunctions.convert_backslash_forwardslash(
                                 lyr.dataSource
                             )
 
@@ -214,8 +216,8 @@ class Merge_Connected_Features_Tool:
 
         # enable the helper functions
         helper = helpers()
-        inFeat = helper.convert_backslach_forwardslach(inFeat)
-        dissolveFeat2 = helper.convert_backslach_forwardslach(dissolveFeat2)
+        inFeat = HelperFunctions.convert_backslash_forwardslash(inFeat)
+        dissolveFeat2 = HelperFunctions.convert_backslash_forwardslash(dissolveFeat2)
 
         # if the input feature class is selected from a drop-down list, the inFeat does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -225,7 +227,7 @@ class Merge_Connected_Features_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeat == lyr.name:
-                        inFeat = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inFeat = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeat)
@@ -247,7 +249,7 @@ class Merge_Connected_Features_Tool:
         env.workspace = workspaceName
         env.overwriteOutput = True
 
-        helper.addIDField(inFeat, "featID")
+        HelperFunctions.addIDField(inFeat, "featID")
 
         # Generate near table between individual input poygon features
         itemList = []
@@ -370,7 +372,7 @@ class Merge_Connected_Features_Tool:
                 )
 
             helper.calculateFeatID(dissolveFeat2)
-            helper.deleteDataItems(itemList)
+            HelperFunctions.deleteDataItems(itemList)
 
         return
 
@@ -484,7 +486,7 @@ class Connect_Nearby_Linear_Features_Tool:
             displayName="Temporary Folder",
             name="tempFolder",
             datatype="DEFolder",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
 
@@ -534,9 +536,9 @@ class Connect_Nearby_Linear_Features_Tool:
 
         # enable helper function
         helper = helpers()
-        inFeat = helper.convert_backslach_forwardslach(inFeat)
-        dissolveFeat = helper.convert_backslach_forwardslach(dissolveFeat)
-        tempFolder = helper.convert_backslach_forwardslach(tempFolder)
+        inFeat = HelperFunctions.convert_backslash_forwardslash(inFeat)
+        dissolveFeat = HelperFunctions.convert_backslash_forwardslash(dissolveFeat)
+        tempFolder = HelperFunctions.convert_backslash_forwardslash(tempFolder)
 
         # if the input feature class is selected from a drop-down list, the inFeat does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -546,7 +548,7 @@ class Connect_Nearby_Linear_Features_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeat == lyr.name:
-                        inFeat = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inFeat = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeat)
@@ -595,7 +597,7 @@ class Connect_Nearby_Linear_Features_Tool:
         # if not, add and calculate it
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
-            helper.addIDField(inFeat, "featID")
+            HelperFunctions.addIDField(inFeat, "featID")
 
         itemList = []
         # generate bounding rectangle
@@ -609,19 +611,19 @@ class Connect_Nearby_Linear_Features_Tool:
         inID = "featID"
         joinID = "featID"
         expression = "!" + MbrFeat + "." + "MBG_Orientation" + "!"
-        helper.addField(inFeat, MbrFeat, field, inID, joinID, expression)
+        HelperFunctions.addField(inFeat, MbrFeat, field, inID, joinID, expression)
 
         field = "rectangle_Length"
         inID = "featID"
         joinID = "featID"
         expression = "!" + MbrFeat + "." + "MBG_Length" + "!"
-        helper.addField(inFeat, MbrFeat, field, inID, joinID, expression)
+        HelperFunctions.addField(inFeat, MbrFeat, field, inID, joinID, expression)
 
         field = "rectangle_Width"
         inID = "featID"
         joinID = "featID"
         expression = "!" + MbrFeat + "." + "MBG_Width" + "!"
-        helper.addField(inFeat, MbrFeat, field, inID, joinID, expression)
+        HelperFunctions.addField(inFeat, MbrFeat, field, inID, joinID, expression)
 
         field = "Length_Width_Ratio"
         inID = "featID"
@@ -637,15 +639,18 @@ class Connect_Nearby_Linear_Features_Tool:
             + "MBG_Width"
             + "!"
         )
-        helper.addField(inFeat, MbrFeat, field, inID, joinID, expression)
+        HelperFunctions.addField(inFeat, MbrFeat, field, inID, joinID, expression)
 
         # select a subset of input features to connect, based on the area threshold and length to width ratio threshold
         # this is to speed up the process when there are a large number of input features
         inFeat_selected1 = inFeat + "_selected1"
         itemList.append(inFeat_selected1)
-
-        converter = helper.areaUnitConverter(areaUnit)
+		
+		# convert the input area unit to "SQUARE_KILOMETERS"
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThresholdValue)
+		# convert to "square meters"
+        areaThresholdValue = areaThresholdValue * 1000000
 
         whereClause = (
             "(Length_Width_Ratio >= "
@@ -732,7 +737,7 @@ def getDirection(angle1,angle2):
         return 'N'"""
 
         arcpy.CalculateField_management(
-            MbrLines1_selected, fieldName, expression, "PYTHON_9.3", codeblock
+            MbrLines1_selected, fieldName, expression, "PYTHON3", codeblock
         )
         # add and calculate an "angle" field
         fieldName = "angle"
@@ -744,7 +749,7 @@ def getDirection(angle1,angle2):
         )
         expression = "!rectangle_Orientation!"
         arcpy.CalculateField_management(
-            MbrLines1_selected, fieldName, expression, "PYTHON_9.3"
+            MbrLines1_selected, fieldName, expression, "PYTHON3"
         )
 
         pointFeat = "pointFeat"
@@ -1361,7 +1366,7 @@ def getDirection(angle1,angle2):
         # call the helper function to re-calculate featID the output featureclass
         helper.calculateFeatID(dissolveFeat)
         # delete temporary data
-        helper.deleteDataItems(itemList)
+        HelperFunctions.deleteDataItems(itemList)
 
         return
 
@@ -1484,7 +1489,7 @@ class Connect_Nearby_Linear_HF_Features_Tool:
             displayName="Temporary Folder",
             name="tempFolder",
             datatype="DEFolder",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
 
@@ -1536,9 +1541,9 @@ class Connect_Nearby_Linear_HF_Features_Tool:
 
         # enable helper function
         helper = helpers()
-        inFeat = helper.convert_backslach_forwardslach(inFeat)
-        dissolveFeat = helper.convert_backslach_forwardslach(dissolveFeat)
-        tempFolder = helper.convert_backslach_forwardslach(tempFolder)
+        inFeat = HelperFunctions.convert_backslash_forwardslash(inFeat)
+        dissolveFeat = HelperFunctions.convert_backslash_forwardslash(dissolveFeat)
+        tempFolder = HelperFunctions.convert_backslash_forwardslash(tempFolder)
 
         # if the input feature class is selected from a drop-down list, the inFeat does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -1548,7 +1553,7 @@ class Connect_Nearby_Linear_HF_Features_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeat == lyr.name:
-                        inFeat = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inFeat = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -1558,7 +1563,7 @@ class Connect_Nearby_Linear_HF_Features_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeat)
@@ -1632,7 +1637,7 @@ class Connect_Nearby_Linear_HF_Features_Tool:
         # if not, add and calculate it
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
-            helper.addIDField(inFeat, "featID")
+            HelperFunctions.addIDField(inFeat, "featID")
 
         itemList = []
         # generate bounding rectangle
@@ -1646,19 +1651,19 @@ class Connect_Nearby_Linear_HF_Features_Tool:
         inID = "featID"
         joinID = "featID"
         expression = "!" + MbrFeat + "." + "MBG_Orientation" + "!"
-        helper.addField(inFeat, MbrFeat, field, inID, joinID, expression)
+        HelperFunctions.addField(inFeat, MbrFeat, field, inID, joinID, expression)
 
         field = "rectangle_Length"
         inID = "featID"
         joinID = "featID"
         expression = "!" + MbrFeat + "." + "MBG_Length" + "!"
-        helper.addField(inFeat, MbrFeat, field, inID, joinID, expression)
+        HelperFunctions.addField(inFeat, MbrFeat, field, inID, joinID, expression)
 
         field = "rectangle_Width"
         inID = "featID"
         joinID = "featID"
         expression = "!" + MbrFeat + "." + "MBG_Width" + "!"
-        helper.addField(inFeat, MbrFeat, field, inID, joinID, expression)
+        HelperFunctions.addField(inFeat, MbrFeat, field, inID, joinID, expression)
 
         field = "Length_Width_Ratio"
         inID = "featID"
@@ -1674,15 +1679,17 @@ class Connect_Nearby_Linear_HF_Features_Tool:
             + "MBG_Width"
             + "!"
         )
-        helper.addField(inFeat, MbrFeat, field, inID, joinID, expression)
+        HelperFunctions.addField(inFeat, MbrFeat, field, inID, joinID, expression)
 
         # select a subset of input features to connect, based on the area threshold and length to width ratio threshold
         # this is to speed up the process when there are a large number of input features
         inFeat_selected1 = inFeat + "_selected1"
         itemList.append(inFeat_selected1)
-
-        converter = helper.areaUnitConverter(areaUnit)
+		# convert the input area unit to "SQUARE_KILOMETERS"
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThresholdValue)
+		# convert to "square meters"
+        areaThresholdValue = areaThresholdValue * 1000000
 
         whereClause = (
             "(Length_Width_Ratio >= "
@@ -1769,7 +1776,7 @@ def getDirection(angle1,angle2):
         return 'N'"""
 
         arcpy.CalculateField_management(
-            MbrLines1_selected, fieldName, expression, "PYTHON_9.3", codeblock
+            MbrLines1_selected, fieldName, expression, "PYTHON3", codeblock
         )
         # add and calculate an "angle" field
         fieldName = "angle"
@@ -1781,7 +1788,7 @@ def getDirection(angle1,angle2):
         )
         expression = "!rectangle_Orientation!"
         arcpy.CalculateField_management(
-            MbrLines1_selected, fieldName, expression, "PYTHON_9.3"
+            MbrLines1_selected, fieldName, expression, "PYTHON3"
         )
 
         # expand inBathy
@@ -2335,59 +2342,13 @@ def getDirection(angle1,angle2):
         # call the helper function to re-calculate featID the output featureclass
         helper.calculateFeatID(dissolveFeat)
         # delete temporary data
-        ##        helper.deleteDataItems(itemList)
+        ##        HelperFunctions.deleteDataItems(itemList)
 
         return
 
 
 # the helper functions are defined here
-class helpers:
-
-    # This function calculates a converter value for the input area unit. The base unit is "SquareMeters".
-    def areaUnitConverter(self, inAreaUnit):
-        # inAreaUnit: input Area Unit
-
-        if inAreaUnit == "Acres":
-            converter = 4046.86
-        elif inAreaUnit == "Ares":
-            converter = 100
-        elif inAreaUnit == "Hectares":
-            converter = 10000
-        elif inAreaUnit == "SquareCentimeters":
-            converter = 0.0001
-        elif inAreaUnit == "SquareDecimeters":
-            converter = 0.01
-        elif inAreaUnit == "SquareMeters":
-            converter = 1
-        elif inAreaUnit == "SquareFeet":
-            converter = 0.092903
-        elif inAreaUnit == "SquareInches":
-            converter = 0.00064516
-        elif inAreaUnit == "SquareKilometers":
-            converter = 1000000
-        elif inAreaUnit == "SquareMiles":
-            converter = 2589990
-        elif inAreaUnit == "SquareMillimeters":
-            converter = 0.000001
-        elif inAreaUnit == "SquareYards":
-            converter = 0.83613
-
-        return converter
-
-    # This function converts backslach (accepted through the ArcGIS tool) to forwardslach (needed in python script) in a path
-    def convert_backslach_forwardslach(self, inText):
-        # inText: input path
-
-        inText = rf"{inText}"
-        if inText.find("\t"):
-            inText = inText.replace("\t", "\\t")
-        elif inText.find("\n"):
-            inText = inText.replace("\n", "\\n")
-        elif inText.find("\r"):
-            inText = inText.replace("\r", "\\r")
-
-        inText = inText.replace("\\", "/")
-        return inText
+class helpers:      
 
     # This function gets unique values in a list
     def getUnique(self, l1):
@@ -2411,43 +2372,8 @@ class helpers:
 
         l2 = np.unique(np.asarray(l1), axis=0).tolist()
         return l2
-
-    # This function deletes all intermediate data items
-    def deleteDataItems(self, inDataList):
-        # inDataList: a list of data items to be deleted
-
-        if len(inDataList) == 0:
-            arcpy.AddMessage("no data item in the list")
-
-        else:
-            for item in inDataList:
-                arcpy.AddMessage("Deleting " + item)
-                arcpy.Delete_management(item)
-        return
-
-    # This function adds a featID field with unique ID values
-    def addIDField(self, inFeat, fieldName):
-        # inFeat: input featureclass (or table)
-        # fieldName: the field in the inFeat to be calculated from the joinFeat
-
-        fieldType = "LONG"
-        fieldPrecision = 15
-
-        fields = arcpy.ListFields(inFeat)
-        field_names = [f.name for f in fields]
-
-        if fieldName in field_names:
-            arcpy.AddMessage(fieldName + " exists and will be recalculated")
-        else:
-            arcpy.AddField_management(inFeat, fieldName, fieldType, fieldPrecision)
-
-        expression = "!OBJECTID!"
-
-        arcpy.CalculateField_management(inFeat, fieldName, expression, "PYTHON_9.3")
-
-        arcpy.AddMessage(fieldName + " added and calculated")
-        return
-
+    
+    
     # This function adds and calculates unique featID field
     def calculateFeatID(self, inFeat):
         # inFeat: input features
@@ -2473,36 +2399,22 @@ class helpers:
         inID = "ORIG_FID"
         joinID = "OBJECTID"
         expression = "!" + originPointFeat + "." + "featID" + "!"
-        self.addLongField(inLinkFeat, originPointFeat, field1, inID, joinID, expression)
+        HelperFunctions.addLongField(inLinkFeat, originPointFeat, field1, inID, joinID, expression)
         expression = "!" + originPointFeat + "." + "angle" + "!"
-        self.addField(inLinkFeat, originPointFeat, field2, inID, joinID, expression)
+        HelperFunctions.addField(inLinkFeat, originPointFeat, field2, inID, joinID, expression)
 
         field1 = "featID2"
         field2 = "angle2"  # orientation of the destination features
         inID = "DEST_FID"
         joinID = "OBJECTID"
         expression = "!" + destPointFeat + "." + "featID" + "!"
-        self.addLongField(inLinkFeat, destPointFeat, field1, inID, joinID, expression)
+        HelperFunctions.addLongField(inLinkFeat, destPointFeat, field1, inID, joinID, expression)
         expression = "!" + destPointFeat + "." + "angle" + "!"
-        self.addField(inLinkFeat, destPointFeat, field2, inID, joinID, expression)
+        HelperFunctions.addField(inLinkFeat, destPointFeat, field2, inID, joinID, expression)
 
         return
 
-    # This function deletes a feild from input featureclass
-    def deleteField(self, inFeat, fieldName):
-        # inFeat: input featureclass
-        # fieldName: field to be deleted
-
-        fields = arcpy.ListFields(inFeat)
-        field_names = [f.name for f in fields]
-        if fieldName in field_names:
-            arcpy.AddMessage(fieldName + " exists and will be deleted")
-            arcpy.DeleteField_management(inFeat, [fieldName])
-        else:
-            arcpy.AddMessage(fieldName + " does not exist")
-
-        return
-
+    
     # This function finds the polygon features that connect with each other (e.g, near_dist == 0)
     # and generate a new list of featID, with the connected features being assigned the same featID
     def findNewFeatIDs(self, inFeat, inIDList, nearIDList):
@@ -2611,12 +2523,12 @@ class helpers:
         arcpy.Copy_management(footFeat, footFeat1)
 
         fieldName = "featID"
-        self.deleteField(headFeat1, fieldName)
-        self.deleteField(footFeat1, fieldName)
+        HelperFunctions.deleteSelectedField(headFeat1, fieldName)
+        HelperFunctions.deleteSelectedField(footFeat1, fieldName)
 
         fieldName = "rectangle_Orientation"
-        self.deleteField(headFeat1, fieldName)
-        self.deleteField(footFeat1, fieldName)
+        HelperFunctions.deleteSelectedField(headFeat1, fieldName)
+        HelperFunctions.deleteSelectedField(footFeat1, fieldName)
 
         headFeat2 = "headFeat2"
         footFeat2 = "footFeat2"
@@ -2873,108 +2785,10 @@ class helpers:
         inFeats = [erasedFeat1, selectFeat3_1]
         arcpy.Merge_management(inFeats, dissolveFeat2)
         itemList.append(tempLayer)
-        ##        self.deleteDataItems(itemList)
+        ##        HelperFunctions.deleteDataItems(itemList)
         return count
 
-    # This function adds and calculates a double field from a joined featureclass
-    def addField(self, inFeat, joinFeat, fieldName, inID, joinID, expression):
-        # inFeat: input featureclass (or table)
-        # joinFeat: feature (or table) to be joined with the inFeat
-        # fieldName: the field in the inFeat to be calculated from the joinFeat
-        # inID: unique id field in the inFeat
-        # joinID: unique id field in the joinFeat that matches the inID
-        # expression: expression text used to calculate the field
-
-        fieldType = "DOUBLE"
-        fieldPrecision = 15
-        fieldScale = 6
-
-        fields = arcpy.ListFields(inFeat)
-        field_names = [f.name for f in fields]
-
-        if fieldName in field_names:
-            arcpy.AddMessage(fieldName + " exists and will be recalculated")
-        else:
-            arcpy.AddField_management(
-                inFeat, fieldName, fieldType, fieldPrecision, fieldScale
-            )
-
-        layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(inFeat, layerName)
-        arcpy.AddJoin_management(layerName, inID, joinFeat, joinID, "KEEP_ALL")
-
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
-
-        arcpy.RemoveJoin_management(layerName, joinFeat)
-
-        arcpy.Delete_management(layerName)
-        arcpy.AddMessage(fieldName + " added and calculated")
-        return
-
-    # This function adds and calculates a long field from a joined featureclass
-    def addLongField(self, inFeat, joinFeat, fieldName, inID, joinID, expression):
-        # inFeat: input featureclass (or table)
-        # joinFeat: feature (or table) to be joined with the inFeat
-        # fieldName: the field in the inFeat to be calculated from the joinFeat
-        # inID: unique id field in the inFeat
-        # joinID: unique id field in the joinFeat that matches the inID
-        # expression: expression text used to calculate the field
-
-        fieldType = "LONG"
-        fieldPrecision = 15
-
-        fields = arcpy.ListFields(inFeat)
-        field_names = [f.name for f in fields]
-
-        if fieldName in field_names:
-            arcpy.AddMessage(fieldName + " exists and will be recalculated")
-        else:
-            arcpy.AddField_management(inFeat, fieldName, fieldType, fieldPrecision)
-
-        layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(inFeat, layerName)
-        arcpy.AddJoin_management(layerName, inID, joinFeat, joinID, "KEEP_ALL")
-
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
-
-        arcpy.RemoveJoin_management(layerName, joinFeat)
-
-        arcpy.Delete_management(layerName)
-        arcpy.AddMessage(fieldName + " added and calculated")
-        return
-
-    # This function adds and calculates a long field from a joined featureclass
-    def addTextField(self, inFeat, joinFeat, fieldName, inID, joinID, expression):
-        # inFeat: input featureclass (or table)
-        # joinFeat: feature (or table) to be joined with the inFeat
-        # fieldName: the field in the inFeat to be calculated from the joinFeat
-        # inID: unique id field in the inFeat
-        # joinID: unique id field in the joinFeat that matches the inID
-        # expression: expression text used to calculate the field
-
-        fieldType = "text"
-        fieldLength = 10
-
-        fields = arcpy.ListFields(inFeat)
-        field_names = [f.name for f in fields]
-
-        if fieldName in field_names:
-            arcpy.AddMessage(fieldName + " exists and will be recalculated")
-        else:
-            arcpy.AddField_management(inFeat, fieldName, fieldType, fieldLength)
-
-        layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(inFeat, layerName)
-        arcpy.AddJoin_management(layerName, inID, joinFeat, joinID, "KEEP_ALL")
-
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
-
-        arcpy.RemoveJoin_management(layerName, joinFeat)
-
-        arcpy.Delete_management(layerName)
-        arcpy.AddMessage(fieldName + " added and calculated")
-        return
-
+   
     # This function lists duplicated elements
     def RiteshKumar(self, inList):
         return list({x for x in inList if inList.count(x) > 1})
@@ -3011,7 +2825,7 @@ class helpers:
         if fieldName not in fieldNames:
             arcpy.AddField_management(inLinkFeat, fieldName, fieldType, fieldPrecision)
         expression = "!OBJECTID!"
-        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON3")
 
         if linkDirection != "FH":
             fieldType = "DOUBLE"
@@ -3024,7 +2838,7 @@ class helpers:
                 )
             expression = "!ORIG_FID! / !DEST_FID!"
             arcpy.CalculateField_management(
-                inLinkFeat, fieldName, expression, "PYTHON_9.3"
+                inLinkFeat, fieldName, expression, "PYTHON3"
             )
 
         fieldType = "DOUBLE"
@@ -3045,7 +2859,7 @@ def getAngle(inAngle):
         return inAngle"""
 
         arcpy.CalculateField_management(
-            inLinkFeat, fieldName, expression, "PYTHON_9.3", codeblock
+            inLinkFeat, fieldName, expression, "PYTHON3", codeblock
         )
 
         fieldType = "DOUBLE"
@@ -3057,7 +2871,7 @@ def getAngle(inAngle):
                 inLinkFeat, fieldName, fieldType, fieldPrecision, fieldScale
             )
         expression = "!ORIG_X! - !DEST_X!"
-        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON3")
 
         fieldType = "DOUBLE"
         fieldPrecision = 15
@@ -3068,7 +2882,7 @@ def getAngle(inAngle):
                 inLinkFeat, fieldName, fieldType, fieldPrecision, fieldScale
             )
         expression = "!ORIG_Y! - !DEST_Y!"
-        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON3")
 
         fieldType = "DOUBLE"
         fieldPrecision = 15
@@ -3094,7 +2908,7 @@ def getAngle(x,y):
         return inAngle"""
 
         arcpy.CalculateField_management(
-            inLinkFeat, fieldName, expression, "PYTHON_9.3", codeblock
+            inLinkFeat, fieldName, expression, "PYTHON3", codeblock
         )
 
         fieldType = "DOUBLE"
@@ -3114,7 +2928,7 @@ def getAngle(inAngle):
         return inAngle"""
 
         arcpy.CalculateField_management(
-            inLinkFeat, fieldName, expression, "PYTHON_9.3", codeblock
+            inLinkFeat, fieldName, expression, "PYTHON3", codeblock
         )
 
         arcpy.AddMessage("fields added and calculated")
@@ -4040,7 +3854,7 @@ def getAngle(inAngle):
     ##        inID = "OBJECTID"
     ##        joinID = "OBJECTID"
     ##        expression = "!" + MbrLineClass + "." + "direction" + "!"
-    ##        self.addTextField(outPointFeat,MbrLineClass,field,inID,joinID,expression)
+    ##        HelperFunctions.addTextField(outPointFeat,MbrLineClass,field,inID,joinID,expression)
     ##        # delete temporary data
     ##        arcpy.Delete_management(inFeatVertices)
     ##        arcpy.Delete_management(selectedPoints)
@@ -4438,7 +4252,7 @@ def getAngle(inAngle):
         )
 
         # delete temporary data
-        self.deleteDataItems(itemList)
+        HelperFunctions.deleteDataItems(itemList)
 
     # This function generates five lists from the direction points input featureclass.
     def generateDirectionPointLists(
@@ -4555,7 +4369,7 @@ def getAngle(inAngle):
                 arcpy.Delete_management(tempPoints)
                 arcpy.Delete_management(layerTemp)
 
-        self.deleteDataItems(itemList)
+        HelperFunctions.deleteDataItems(itemList)
         return idList, angleList, dirList, xList, yList
 
     # This function selects a subset of input links.
@@ -4574,11 +4388,11 @@ def getAngle(inAngle):
         inID = "ORIG_FID"
         joinID = "OBJECTID"
         expression = "!" + pointsFeatFrom + "." + "featID" + "!"
-        self.addLongField(inLinksFeat, pointsFeatFrom, field1, inID, joinID, expression)
+        HelperFunctions.addLongField(inLinksFeat, pointsFeatFrom, field1, inID, joinID, expression)
         expression = "!" + pointsFeatFrom + "." + "location" + "!"
-        self.addTextField(inLinksFeat, pointsFeatFrom, field2, inID, joinID, expression)
+        HelperFunctions.addTextField(inLinksFeat, pointsFeatFrom, field2, inID, joinID, expression)
         expression = "!" + pointsFeatFrom + "." + "direction" + "!"
-        self.addTextField(inLinksFeat, pointsFeatFrom, field3, inID, joinID, expression)
+        HelperFunctions.addTextField(inLinksFeat, pointsFeatFrom, field3, inID, joinID, expression)
 
         field1 = "featID2"
         field2 = "toLocation"  # location of the destination features
@@ -4586,11 +4400,11 @@ def getAngle(inAngle):
         inID = "DEST_FID"
         joinID = "OBJECTID"
         expression = "!" + pointsFeatTo + "." + "featID" + "!"
-        self.addLongField(inLinksFeat, pointsFeatTo, field1, inID, joinID, expression)
+        HelperFunctions.addLongField(inLinksFeat, pointsFeatTo, field1, inID, joinID, expression)
         expression = "!" + pointsFeatTo + "." + "location" + "!"
-        self.addTextField(inLinksFeat, pointsFeatTo, field2, inID, joinID, expression)
+        HelperFunctions.addTextField(inLinksFeat, pointsFeatTo, field2, inID, joinID, expression)
         expression = "!" + pointsFeatTo + "." + "direction" + "!"
-        self.addTextField(inLinksFeat, pointsFeatTo, field3, inID, joinID, expression)
+        HelperFunctions.addTextField(inLinksFeat, pointsFeatTo, field3, inID, joinID, expression)
 
         # add more fields
         fieldName1 = "idDiff"
@@ -4614,7 +4428,7 @@ def getAngle(inAngle):
         inID = "featID1"
         joinID = "featID1"
         expression = "!" + linksFeat1Temp + ".LINK_DIST! - !" + tab1 + ".MIN_LINK_DIST!"
-        self.addField(linksFeat1Temp, tab1, fieldName2, inID, joinID, expression)
+        HelperFunctions.addField(linksFeat1Temp, tab1, fieldName2, inID, joinID, expression)
         # select a subset o links based on the following condition
         linksFeat2Temp = "links2Temp"
         whereClause = "distDiff = 0"

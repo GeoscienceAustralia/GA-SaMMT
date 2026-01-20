@@ -8,6 +8,7 @@
 
 import arcpy
 from arcpy.sa import MajorityFilter, Reclassify, RemapRange, Slope
+import HelperFunctions
 
 
 class Toolbox:
@@ -86,7 +87,7 @@ class SurfaceToolBathy:
             displayName="Temporary Workspace",
             name="tempWS",
             datatype="DEWorkspace",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
         param5.defaultEnvironmentName = "workspace"
@@ -121,10 +122,10 @@ class SurfaceToolBathy:
         tempWS = parameters[5].valueAsText
         # enable helper function
         helper = helpers()
-        bathyRas = helper.convert_backslach_forwardslach(bathyRas)
-        slopeRas = helper.convert_backslach_forwardslach(slopeRas)
-        outFeat = helper.convert_backslach_forwardslach(outFeat)
-        tempWS = helper.convert_backslach_forwardslach(tempWS)
+        bathyRas = HelperFunctions.convert_backslash_forwardslash(bathyRas)
+        slopeRas = HelperFunctions.convert_backslash_forwardslash(slopeRas)
+        outFeat = HelperFunctions.convert_backslash_forwardslash(outFeat)
+        tempWS = HelperFunctions.convert_backslash_forwardslash(tempWS)
 
         # if the input bathymetry raster is selected from a drop-down list, the bathyRas does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -134,7 +135,7 @@ class SurfaceToolBathy:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if bathyRas == lyr.name:
-                        bathyRas = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input bathymetry grid is in a correct format
         rasDesc = arcpy.Describe(bathyRas)
@@ -240,7 +241,7 @@ class SurfaceToolSlope:
             displayName="Temporary Workspace",
             name="tempWS",
             datatype="DEWorkspace",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
         param4.defaultEnvironmentName = "workspace"
@@ -274,9 +275,9 @@ class SurfaceToolSlope:
         tempWS = parameters[4].valueAsText
         # enable helper function
         helper = helpers()
-        slopeRas = helper.convert_backslach_forwardslach(slopeRas)
-        outFeat = helper.convert_backslach_forwardslach(outFeat)
-        tempWS = helper.convert_backslach_forwardslach(tempWS)
+        slopeRas = HelperFunctions.convert_backslash_forwardslash(slopeRas)
+        outFeat = HelperFunctions.convert_backslash_forwardslash(outFeat)
+        tempWS = HelperFunctions.convert_backslash_forwardslash(tempWS)
 
         # if the input slope raster is selected from a drop-down list, the slopeRas does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -286,7 +287,7 @@ class SurfaceToolSlope:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if slopeRas == lyr.name:
-                        slopeRas = helper.convert_backslach_forwardslach(lyr.dataSource)
+                        slopeRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input bathymetry grid is in a correct format
         rasDesc = arcpy.Describe(slopeRas)
@@ -330,65 +331,7 @@ class SurfaceToolSlope:
 
 
 # helper functions are defined here
-class helpers:
-    # This function converts backslach (accepted through the ArcGIS tool) to forwardslach (needed in python script) in a path
-    def convert_backslach_forwardslach(self, inText):
-        # inText: input path
-
-        inText = rf"{inText}"
-        if inText.find("\t"):
-            inText = inText.replace("\t", "\\t")
-        elif inText.find("\n"):
-            inText = inText.replace("\n", "\\n")
-        elif inText.find("\r"):
-            inText = inText.replace("\r", "\\r")
-
-        inText = inText.replace("\\", "/")
-        return inText
-
-    # This function deletes all intermediate data items
-    def deleteDataItems(self, inDataList):
-        # inDataList: a list of data items to be deleted
-
-        if len(inDataList) == 0:
-            arcpy.AddMessage("no data item in the list")
-
-        else:
-            for item in inDataList:
-                arcpy.AddMessage("Deleting " + item)
-                arcpy.Delete_management(item)
-        return
-
-    # This function calculates a converter value for the input area unit. The base unit is "SquareKilometers".
-    def areaUnitConverter(self, inAreaUnit):
-        # inAreaUnit: input Area Unit
-
-        if inAreaUnit == "Acres":
-            converter = 0.00404686
-        elif inAreaUnit == "Ares":
-            converter = 0.0001
-        elif inAreaUnit == "Hectares":
-            converter = 0.01
-        elif inAreaUnit == "SquareCentimeters":
-            converter = 0.0000000001
-        elif inAreaUnit == "SquareDecimeters":
-            converter = 0.00000001
-        elif inAreaUnit == "SquareMeters":
-            converter = 0.000001
-        elif inAreaUnit == "SquareFeet":
-            converter = 0.000000092903
-        elif inAreaUnit == "SquareInches":
-            converter = 0.00000000064516
-        elif inAreaUnit == "SquareKilometers":
-            converter = 1
-        elif inAreaUnit == "SquareMiles":
-            converter = 2.58999
-        elif inAreaUnit == "SquareMillimeters":
-            converter = 0.000000000001
-        elif inAreaUnit == "SquareYards":
-            converter = 0.00000083613
-
-        return converter
+class helpers:     
 
     # This function generate three-class morphological surface from a bathymetry grid
     def Surface_Tool_bathy(
@@ -460,7 +403,7 @@ class helpers:
         # eliminate small polygons
 
         # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = self.areaUnitConverter(areaUnit)
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThresholdValue)
         where_clause = '"AREA_GEO" < ' + str(areaThreshold)
 
@@ -534,7 +477,7 @@ class helpers:
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Plane'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
         arcpy.Delete_management(layerName)
 
         where_clause = '"gridcode" = 2'
@@ -544,7 +487,7 @@ class helpers:
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Slope'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
         arcpy.Delete_management(layerName)
 
         where_clause = '"gridcode" = 3'
@@ -554,10 +497,10 @@ class helpers:
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Escarpment'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
         arcpy.Delete_management(layerName)
 
-        self.deleteDataItems(interimDataList)
+        HelperFunctions.deleteDataItems(interimDataList)
 
     # This function generate three-class morphological surface from a bathymetry grid
     def Surface_Tool_slope(
@@ -614,7 +557,7 @@ class helpers:
         # eliminate small polygons
 
         # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = self.areaUnitConverter(areaUnit)
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThresholdValue)
         where_clause = '"AREA_GEO" < ' + str(areaThreshold)
 
@@ -688,7 +631,7 @@ class helpers:
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Plane'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
         arcpy.Delete_management(layerName)
 
         where_clause = '"gridcode" = 2'
@@ -698,7 +641,7 @@ class helpers:
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Slope'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
         arcpy.Delete_management(layerName)
 
         where_clause = '"gridcode" = 3'
@@ -708,7 +651,7 @@ class helpers:
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Escarpment'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
+        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
         arcpy.Delete_management(layerName)
 
-        self.deleteDataItems(interimDataList)
+        HelperFunctions.deleteDataItems(interimDataList)

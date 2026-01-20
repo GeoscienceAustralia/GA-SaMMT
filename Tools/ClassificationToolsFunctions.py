@@ -105,7 +105,7 @@ def roundNumber(a):
                         """
             expression = "roundNumber(!contour!)"
             arcpy.CalculateField_management(
-                featContour, fieldName, expression, "PYTHON_9.3", codeblock
+                featContour, fieldName, expression, "PYTHON3", codeblock
             )
             # get the polygon area of the feature
             cursor2 = arcpy.SearchCursor(selectedFeat)

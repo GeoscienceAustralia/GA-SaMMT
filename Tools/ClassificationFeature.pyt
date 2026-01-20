@@ -9,13 +9,13 @@ import arcpy
 from arcpy import env
 from datetime import datetime
 from arcpy.sa import *
-import numpy as np
 import os
 import sys
 import multiprocessing
 from importlib import reload
 import ClassificationToolsFunctions
 from ClassificationToolsFunctions import execute_verify_depression
+import HelperFunctions
 
 arcpy.CheckOutExtension("Spatial")
 
@@ -166,7 +166,7 @@ class Classify_Bathymetric_Low_Features_Tool:
 
         # enable helper
         helper = helpers()
-        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
+        inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -176,7 +176,7 @@ class Classify_Bathymetric_Low_Features_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslash_forwardslash(
+                        inFeatClass = HelperFunctions.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
 
@@ -244,7 +244,7 @@ class Classify_Bathymetric_Low_Features_Tool:
                 )
                 raise arcpy.ExecuteError
 
-        # check the 'Morphological_Feature' field exists
+        # check the 'Morphology_feature' field exists
         field = "Morphology_feature"
         fieldType = "TEXT"
         fieldLength = 200
@@ -492,7 +492,7 @@ class Classify_Bathymetric_High_Features_Tool:
 
         # enable helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
+        inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if inFeatClass.rfind("/") < 0:
@@ -501,7 +501,7 @@ class Classify_Bathymetric_High_Features_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslash_forwardslash(
+                        inFeatClass = HelperFunctions.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # check that the input feature class is in a correct format
@@ -547,7 +547,7 @@ class Classify_Bathymetric_High_Features_Tool:
                     + " attribute. You have to calculate the attribute using the Attributes Tool!"
                 )
                 raise arcpy.ExecuteError
-        # check the 'Morphological_Feature' field exists
+        # check the 'Morphology_feature' field exists
         field = "Morphology_feature"
         fieldType = "TEXT"
         fieldLength = 200
@@ -767,8 +767,8 @@ class Verify_Depression_Tool:
 
         # enable helper
         helper = helpers()
-        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
-        inBathy = helper.convert_backslash_forwardslash(inBathy)
+        inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
+        inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -778,7 +778,7 @@ class Verify_Depression_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslash_forwardslash(
+                        inFeatClass = HelperFunctions.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
 
@@ -807,7 +807,7 @@ class Verify_Depression_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input bathymetry grid is in a correct format
         rasDesc = arcpy.Describe(inBathy)
@@ -846,11 +846,11 @@ class Verify_Depression_Tool:
 
         time1 = datetime.now()
         # select the input bathymetric low features that are originally classified as the Depression
-        whereClause = "Morphological_Feature = " + "'Depression'"
+        whereClause = "Morphology_feature = " + "'Depression'"
         depressionFeat = "depressionFeat"
         arcpy.Select_analysis(inFeatClass, depressionFeat, whereClause)
         # select the input bathymetric low features that are originally classified as other feature types
-        whereClause = "Morphological_Feature <> " + "'Depression'"
+        whereClause = "Morphology_feature <> " + "'Depression'"
         otherFeat = "otherFeat"
         arcpy.Select_analysis(inFeatClass, otherFeat, whereClause)
         # get the cell size of the input bathymetric grid, assuming the cell is square shape
@@ -860,7 +860,7 @@ class Verify_Depression_Tool:
         nuFeats = int(arcpy.management.GetCount(depressionFeat)[0])
         arcpy.AddMessage("They are " + str(nuFeats) + " features for multiprocessing.")
         # set the maximum number of CPUs for the multiprocessing job equals to half of those available
-        maxCPU = int(multiprocessing.cpu_count() / 2)
+        maxCPU = int(multiprocessing.cpu_count() / 2) - 1
         # the name of the featureclass after merging all output features resulted from the multiprocessing jobs
         depressionFeat1 = depressionFeat + "_merged"
         # only doing the multiprocessing jobs if there is at least one Depression feature to verify
@@ -877,8 +877,8 @@ class Verify_Depression_Tool:
 
             arcpy.AddMessage("Using " + str(nCPU) + " CPU processors for multiprocessing")
             workspaceName = env.workspace
-            # calling the splitFeat function to split the depression features, copy the input bathymetry grid, etc
-            workspaceList, depressionFeatList, bathyList, outFeatList = helper.splitFeat(
+            # calling the splitDepressionFeat function to split the depression features, copy the input bathymetry grid, etc
+            workspaceList, depressionFeatList, bathyList, outFeatList = helper.splitDepressionFeat(
                 workspaceName,
                 depressionFeat,
                 inBathy,
@@ -938,24 +938,9 @@ class Verify_Depression_Tool:
 
 
 # define helper functions here
-class helpers:
-    # This function converts backslash (accepted through the ArcGIS tool) to forwardslash (needed in python script) in a path
-    def convert_backslash_forwardslash(self, inText):
-        # inText: input path
-
-        inText = rf"{inText}"
-        if inText.find("\t"):
-            inText = inText.replace("\t", "\\t")
-        elif inText.find("\n"):
-            inText = inText.replace("\n", "\\n")
-        elif inText.find("\r"):
-            inText = inText.replace("\r", "\\r")
-
-        inText = inText.replace("\\", "/")
-        return inText
-
+class helpers:    
     # This function input depression features into a number of subsets determined by the noSplit parameter
-    def splitFeat(self, workspace, depressionFeat, inBathy, outFeat, noSplit):
+    def splitDepressionFeat(self, workspace, depressionFeat, inBathy, outFeat, noSplit):
         # workspace: the workspace which contains depressionFeat and inBathy
         # depressionFeat: the featureclass to be split
         # inBathy: the input bathymetric grid to be copied to the new workspace

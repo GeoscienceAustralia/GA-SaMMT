@@ -7,7 +7,6 @@
 
 import math
 import warnings
-from datetime import datetime
 
 import arcpy
 from arcpy import env
@@ -20,6 +19,8 @@ from importlib import reload
 from datetime import datetime
 import ContourToolsFunctions
 from ContourToolsFunctions import execute_contour_BL
+import HelperFunctions
+
 
 arcpy.CheckOutExtension("Spatial")
 
@@ -107,7 +108,7 @@ class TPIToolLow:
             displayName="Temporary Workspace",
             name="tempWS",
             datatype="DEWorkspace",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
         param6.defaultEnvironmentName = "workspace"
@@ -143,10 +144,10 @@ class TPIToolLow:
         tempWS = parameters[6].valueAsText
         # enable the helper function
         helper = helpers()
-        bathyRas = helper.convert_backslash_forwardslash(bathyRas)
-        tpiRas = helper.convert_backslash_forwardslash(tpiRas)
-        outFeat = helper.convert_backslash_forwardslash(outFeat)
-        tempWS = helper.convert_backslash_forwardslash(tempWS)
+        bathyRas = HelperFunctions.convert_backslash_forwardslash(bathyRas)
+        tpiRas = HelperFunctions.convert_backslash_forwardslash(tpiRas)
+        outFeat = HelperFunctions.convert_backslash_forwardslash(outFeat)
+        tempWS = HelperFunctions.convert_backslash_forwardslash(tempWS)
         # if the input bathyRas is selected from a drop-down list, the bathyRas does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if bathyRas.rfind("/") < 0:
@@ -155,7 +156,7 @@ class TPIToolLow:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if bathyRas == lyr.name:
-                        bathyRas = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input bathymetry grid is in a correct format
         rasDesc = arcpy.Describe(bathyRas)
@@ -319,7 +320,7 @@ class Openness_Low_Tool:
             displayName="Temporary Workspace",
             name="tempWS",
             datatype="DEWorkspace",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
         param7.defaultEnvironmentName = "workspace"
@@ -356,17 +357,17 @@ class Openness_Low_Tool:
         poSTDScaleSmall = parameters[6].valueAsText
         tempWS = parameters[7].valueAsText
 
-        bathyRas = helper.convert_backslash_forwardslash(bathyRas)
-        poRas = helper.convert_backslash_forwardslash(poRas)
-        outFeat = helper.convert_backslash_forwardslash(outFeat)
-        tempWS = helper.convert_backslash_forwardslash(tempWS)
+        bathyRas = HelperFunctions.convert_backslash_forwardslash(bathyRas)
+        poRas = HelperFunctions.convert_backslash_forwardslash(poRas)
+        outFeat = HelperFunctions.convert_backslash_forwardslash(outFeat)
+        tempWS = HelperFunctions.convert_backslash_forwardslash(tempWS)
         if bathyRas.rfind("/") < 0:
             aprx = arcpy.mp.ArcGISProject("CURRENT")
             m = aprx.activeMap
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if bathyRas == lyr.name:
-                        bathyRas = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input bathymetry grid is in a correct format
         rasDesc = arcpy.Describe(bathyRas)
@@ -537,7 +538,7 @@ class TPI_CI_Low_Tool:
             displayName="Temporary Workspace",
             name="tempWS",
             datatype="DEWorkspace",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
         param8.defaultEnvironmentName = "workspace"
@@ -547,7 +548,7 @@ class TPI_CI_Low_Tool:
             displayName="Temporary Folder",
             name="tempFolder",
             datatype="DEFolder",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
 
@@ -596,19 +597,19 @@ class TPI_CI_Low_Tool:
         tempWS = parameters[8].valueAsText
         tempFolder = parameters[9].valueAsText
 
-        bathyRas = helper.convert_backslash_forwardslash(bathyRas)
-        tpiRas = helper.convert_backslash_forwardslash(tpiRas)
-        ciRas = helper.convert_backslash_forwardslash(ciRas)
-        outFeat = helper.convert_backslash_forwardslash(outFeat)
-        tempWS = helper.convert_backslash_forwardslash(tempWS)
-        tempFolder = helper.convert_backslash_forwardslash(tempFolder)
+        bathyRas = HelperFunctions.convert_backslash_forwardslash(bathyRas)
+        tpiRas = HelperFunctions.convert_backslash_forwardslash(tpiRas)
+        ciRas = HelperFunctions.convert_backslash_forwardslash(ciRas)
+        outFeat = HelperFunctions.convert_backslash_forwardslash(outFeat)
+        tempWS = HelperFunctions.convert_backslash_forwardslash(tempWS)
+        tempFolder = HelperFunctions.convert_backslash_forwardslash(tempFolder)
         if bathyRas.rfind("/") < 0:
             aprx = arcpy.mp.ArcGISProject("CURRENT")
             m = aprx.activeMap
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if bathyRas == lyr.name:
-                        bathyRas = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input bathymetry grid is in a correct format
         rasDesc = arcpy.Describe(bathyRas)
@@ -877,7 +878,7 @@ class ContourBL_Tool(object):
             )
             raise arcpy.ExecuteError
 
-        if ((float(dDepth) - float(sDepth)) % float(cInterval)) != 0:
+        if round((float(dDepth) - float(sDepth)) % float(cInterval), 5) != 0:
             messages.addErrorMessage(
                 "The difference between the deepest and the shallowest contour depths must be divisible to "
                 + "the contour interval!"
@@ -898,7 +899,7 @@ class ContourBL_Tool(object):
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if bathyRas == lyr.name:
-                        bathyRas = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input bathymetry grid is in a correct format
         rasDesc = arcpy.Describe(bathyRas)
@@ -941,7 +942,7 @@ class ContourBL_Tool(object):
         areaThresholdValue = areaThreshold.split(" ")[0]
         areaUnit = areaThreshold.split(" ")[1]
         # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = helper.areaUnitConverter(areaUnit)
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThresholdValue = converter * float(areaThresholdValue)
         # convert to "square meters"
         areaThresholdValue = areaThresholdValue * 1000000
@@ -968,7 +969,7 @@ def roundNumber(a):
                     """
         expression = "roundNumber(!contour!)"
         arcpy.CalculateField_management(
-            outContour, fieldName, expression, "PYTHON_9.3", codeblock
+            outContour, fieldName, expression, "PYTHON3", codeblock
         )
         itemList = []
         # loop though each contour value
@@ -1033,7 +1034,7 @@ def roundNumber(a):
                     inID = "OBJECTID"
                     joinID = "OBJECTID_1"
                     expression = "!" + outTab + "." + "MEAN" + "!"
-                    helper.addField(dissolvedFeat, outTab, field, inID, joinID, expression)
+                    HelperFunctions.addField(dissolvedFeat, outTab, field, inID, joinID, expression)
                     arcpy.management.Delete(outTab)
                     # delete feature(s) with null mean_depth
                     tempLayer = "tempLayer"
@@ -1067,7 +1068,7 @@ def roundNumber(a):
                             + "!"
                     )
                     arcpy.CalculateField_management(
-                        dissolvedFeat, fieldName, expression, "PYTHON_9.3"
+                        dissolvedFeat, fieldName, expression, "PYTHON3"
                     )
                     # further select only those features that have negative depth difference smaller than a negative
                     # threshold
@@ -1192,7 +1193,7 @@ def roundNumber(a):
             arcpy.AddMessage("Using " + str(nCPU) + " CPU processors for multiprocessing")
             workspaceName = env.workspace
 
-            workspaceList, tempfolderList, outFeat2List, mergeFeatList, joinFeatList, outFeat1List = helper.splitFeat(
+            workspaceList, tempfolderList, outFeat2List, mergeFeatList, joinFeatList, outFeat1List = HelperFunctions.splitFeat(
                 workspaceName,
                 outFeat2_Selected,
                 outFeat1,
@@ -1248,7 +1249,7 @@ def roundNumber(a):
             arcpy.management.Copy(outFeat1_Selected1, outFeat)
 
         # delete intermediate datasets
-        helper.deleteDataItems(itemList)
+        HelperFunctions.deleteDataItems(itemList)
 
         time2 = datetime.now()
         diff = time2 - time1
@@ -1390,7 +1391,7 @@ class PseudoContourBL_Tool(object):
                     for lyr in m.listLayers():
                         if lyr.isRasterLayer:
                             if bathyRas == lyr.name:
-                                bathyRas = helper.convert_backslash_forwardslash(lyr.dataSource)
+                                bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
                 minResult = arcpy.GetRasterProperties_management(bathyRas, "MINIMUM")
                 minValue = minResult.getOutput(0)
@@ -1491,7 +1492,7 @@ class PseudoContourBL_Tool(object):
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if bathyRas == lyr.name:
-                        bathyRas = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input bathymetry grid is in a correct format
         rasDesc = arcpy.Describe(bathyRas)
@@ -1527,7 +1528,7 @@ class PseudoContourBL_Tool(object):
         minAreaThresholdValue = minAreaThreshold.split(" ")[0]
         areaUnit = minAreaThreshold.split(" ")[1]
         # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = helper.areaUnitConverter(areaUnit)
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         minAreaThresholdValue = converter * float(minAreaThresholdValue)
         # convert to "square meters"
         minAreaThresholdValue = minAreaThresholdValue * 1000000
@@ -1535,7 +1536,7 @@ class PseudoContourBL_Tool(object):
         maxAreaThresholdValue = maxAreaThreshold.split(" ")[0]
         areaUnit = maxAreaThreshold.split(" ")[1]
         # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = helper.areaUnitConverter(areaUnit)
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         maxAreaThresholdValue = converter * float(maxAreaThresholdValue)
         # convert to "square meters"
         maxAreaThresholdValue = maxAreaThresholdValue * 1000000
@@ -1613,7 +1614,7 @@ class PseudoContourBL_Tool(object):
                     inID = "OBJECTID"
                     joinID = "OBJECTID_1"
                     expression = "!" + outTab + "." + "MEAN" + "!"
-                    helper.addField(dissolvedFeat, outTab, field, inID, joinID, expression)
+                    HelperFunctions.addField(dissolvedFeat, outTab, field, inID, joinID, expression)
                     arcpy.management.Delete(outTab)
                     # delete feature(s) with null mean_depth
                     tempLayer = "tempLayer"
@@ -1649,7 +1650,7 @@ class PseudoContourBL_Tool(object):
                             + "!"
                     )
                     arcpy.CalculateField_management(
-                        dissolvedFeat, fieldName, expression, "PYTHON_9.3"
+                        dissolvedFeat, fieldName, expression, "PYTHON3"
                     )
                     # further select only those features that have negative depth difference smaller than a negative
                     # threshold
@@ -1774,7 +1775,7 @@ class PseudoContourBL_Tool(object):
             arcpy.AddMessage("Using " + str(nCPU) + " CPU processors for multiprocessing")
             workspaceName = env.workspace
 
-            workspaceList, tempfolderList, outFeat2List, mergeFeatList, joinFeatList, outFeat1List = helper.splitFeat(
+            workspaceList, tempfolderList, outFeat2List, mergeFeatList, joinFeatList, outFeat1List = HelperFunctions.splitFeat(
                 workspaceName,
                 outFeat2_Selected,
                 outFeat1,
@@ -1830,7 +1831,7 @@ class PseudoContourBL_Tool(object):
             arcpy.management.Copy(outFeat1_Selected1, outFeat)
 
         # delete intermediate datasets
-        helper.deleteDataItems(itemList)
+        HelperFunctions.deleteDataItems(itemList)
 
         time2 = datetime.now()
         diff = time2 - time1
@@ -1842,338 +1843,7 @@ class PseudoContourBL_Tool(object):
 
 # helper functions are defined below
 class helpers:
-
-    # This function converts comma decimal separator (e.g., European standard) to dot (e.g.,US, UK and Australian standard)
-    def convertDecimalSeparator(self, inText):
-        # inText: input string representing a decimal number
-        textList = inText.split(",")
-        inText1 = textList[0] + "." + textList[1]
-        return inText1
-
-    # This function converts backslach (accepted through the ArcGIS tool) to forwardslach (needed in python script) in a path
-    def convert_backslash_forwardslash(self, inText):
-        # inText: input path
-
-        inText = rf"{inText}"
-        if inText.find("\t"):
-            inText = inText.replace("\t", "\\t")
-        elif inText.find("\n"):
-            inText = inText.replace("\n", "\\n")
-        elif inText.find("\r"):
-            inText = inText.replace("\r", "\\r")
-
-        inText = inText.replace("\\", "/")
-        return inText
-
-    # This function calculate TPI values from a bathymetry grid
-    def calculateTPI(self, bathy, radius, tpiRas):
-        # bathy: input bathymetry grid
-        # radius: the input radius value of a circle window
-        # tpiRas: output TPI grid
-
-        time1 = datetime.now()
-        neighborhood = NbrCircle(radius, "CELL")
-        outFocal = FocalStatistics(bathy, neighborhood, "MEAN", "DATA")
-        # TPI equals to the difference between the value of the centre cell and the mean value of its neighbourhood
-        outMinus = Minus(bathy, outFocal)
-        outMinus.save(tpiRas)
-        arcpy.AddMessage("TPI is done")
-        time2 = datetime.now()
-        diff = time2 - time1
-        arcpy.AddMessage("took " + str(diff) + " to generate TPI.")
-        return
-
-    # This function selects part of the raster based on a threshold value
-    def selectRaster(self, inRas, outRas, threshold, sign, value=1):
-        # inRas: input raster
-        # outRas: output raster
-        # threshold: input threshold value used to select the inRas
-        # sign: sign as part of the selection condition
-        # value: the new raster value assigned to the part of the raster that satisfies the condition
-
-        if sign == ">=":
-            conDo = Con((Raster(inRas) >= threshold), value)
-        elif sign == "<=":
-            conDo = Con((Raster(inRas) <= threshold), value)
-        conDo.save(outRas)
-
-    # This function deletes all intermediate data items
-    def deleteDataItems(self, inDataList):
-        # inDataList: a list of data items to be deleted
-
-        if len(inDataList) == 0:
-            arcpy.AddMessage("no data item in the list")
-
-        else:
-            for item in inDataList:
-                arcpy.AddMessage("Deleting " + item)
-                arcpy.Delete_management(item)
-        return
-
-    # This function deletes all unnecessary fields from the input featureclass
-    def deleteFields(self, inFeat):
-        # inFeat: input featureclass
-        fields = arcpy.ListFields(inFeat)
-        fieldList = []
-        for field in fields:
-            if not field.required:
-                fieldList.append(field.name)
-        arcpy.DeleteField_management(inFeat, fieldList)
-
-    # This function calculates a converter value for the input area unit. The base unit is "SquareKilometers".
-    def areaUnitConverter(self, inAreaUnit):
-        # inAreaUnit: input Area Unit
-
-        if inAreaUnit == "Acres":
-            converter = 0.00404686
-        elif inAreaUnit == "Ares":
-            converter = 0.0001
-        elif inAreaUnit == "Hectares":
-            converter = 0.01
-        elif inAreaUnit == "SquareCentimeters":
-            converter = 0.0000000001
-        elif inAreaUnit == "SquareDecimeters":
-            converter = 0.00000001
-        elif inAreaUnit == "SquareMeters":
-            converter = 0.000001
-        elif inAreaUnit == "SquareFeet":
-            converter = 0.000000092903
-        elif inAreaUnit == "SquareInches":
-            converter = 0.00000000064516
-        elif inAreaUnit == "SquareKilometers":
-            converter = 1
-        elif inAreaUnit == "SquareMiles":
-            converter = 2.58999
-        elif inAreaUnit == "SquareMillimeters":
-            converter = 0.000000000001
-        elif inAreaUnit == "SquareYards":
-            converter = 0.00000083613
-
-        return converter
-
-    # This function calculates positive or negative openness value from the batymetry grid
-    def calculateOpenness(
-        self, bathyRas, radius, opennessParameter, outRas, tempWS, messages
-    ):
-        # bathyRas: input bathymetry grid
-        # radius: radius value of the analysis window
-        # opennessParameter: determine whether to calculate positive or negative openness
-        # outRas: output openness grid
-        # tempWS: temporary workspace
-        # messages: to handle error messages
-
-        ## most of the codes are taken from the "Openness" tool in the "ArcGeomorphometry Tools" python toolbox
-        ## with the following modifications: 1) the analysis radius (window size) now accepts all positive integer values not limited to odd numbers only
-        ## 2) the border areas are now processed properly instead of being left blank
-        ## 3) modify some codes to work in later versions of python and numpy module
-
-        time1 = datetime.now()
-        radius = int(radius)
-        # the radius in the diagonal directions
-        radius1 = int(np.round(radius / np.sqrt(2)))
-
-        # Describe input raster
-        descData = arcpy.Describe(bathyRas)
-        dataPath = descData.path
-        cellSize = descData.meanCellHeight
-        extent = descData.Extent
-        height = descData.height
-        width = descData.width
-        xmin = extent.XMin
-        ymin = extent.YMin
-
-        spatialReference = descData.spatialReference
-        if spatialReference.type == "Geographic":
-            messages.addErrorMessage(
-                "    *** Coordinate system of input bathymetry grid is Geographic. A projected coordinate system is required. ***"
-            )
-            raise arcpy.ExecuteError
-        pnt = arcpy.Point(xmin, ymin)
-
-        # Load DEM into numpy float32 array
-        rasterDEMArray = arcpy.RasterToNumPyArray(bathyRas)
-
-        # Check window size
-        if radius > rasterDEMArray.shape[-1]:
-            messages.addErrorMessage("    *** Analysis window is too long. ***")
-            raise arcpy.ExecuteError
-        #   calculate elevation angles within roughly circular search window (clockwise from N=0º)
-        outShape = rasterDEMArray.shape
-
-        outArray = np.zeros(outShape, dtype=np.float32)
-        # the new array extends the loaded DEM array with a width of the radius from all four borders, so that the border areas of the loaded DEM can be processed properly
-        rasterDEMArray1 = np.arange(
-            (rasterDEMArray.shape[0] + 2 * radius)
-            * (rasterDEMArray.shape[1] + 2 * radius)
-        ).reshape(
-            rasterDEMArray.shape[0] + 2 * radius, rasterDEMArray.shape[1] + 2 * radius
-        )
-        rasterDEMArray1 = np.zeros_like(rasterDEMArray1, dtype=float)
-        rasterDEMArray1[:] = np.nan
-        rasterDEMArray1[
-            radius : rasterDEMArray.shape[0] + radius,
-            radius : rasterDEMArray.shape[1] + radius,
-        ] = rasterDEMArray
-        del rasterDEMArray  # to release memory
-        #   set temporal arrays
-        tempArray = np.zeros_like(outArray)
-        # arrayList holds the temporal arrays, so that we can calculate np.nanmean()
-        arrayList = []
-        shiftsList = [
-            (x, y)
-            for x in range(-radius, radius + 1)
-            for y in range(-radius, radius + 1)
-        ]
-        #   calculate elevation angles within roughly circular search window (clockwise from N=0º)
-        for direction in range(0, 360, 45):
-            if direction == 0:
-                shiftsListD = filter(lambda arr: arr[0] < 0 and arr[1] == 0, shiftsList)
-            elif direction == 45:
-                shiftsListD = filter(
-                    lambda arr: arr[1] < radius1 + 1
-                    and arr[0] == -arr[1]
-                    and arr[1] > 0,
-                    shiftsList,
-                )
-            elif direction == 90:
-                shiftsListD = filter(lambda arr: arr[0] == 0 and arr[1] > 0, shiftsList)
-            elif direction == 135:
-                shiftsListD = filter(
-                    lambda arr: arr[1] < radius1 + 1
-                    and arr[0] == arr[1]
-                    and arr[0] > 0,
-                    shiftsList,
-                )
-            elif direction == 180:
-                shiftsListD = filter(lambda arr: arr[0] > 0 and arr[1] == 0, shiftsList)
-            elif direction == 225:
-                shiftsListD = filter(
-                    lambda arr: arr[0] < radius1 + 1
-                    and arr[0] == -arr[1]
-                    and arr[0] > 0,
-                    shiftsList,
-                )
-            elif direction == 270:
-                shiftsListD = filter(lambda arr: arr[0] == 0 and arr[1] < 0, shiftsList)
-            elif direction == 315:
-                shiftsListD = filter(
-                    lambda arr: -arr[1] < radius1 + 1
-                    and arr[0] == arr[1]
-                    and arr[0] < 0,
-                    shiftsList,
-                )
-
-            if opennessParameter == "positiveOpenness":  # calculate positive openness
-                tempArray.fill(-9999.9)
-                for dx, dy in shiftsListD:
-                    xstop = -radius + dx or None
-                    ystop = -radius + dy or None
-                    angleArray = (
-                        rasterDEMArray1[radius + dx : xstop, radius + dy : ystop]
-                        - rasterDEMArray1[radius:-radius, radius:-radius]
-                    ) / (math.hypot(dx, dy) * cellSize)
-                    angleArray[np.isnan(angleArray)] = -999999.9
-                    tempArray = np.maximum(tempArray, angleArray)
-                tempArray = np.where(tempArray < -9999, np.nan, tempArray)
-                arrayList.append(90 - np.degrees(np.arctan(tempArray)))
-            elif opennessParameter == "negativeOpenness":  # calculate negative openness
-                tempArray.fill(9999.9)
-                for dx, dy in shiftsListD:
-                    xstop = -radius + dx or None
-                    ystop = -radius + dy or None
-                    angleArray = (
-                        rasterDEMArray1[radius + dx : xstop, radius + dy : ystop]
-                        - rasterDEMArray1[radius:-radius, radius:-radius]
-                    ) / (math.hypot(dx, dy) * cellSize)
-                    angleArray[np.isnan(angleArray)] = -999999.9
-                    tempArray = np.minimum(tempArray, angleArray)
-                tempArray = np.where(tempArray < -9999, np.nan, tempArray)
-                arrayList.append(90 + np.degrees(np.arctan(tempArray)))
-        del rasterDEMArray1
-        del tempArray
-        # np.stack() requires numpy version 1.10.0 or higher
-        stacked_array = np.stack(arrayList)
-        with warnings.catch_warnings():
-            # ignore runtime warning
-            warnings.simplefilter("ignore", category=RuntimeWarning)
-            outArray = np.nanmean(stacked_array, axis=0)
-
-        # Create new output calculated raster, set spatial coordinates and save
-        # if the raster is more than 5000 cells in either X or Y directions, split the raster into blocks
-        blocksize = 5000
-        if (width <= blocksize) and (height <= blocksize):
-            newRaster = arcpy.NumPyArrayToRaster(
-                outArray, pnt, cellSize, cellSize, -9999
-            )
-            if spatialReference.name != "Unknown":
-                arcpy.DefineProjection_management(newRaster, spatialReference)
-            # Set nodata where nodata in the input DEM
-            newRaster = SetNull(IsNull(bathyRas), newRaster)
-            newRaster.save(outRas)
-            del outArray
-        else:
-            itemList = []
-            xList = []
-            yList = []
-            for x in range(0, width, blocksize):
-                xList.append(x)
-            for y in range(0, height, blocksize):
-                yList.append(y)
-            xList.append(width)
-            yList.append(height)
-
-            i = 0
-            j = len(yList) - 1
-            k = 0
-            while i < len(xList) - 1:
-                while j > 0:
-                    arr = outArray[yList[j - 1] : yList[j], xList[i] : xList[i + 1]]
-                    hh = arr.shape[0]
-                    ww = arr.shape[1]
-                    pnt = arcpy.Point(xmin, ymin)
-                    newRaster = arcpy.NumPyArrayToRaster(
-                        arr, pnt, cellSize, cellSize, -9999
-                    )
-                    ras = tempWS + "/" + "tempRas" + str(k)
-                    itemList.append(ras)
-                    newRaster.save(ras)
-                    if spatialReference.name != "Unknown":
-                        arcpy.DefineProjection_management(ras, spatialReference)
-                    ymin = ymin + hh * cellSize
-
-                    j -= 1
-                    k += 1
-                xmin = xmin + ww * cellSize
-                i += 1
-                j = len(yList) - 1
-                ymin = extent.YMin
-
-            del outArray
-            tempRaster = "tempRaster"
-
-            arcpy.MosaicToNewRaster_management(
-                itemList,
-                tempWS,
-                tempRaster,
-                bathyRas,
-                "32_BIT_FLOAT",
-                "#",
-                "1",
-                "FIRST",
-                "FIRST",
-            )
-            itemList.append(tempWS + "/" + tempRaster)
-
-            # Set nodata where nodata in the input DEM
-            newRaster = SetNull(IsNull(bathyRas), tempWS + "/" + tempRaster)
-            newRaster.save(outRas)
-            self.deleteDataItems(itemList)
-
-        time2 = datetime.now()
-        diff = time2 - time1
-        arcpy.AddMessage("took " + str(diff) + " to generate openness.")
-        return
-
+    
     # This function calculates convergence index (CI) from an Aspect grid
     def calculateCI(self, aspectRas, ciRas, tempFolder):
         # aspectRas: input Aspect grid
@@ -2182,7 +1852,6 @@ class helpers:
 
         directionList = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
         temRasList = []
-        fileName = tempFolder + "/weight.txt"
         text1 = "0 0 0"
         text2 = "1 0 0"
         text3 = "0 1 0"
@@ -2268,11 +1937,11 @@ class helpers:
         ci.save(ciRas)
         arcpy.AddMessage("CI is done")
         # delete intermediate data
-        self.deleteDataItems(temRasList)
+        HelperFunctions.deleteDataItems(temRasList)
         arcpy.AddMessage("delete done")
         return
 
-    # This function calculates TPI and uses TPI threshold to identify Bathymetric High features
+    # This function calculates TPI and uses TPI threshold to identify Bathymetric Low features
     def TPI_Tool_Low(
         self,
         tempWS,
@@ -2310,7 +1979,7 @@ class helpers:
             return
         else:  # calling the helper function to calculate TPI
             arcpy.AddMessage("calculating TPI...")
-            self.calculateTPI(bathyRas, tpiRadius, tpiRas)
+            HelperFunctions.calculateTPI(bathyRas, tpiRadius, tpiRas)
         # copy the TPI raster to a backup directory
         arcpy.Copy_management(tpiRas, tpiRas1)
 
@@ -2318,19 +1987,19 @@ class helpers:
         tpiSTDResult = arcpy.GetRasterProperties_management(tpiRas, "STD")
         stdText = tpiSTDResult.getOutput(0)
         if stdText.find(",") > 0:
-            stdText = self.convertDecimalSeparator(stdText)
+            stdText = HelperFunctions.convertDecimalSeparator(stdText)
         tpiSTD = float(stdText)
         tpiMEANResult = arcpy.GetRasterProperties_management(tpiRas, "MEAN")
         meanText = tpiMEANResult.getOutput(0)
         if meanText.find(",") > 0:
-            meanText = self.convertDecimalSeparator(meanText)
+            meanText = HelperFunctions.convertDecimalSeparator(meanText)
         tpiMean = float(meanText)
         # define the TPI threshold value for the subsequent mapping
         tpiThreshold = tpiMean - float(tpiSTDScale) * tpiSTD
         arcpy.AddMessage("using tpi threshold " + str(tpiThreshold))
         tpiClassRas1 = tempWS + "/" + "tpiC"
         # select areas that satisfy the threshold condition
-        self.selectRaster(tpiRas, tpiClassRas1, tpiThreshold, "<=")
+        HelperFunctions.selectRaster(tpiRas, tpiClassRas1, tpiThreshold, "<=")
 
         # convert selected areas to polygons
         tpiPoly1 = tempWS + "/" + "tpiC_poly"
@@ -2341,7 +2010,7 @@ class helpers:
         areaUnit1 = "SQUARE_KILOMETERS"
         arcpy.AddGeometryAttributes_management(tpiPoly1, "AREA_GEODESIC", "", areaUnit1)
         # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = self.areaUnitConverter(areaUnit)
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThreshold)
         arcpy.AddMessage(str(areaThreshold))
 
@@ -2352,7 +2021,7 @@ class helpers:
 
         arcpy.Delete_management(tpiPoly1)
         arcpy.Delete_management(tpiClassRas1)
-        self.deleteFields(outFeat)
+        HelperFunctions.deleteAllFields(outFeat)
 
         arcpy.AddMessage("TPI tool is done")
         return
@@ -2400,7 +2069,7 @@ class helpers:
         else:  # call the helper function to calculate positive openness
             arcpy.AddMessage("calculating Positive Openness...")
             opennessParameter = "positiveOpenness"
-            self.calculateOpenness(
+            HelperFunctions.calculateOpenness(
                 bathyRas, poRadius, opennessParameter, poRas, tempWS, messages
             )
         arcpy.CopyRaster_management(poRas, poRas1)
@@ -2433,24 +2102,24 @@ class helpers:
         poSTDResult = arcpy.GetRasterProperties_management(poRas, "STD")
         stdText = poSTDResult.getOutput(0)
         if stdText.find(",") > 0:
-            stdText = self.convertDecimalSeparator(stdText)
+            stdText = HelperFunctions.convertDecimalSeparator(stdText)
         poSTD = float(stdText)
         poMEANResult = arcpy.GetRasterProperties_management(poRas, "MEAN")
         meanText = poMEANResult.getOutput(0)
         if meanText.find(",") > 0:
-            meanText = self.convertDecimalSeparator(meanText)
+            meanText = HelperFunctions.convertDecimalSeparator(meanText)
         poMean = float(meanText)
         poThresholdLarge = poMean - float(poSTDScaleLarge) * poSTD
         arcpy.AddMessage("using po threshold " + str(poThresholdLarge))
         poClassRas1 = tempWS + "/" + "po_C"
-        self.selectRaster(poRas, poClassRas1, poThresholdLarge, "<=")
+        HelperFunctions.selectRaster(poRas, poClassRas1, poThresholdLarge, "<=")
         interimDataList.append(poClassRas1)
 
         # select second set of areas (features) areas with po <= poThresholdSmall
         poThresholdSmall = poMean - float(poSTDScaleSmall) * poSTD
         arcpy.AddMessage("using po threshold " + str(poThresholdSmall))
         poClassRas2 = tempWS + "/" + "po_C1"
-        self.selectRaster(poRas, poClassRas2, poThresholdSmall, "<=")
+        HelperFunctions.selectRaster(poRas, poClassRas2, poThresholdSmall, "<=")
         interimDataList.append(poClassRas2)
 
         # convert selected areas to polygons
@@ -2469,7 +2138,7 @@ class helpers:
         arcpy.AddGeometryAttributes_management(poPoly2, "AREA_GEODESIC", "", areaUnit1)
 
         # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = self.areaUnitConverter(areaUnit)
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThreshold)
 
         # further selection based on the input area threshold
@@ -2548,8 +2217,8 @@ class helpers:
         arcpy.Copy_management(mergedFeat, outFeat)
 
         # delete intermediate results
-        self.deleteDataItems(interimDataList)
-        self.deleteFields(outFeat)
+        HelperFunctions.deleteDataItems(interimDataList)
+        HelperFunctions.deleteAllFields(outFeat)
 
         arcpy.AddMessage("Openness Low tool is done")
 
@@ -2632,7 +2301,7 @@ class helpers:
             return
         else:
             arcpy.AddMessage("calculating TPI...")
-            self.calculateTPI(bathyRas1, tpiRadius, tpiRas)
+            HelperFunctions.calculateTPI(bathyRas1, tpiRadius, tpiRas)
         # copy the TPI raster to a backup directory
         arcpy.CopyRaster_management(tpiRas, tpiRas1)
 
@@ -2641,36 +2310,36 @@ class helpers:
         ciSTDResult = arcpy.GetRasterProperties_management(ciRas, "STD")
         cistdText = ciSTDResult.getOutput(0)
         if cistdText.find(",") > 0:
-            cistdText = self.convertDecimalSeparator(cistdText)
+            cistdText = HelperFunctions.convertDecimalSeparator(cistdText)
         ciSTD = float(cistdText)
         ciMEANResult = arcpy.GetRasterProperties_management(ciRas, "MEAN")
         cimeanText = ciMEANResult.getOutput(0)
         if cimeanText.find(",") > 0:
-            cimeanText = self.convertDecimalSeparator(cimeanText)
+            cimeanText = HelperFunctions.convertDecimalSeparator(cimeanText)
         ciMean = float(cimeanText)
         ciThreshold = ciMean - float(ciSTDScale) * ciSTD
         arcpy.AddMessage("using ci threshold " + str(ciThreshold))
         ciClassRas1 = tempWS + "/" + "ciC"
         interimDataList.append(ciClassRas1)
-        self.selectRaster(ciRas, ciClassRas1, ciThreshold, "<=")
+        HelperFunctions.selectRaster(ciRas, ciClassRas1, ciThreshold, "<=")
         arcpy.AddMessage("CI selection done")
 
         # select TPI based on the threshold
         tpiSTDResult = arcpy.GetRasterProperties_management(tpiRas, "STD")
         tpistdText = tpiSTDResult.getOutput(0)
         if tpistdText.find(",") > 0:
-            tpistdText = self.convertDecimalSeparator(tpistdText)
+            tpistdText = HelperFunctions.convertDecimalSeparator(tpistdText)
         tpiSTD = float(tpistdText)
         tpiMEANResult = arcpy.GetRasterProperties_management(tpiRas, "MEAN")
         tpimeanText = tpiMEANResult.getOutput(0)
         if tpimeanText.find(",") > 0:
-            tpimeanText = self.convertDecimalSeparator(tpimeanText)
+            tpimeanText = HelperFunctions.convertDecimalSeparator(tpimeanText)
         tpiMean = float(tpimeanText)
         tpiThreshold = tpiMean - float(tpiSTDScale) * tpiSTD
         arcpy.AddMessage("using tpi threshold " + str(tpiThreshold))
         tpiClassRas1 = tempWS + "/" + "tpiC"
         interimDataList.append(tpiClassRas1)
-        self.selectRaster(tpiRas, tpiClassRas1, tpiThreshold, "<=")
+        HelperFunctions.selectRaster(tpiRas, tpiClassRas1, tpiThreshold, "<=")
         arcpy.AddMessage("TPI selection done")
 
         # mosaic ciC and tpiC
@@ -2703,7 +2372,7 @@ class helpers:
             ci_tpiPoly, "AREA_GEODESIC", "", areaUnit1
         )
         # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = self.areaUnitConverter(areaUnit)
+        converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThreshold)
 
         # further selection based on the input area threshold
@@ -2732,107 +2401,9 @@ class helpers:
         arcpy.Copy_management(ci_tpiPoly_selected1, outFeat)
 
         # delete intermediate results
-        self.deleteDataItems(interimDataList)
-        self.deleteFields(outFeat)
+        HelperFunctions.deleteDataItems(interimDataList)
+        HelperFunctions.deleteAllFields(outFeat)
 
         arcpy.AddMessage("TPI CI Low tool is done")
 
-    def addField(self, inFeat, joinFeat, fieldName, inID, joinID, expression):
-        # inFeat: input featureclass (or table)
-        # joinFeat: feature (or table) to be joined with the inFeat
-        # fieldName: the field in the inFeat to be calculated from the joinFeat
-        # inID: unique id field in the inFeat
-        # joinID: unique id field in the joinFeat that matches the inID
-        # expression: expression text used to calculate the field
-
-        fieldType = "DOUBLE"
-        fieldPrecision = 15
-        fieldScale = 6
-
-        fields = arcpy.ListFields(inFeat)
-        field_names = [f.name for f in fields]
-
-        if fieldName in field_names:
-            arcpy.AddMessage(fieldName + " exists and will be recalculated")
-        else:
-            arcpy.AddField_management(
-                inFeat, fieldName, fieldType, fieldPrecision, fieldScale
-            )
-
-        layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(inFeat, layerName)
-        arcpy.AddJoin_management(layerName, inID, joinFeat, joinID, "KEEP_ALL")
-
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON_9.3")
-
-        arcpy.RemoveJoin_management(layerName, joinFeat)
-
-        arcpy.Delete_management(layerName)
-        arcpy.AddMessage(fieldName + " added and calculated")
-        return
-
-    def splitFeat(self, workspace, inFeat, mergeFeat, joinFeat, selectFeat, noSplit):
-        # workspace: the workspace which contains inFeat, mergeFeat and joinFeat
-        # inFeat: the featureclass to be split
-        # mergeFeat: a featureclass to be copied to the new workspace
-        # joinFeat: another featureclass to be copied to the new workspace
-        # selectFeat: the basename for a featureclass
-        # noSplit: the number of subsets to split the inFeat into
-
-        noFeat = int(arcpy.GetCount_management(inFeat).getOutput(0))
-        featCount = int(noFeat / noSplit)
-
-        featList = []
-        tempfolderList = []
-        workspaceList = []
-        mergeFeatList = []
-        joinFeatList = []
-        selectFeatList = []
-
-        path = workspace.rstrip(workspace.split('/')[-1])
-        path = path.rstrip('/')
-        baseName = workspace.split('/')[-1]
-        baseName = baseName.split('.')[0]
-
-        # loop through subsets
-        i = 1
-        while i <= noSplit:
-            # create a File Geodatabase
-            gdbName = baseName + str(i) + '.gdb'
-            arcpy.CreateFileGDB_management(path, gdbName)
-            arcpy.AddMessage(gdbName + ' created')
-            workspace = path + '/' + gdbName
-            workspaceList.append(workspace)
-            # select a subset of inFeat depending on the number of splits
-            startID = (i - 1) * featCount
-            if i == noSplit:
-                endID = noFeat
-            else:
-                endID = i * featCount
-            whereClause = '((OBJECTID > ' + str(startID) + ') And (OBJECTID <= ' + str(endID) + '))'
-            outFeat = path + '/' + gdbName + '/' + inFeat + '_' + str(i)
-            arcpy.analysis.Select(inFeat, outFeat, whereClause)
-            arcpy.AddMessage(outFeat + ' generated')
-            featList.append(outFeat)
-            # copy mergeFeat
-            data1 = path + '/' + gdbName + '/' + mergeFeat
-            mergeFeatList.append(data1)
-            arcpy.Copy_management(mergeFeat, data1)
-            arcpy.AddMessage(mergeFeat + ' copied')
-            # copy joinFeat
-            data2 = path + '/' + gdbName + '/' + joinFeat
-            joinFeatList.append(data2)
-            arcpy.Copy_management(joinFeat, data2)
-            arcpy.AddMessage(joinFeat + ' copied')
-            # create temp folder
-            folderName = 'temp' + str(i)
-            arcpy.CreateFolder_management(path, folderName)
-            arcpy.AddMessage(folderName + ' created')
-            tempFolder = path + '/' + folderName
-            tempfolderList.append(tempFolder)
-            # create a new name based on the basename of a featureclass
-            data3 = path + '/' + gdbName + '/' + selectFeat + '_' + str(i)
-            selectFeatList.append(data3)
-
-            i += 1
-        return workspaceList, tempfolderList, featList, mergeFeatList, joinFeatList, selectFeatList
+    

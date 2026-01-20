@@ -10,10 +10,7 @@ ArcGIS Pro: 2.6.4 and above
 import math
 import os
 import sys
-from datetime import datetime
-
 import arcpy
-import numpy as np
 import pandas as pd
 from arcpy import env
 from arcpy.sa import *
@@ -25,6 +22,7 @@ from AddAttributesFunctions import execute_shape_BH
 from AddAttributesFunctions import execute_shape_BL
 from AddAttributesFunctions import execute_profile_BH
 from AddAttributesFunctions import execute_profile_BL
+import HelperFunctions
 
 arcpy.CheckOutExtension("Spatial")
 
@@ -126,8 +124,8 @@ class Add_Shape_Attributes_High_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
-        inBathy = helper.convert_backslash_forwardslash(inBathy)
+        inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
+        inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -137,7 +135,7 @@ class Add_Shape_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslash_forwardslash(
+                        inFeatClass = HelperFunctions.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
 
@@ -149,7 +147,7 @@ class Add_Shape_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -208,7 +206,7 @@ class Add_Shape_Attributes_High_Tool:
         # if not, add and calculate it
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
-            helper.addIDField(inFeatClass, "featID")
+            HelperFunctions.addIDField(inFeatClass, "featID")
 
         # important, need to set the python.exe within ArcGIS Pro as the python set_executable
         # this will make sure the multiprocessing opens multiple python windows for processing
@@ -301,7 +299,7 @@ class Add_Shape_Attributes_Low_Tool:
             displayName="Output Head Features",
             name="headFeatClass",
             datatype="DEFeatureClass",
-            parameterType="required",
+            parameterType="Required",
             direction="Output",
         )
 
@@ -310,7 +308,7 @@ class Add_Shape_Attributes_Low_Tool:
             displayName="Output Foot Features",
             name="footFeatClass",
             datatype="DEFeatureClass",
-            parameterType="required",
+            parameterType="Required",
             direction="Output",
         )
 
@@ -330,7 +328,7 @@ class Add_Shape_Attributes_Low_Tool:
             displayName="Calculate additional attributes",
             name="additionalOption",
             datatype="GPBoolean",
-            parameterType="required",
+            parameterType="Required",
             direction="Input",
         )
         param6.value = False
@@ -367,10 +365,10 @@ class Add_Shape_Attributes_Low_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
-        inBathy = helper.convert_backslash_forwardslash(inBathy)
-        headFeatClass = helper.convert_backslash_forwardslash(headFeatClass)
-        footFeatClass = helper.convert_backslash_forwardslash(footFeatClass)
+        inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
+        inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
+        headFeatClass = HelperFunctions.convert_backslash_forwardslash(headFeatClass)
+        footFeatClass = HelperFunctions.convert_backslash_forwardslash(footFeatClass)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -380,7 +378,7 @@ class Add_Shape_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslash_forwardslash(
+                        inFeatClass = HelperFunctions.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
@@ -391,7 +389,7 @@ class Add_Shape_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -465,7 +463,7 @@ class Add_Shape_Attributes_Low_Tool:
         # if not, add and calculate it
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
-            helper.addIDField(inFeatClass, "featID")
+            HelperFunctions.addIDField(inFeatClass, "featID")
 
         # important, need to set the python.exe within ArcGIS Pro as the python set_executable
         # this will make sure the multiprocessing opens multiple python windows for processing
@@ -618,8 +616,8 @@ class Add_Profile_Attributes_High_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
-        inBathy = helper.convert_backslash_forwardslash(inBathy)
+        inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
+        inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if inFeatClass.rfind("/") < 0:
@@ -628,7 +626,7 @@ class Add_Profile_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslash_forwardslash(
+                        inFeatClass = HelperFunctions.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
@@ -639,7 +637,7 @@ class Add_Profile_Attributes_High_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -705,7 +703,7 @@ class Add_Profile_Attributes_High_Tool:
         # if not, add and calculate it
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
-            helper.addIDField(inFeatClass, "featID")
+            HelperFunctions.addIDField(inFeatClass, "featID")
 
         # check the 'LengthWidthRatio' field exists
         if "LengthWidthRatio" not in field_names:
@@ -866,8 +864,8 @@ class Add_Profile_Attributes_Low_Tool:
 
         # calling the helper functions
         helper = helpers()
-        inFeatClass = helper.convert_backslash_forwardslash(inFeatClass)
-        inBathy = helper.convert_backslash_forwardslash(inBathy)
+        inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
+        inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if inFeatClass.rfind("/") < 0:
@@ -876,7 +874,7 @@ class Add_Profile_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isFeatureLayer:
                     if inFeatClass == lyr.name:
-                        inFeatClass = helper.convert_backslash_forwardslash(
+                        inFeatClass = HelperFunctions.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
         # if the input bathymetry raster is selected from a drop-down list, the inBathy does not contain the full path
@@ -887,7 +885,7 @@ class Add_Profile_Attributes_Low_Tool:
             for lyr in m.listLayers():
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
-                        inBathy = helper.convert_backslash_forwardslash(lyr.dataSource)
+                        inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
@@ -953,7 +951,7 @@ class Add_Profile_Attributes_Low_Tool:
         # if not, add and calculate it
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
-            helper.addIDField(inFeatClass, "featID")
+            HelperFunctions.addIDField(inFeatClass, "featID")
 
         # check the 'LengthWidthRatio' field exists
         if "LengthWidthRatio" not in field_names:
@@ -1025,43 +1023,7 @@ class Add_Profile_Attributes_Low_Tool:
 
 # All the helper functions are defined here
 class helpers:
-    # This function converts backslash (accepted in the ArcGIS tool) to forwardslash (needed in python script) in a path
-    def convert_backslash_forwardslash(self, inText):
-        # inText: input path
-        inText = rf"{inText}"
-        if inText.find("\t"):
-            inText = inText.replace("\t", "\\t")
-        elif inText.find("\n"):
-            inText = inText.replace("\n", "\\n")
-        elif inText.find("\r"):
-            inText = inText.replace("\r", "\\r")
-
-        inText = inText.replace("\\", "/")
-        return inText
-
-    # This function adds a featID field with unique ID values
-    def addIDField(self, inFeat, fieldName):
-        # inFeat: input featureclass (or table)
-        # fieldName: the field in the inFeat to be calculated from the joinFeat
-
-        fieldType = "LONG"
-        fieldPrecision = 15
-
-        fields = arcpy.ListFields(inFeat)
-        field_names = [f.name for f in fields]
-
-        if fieldName in field_names:
-            arcpy.AddMessage(fieldName + " exists and will be recalculated")
-        else:
-            arcpy.AddField_management(inFeat, fieldName, fieldType, fieldPrecision)
-
-        expression = "!OBJECTID!"
-
-        arcpy.CalculateField_management(inFeat, fieldName, expression, "PYTHON_9.3")
-
-        arcpy.AddMessage(fieldName + " added and calculated")
-        return
-
+   
     # This function creates temporary workspaces and folders,
     # splits the input bathymetric high featureclass into subsets,
     # and copies a subset and input bathymetry grid into each workspace
