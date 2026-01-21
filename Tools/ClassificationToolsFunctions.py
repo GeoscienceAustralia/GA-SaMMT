@@ -161,7 +161,7 @@ def roundNumber(a):
         # we then update the classification
         if classV == "unclassified":
             arcpy.AddMessage("This is unclassified")
-            row.setValue("Morphological_Feature", "unclassified")
+            row.setValue("Morphology_feature", "unclassified")
             cursor.updateRow(row)
         arcpy.AddMessage("The verification process conducts in total " + str(j) + " evaluation iterations")
 
