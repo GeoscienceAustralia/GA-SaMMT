@@ -200,7 +200,7 @@ class Add_Shape_Attributes_High_Tool:
         # calculate sinuosity, length to width ratio, and other shape attributes
         AddAttributesFunctions.calculateSinuosity_LwR(workspaceName, tempFolder, inFeatClass, inBathy)
         # compact the geodatabase to reduce its size
-        arcpy.Compact_management(workspaceName)
+        arcpy.management.Compact(workspaceName)
         arcpy.AddMessage("Compacted the geodatabase")
 
         return
@@ -416,7 +416,7 @@ class Add_Shape_Attributes_Low_Tool:
             additionalOption,
         )
         # compact the geodatabase to reduce its size
-        arcpy.Compact_management(workspaceName)
+        arcpy.management.Compact(workspaceName)
         arcpy.AddMessage("Compacted the geodatabase")
 
         return
@@ -617,7 +617,7 @@ class Add_Topographic_Attributes_High_Tool:
             if field in field_names:
                 arcpy.AddMessage(field + " exists")
             else:
-                arcpy.AddField_management(
+                arcpy.management.AddField(
                     inFeatClass, field, fieldType, fieldPrecision, fieldScale
                 )
 
@@ -699,7 +699,7 @@ class Add_Topographic_Attributes_High_Tool:
         # delete intermediate files
         HelperFunctions.deleteDataItems(itemList)
         # compact the geodatabase to reduce its size
-        arcpy.Compact_management(workspaceName)
+        arcpy.management.Compact(workspaceName)
         arcpy.AddMessage("Compacted the geodatabase")
 
         return
@@ -1012,7 +1012,7 @@ class Add_Topographic_Attributes_Low_Tool:
             if field in field_names:
                 arcpy.AddMessage(field + " exists")
             else:
-                arcpy.AddField_management(
+                arcpy.management.AddField(
                     inFeatClass, field, fieldType, fieldPrecision, fieldScale
                 )
 
@@ -1092,45 +1092,45 @@ class Add_Topographic_Attributes_Low_Tool:
         # spatial join
         joinFeat1 = "joinFeat1"
         itemList.append(joinFeat1)
-        arcpy.SpatialJoin_analysis(inFeatClass, headFeatClass, joinFeat1)
+        arcpy.analysis.SpatialJoin(inFeatClass, headFeatClass, joinFeat1)
 
         joinFeat2 = "joinFeat2"
         itemList.append(joinFeat2)
-        arcpy.SpatialJoin_analysis(inFeatClass, footFeatClass, joinFeat2)
+        arcpy.analysis.SpatialJoin(inFeatClass, footFeatClass, joinFeat2)
 
         # selection analysis
         selectFeat1 = "selectFeat1"
         itemList.append(selectFeat1)
         whereClause = '"depth" IS NULL'
-        arcpy.Select_analysis(joinFeat1, selectFeat1, whereClause)
+        arcpy.analysis.Select(joinFeat1, selectFeat1, whereClause)
 
         selectFeat2 = "selectFeat2"
         itemList.append(selectFeat2)
         whereClause = '"depth" IS NOT NULL'
-        arcpy.Select_analysis(joinFeat1, selectFeat2, whereClause)
+        arcpy.analysis.Select(joinFeat1, selectFeat2, whereClause)
         # if the depth is null, replace it with the depth1 field
-        arcpy.CalculateField_management(selectFeat1, "depth", "!depth1!", "PYTHON3")
+        arcpy.management.CalculateField(selectFeat1, "depth", "!depth1!", "PYTHON3")
         mergedFeat1 = "mergedFeat1"
         itemList.append(mergedFeat1)
         mergedFeats = [selectFeat1, selectFeat2]
-        arcpy.Merge_management(mergedFeats, mergedFeat1)
+        arcpy.management.Merge(mergedFeats, mergedFeat1)
 
         # selection analysis
         selectFeat3 = "selectFeat3"
         itemList.append(selectFeat3)
         whereClause = '"depth" IS NULL'
-        arcpy.Select_analysis(joinFeat2, selectFeat3, whereClause)
+        arcpy.analysis.Select(joinFeat2, selectFeat3, whereClause)
 
         selectFeat4 = "selectFeat4"
         itemList.append(selectFeat4)
         whereClause = '"depth" IS NOT NULL'
-        arcpy.Select_analysis(joinFeat2, selectFeat4, whereClause)
+        arcpy.analysis.Select(joinFeat2, selectFeat4, whereClause)
 
-        arcpy.CalculateField_management(selectFeat3, "depth", "!depth1!", "PYTHON3")
+        arcpy.management.CalculateField(selectFeat3, "depth", "!depth1!", "PYTHON3")
         mergedFeat2 = "mergedFeat2"
         itemList.append(mergedFeat2)
         mergedFeats = [selectFeat3, selectFeat4]
-        arcpy.Merge_management(mergedFeats, mergedFeat2)
+        arcpy.management.Merge(mergedFeats, mergedFeat2)
 
         field = "headDepth"
         inID = "featID"
@@ -1146,19 +1146,19 @@ class Add_Topographic_Attributes_Low_Tool:
 
         field = "head_foot_depthRange"
         expression = "!headDepth! - !footDepth!"
-        arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON3")
+        arcpy.management.CalculateField(inFeatClass, field, expression, "PYTHON3")
 
         field = "head_foot_gradient"
         expression = (
             "math.degrees(math.atan(!head_foot_depthRange! / !head_foot_length!))"
         )
-        arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON3")
+        arcpy.management.CalculateField(inFeatClass, field, expression, "PYTHON3")
 
         arcpy.AddMessage("All attributes added")
 
         HelperFunctions.deleteDataItems(itemList)
         # compact the geodatabase to reduce its size
-        arcpy.Compact_management(workspaceName)
+        arcpy.management.Compact(workspaceName)
         arcpy.AddMessage("Compacted the geodatabase")
 
         return
@@ -1352,7 +1352,7 @@ class Add_Profile_Attributes_High_Tool:
         for field in fieldList:
             if field in field_names:
                 arcpy.AddMessage(field + " already exists and will be deleted")
-                arcpy.DeleteField_management(inFeatClass, field)
+                arcpy.management.DeleteField(inFeatClass, field)
 
         itemList1 = []
         # expand inBathy
@@ -1367,7 +1367,7 @@ class Add_Profile_Attributes_High_Tool:
         mosaicBathy = "mosaicBathy"
         itemList1.append(mosaicBathy)
         inputRasters = [inBathy, inFocal]
-        arcpy.MosaicToNewRaster_management(
+        arcpy.management.MosaicToNewRaster(
             inputRasters,
             workspaceName,
             mosaicBathy,
@@ -1392,18 +1392,18 @@ class Add_Profile_Attributes_High_Tool:
         # generate bounding rectangle
         MbrFeatClass = "bounding_rectangle"
         itemList1.append(MbrFeatClass)
-        arcpy.MinimumBoundingGeometry_management(
+        arcpy.management.MinimumBoundingGeometry(
             inFeatClass, MbrFeatClass, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
         )
         arcpy.AddMessage("bounding rectangle generated")
-        noFeat = int(arcpy.GetCount_management(inFeatClass).getOutput(0))
-        noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+        noFeat = int(arcpy.management.GetCount(inFeatClass).getOutput(0))
+        noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
         arcpy.AddMessage("noFeat: " + str(noFeat))
         arcpy.AddMessage("noRectangle: " + str(noRectangle))
         # Number of features in the bounding rectangle is expected to be the same as in the input featureclass
         # if not, regenerate the bounding rectangle up to three times
         if noRectangle < noFeat:
-            arcpy.MinimumBoundingGeometry_management(
+            arcpy.management.MinimumBoundingGeometry(
                 inFeatClass,
                 MbrFeatClass,
                 "RECTANGLE_BY_WIDTH",
@@ -1411,9 +1411,9 @@ class Add_Profile_Attributes_High_Tool:
                 "",
                 "MBG_FIELDS",
             )
-            noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+            noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
             if noRectangle < noFeat:
-                arcpy.MinimumBoundingGeometry_management(
+                arcpy.management.MinimumBoundingGeometry(
                     inFeatClass,
                     MbrFeatClass,
                     "RECTANGLE_BY_WIDTH",
@@ -1421,9 +1421,9 @@ class Add_Profile_Attributes_High_Tool:
                     "",
                     "MBG_FIELDS",
                 )
-                noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+                noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
                 if noRectangle < noFeat:
-                    arcpy.MinimumBoundingGeometry_management(
+                    arcpy.management.MinimumBoundingGeometry(
                         inFeatClass,
                         MbrFeatClass,
                         "RECTANGLE_BY_WIDTH",
@@ -1432,7 +1432,7 @@ class Add_Profile_Attributes_High_Tool:
                         "MBG_FIELDS",
                     )
                     noRectangle = int(
-                        arcpy.GetCount_management(MbrFeatClass).getOutput(0)
+                        arcpy.management.GetCount(MbrFeatClass).getOutput(0)
                     )
                     if noRectangle < noFeat:
                         arcpy.AddMessage(
@@ -1450,7 +1450,7 @@ class Add_Profile_Attributes_High_Tool:
         for row in cursor:
             # only do this every 100 iterations
             if k % 100 == 1:
-                arcpy.Compact_management(
+                arcpy.management.Compact(
                     workspaceName
                 )  # compact the geodatabase to reduce its size and potentially improve the performance
                 arcpy.AddMessage("Compacted the geodatabase")
@@ -1467,13 +1467,13 @@ class Add_Profile_Attributes_High_Tool:
                 mergeList.append(inFeat)
 
                 # select the feature
-                arcpy.Select_analysis(inFeatClass, inFeat, whereClause)
+                arcpy.analysis.Select(inFeatClass, inFeat, whereClause)
 
                 boundFeat = workspaceName + "/" + "boundFeat_" + str(featID)
                 itemList.append(boundFeat)
 
                 # select the feature
-                arcpy.Select_analysis(MbrFeatClass, boundFeat, whereClause)
+                arcpy.analysis.Select(MbrFeatClass, boundFeat, whereClause)
 
                 profilePointFC = workspaceName + "/" + "profilePointFC"
                 itemList.append(profilePointFC)
@@ -1514,7 +1514,7 @@ class Add_Profile_Attributes_High_Tool:
                 ExtractValuesToPoints(profilePointFC, mosaicBathy, profilePointFC1)
                 arcpy.AddMessage("extract depth values done")
                 # Add x and y
-                arcpy.AddXY_management(profilePointFC1)
+                arcpy.management.AddXY(profilePointFC1)
                 arcpy.AddMessage("Add x and y done")
                 # export the table to a csv file
                 outCSV = tempFolder + "/" + "profilePointFC1.csv"
@@ -1524,7 +1524,7 @@ class Add_Profile_Attributes_High_Tool:
                 if os.path.isfile(schemaFile):
                     os.remove(schemaFile)
 
-                arcpy.CopyRows_management(profilePointFC1, outCSV)
+                arcpy.management.CopyRows(profilePointFC1, outCSV)
                 arcpy.AddMessage(outCSV + " is generated")
                 # read in the csv file as pandas dataframe
                 points = pd.read_csv(outCSV, sep=",", header=0)
@@ -1601,7 +1601,7 @@ class Add_Profile_Attributes_High_Tool:
                     if field in field_names:
                         arcpy.AddMessage(field + " exists")
                     else:
-                        arcpy.AddField_management(
+                        arcpy.management.AddField(
                             inFeat, field, fieldType, field_length=fieldLength
                         )
 
@@ -1612,7 +1612,7 @@ class Add_Profile_Attributes_High_Tool:
                 for field in fieldList:
                     # calculate string to a text field, the string must be enclosed by double quote
                     expression = '"' + valueList[i] + '"'
-                    arcpy.CalculateField_management(
+                    arcpy.management.CalculateField(
                         inFeat, field, expression, "PYTHON3"
                     )
                     i += 1
@@ -1632,7 +1632,7 @@ class Add_Profile_Attributes_High_Tool:
 
         # merge all individual features together
         mergedFeat = "mergedFeat"
-        arcpy.Merge_management(mergeList, mergedFeat)
+        arcpy.management.Merge(mergeList, mergedFeat)
         arcpy.AddMessage("merged all done")
 
         HelperFunctions.deleteDataItems(mergeList)
@@ -1651,14 +1651,14 @@ class Add_Profile_Attributes_High_Tool:
 
         arcpy.AddMessage("Profile attributes added and calculated")
 
-        arcpy.Delete_management(mergedFeat)
+        arcpy.management.Delete(mergedFeat)
 
         if len(failedIDList) > 0:
             arcpy.AddMessage("Failed on the following featID(s):" + str(failedIDList))
             arcpy.AddMessage("You may want to re-run only these features")
 
         # compact the geodatabase to reduce its size
-        arcpy.Compact_management(workspaceName)
+        arcpy.management.Compact(workspaceName)
         arcpy.AddMessage("Compacted the geodatabase")
 
         return
@@ -1852,7 +1852,7 @@ class Add_Profile_Attributes_Low_Tool:
         for field in fieldList:
             if field in field_names:
                 arcpy.AddMessage(field + " already exists and will be deleted")
-                arcpy.DeleteField_management(inFeatClass, field)
+                arcpy.management.DeleteField(inFeatClass, field)
 
         itemList1 = []
         # expand inBathy
@@ -1867,7 +1867,7 @@ class Add_Profile_Attributes_Low_Tool:
         mosaicBathy = "mosaicBathy"
         itemList1.append(mosaicBathy)
         inputRasters = [inBathy, inFocal]
-        arcpy.MosaicToNewRaster_management(
+        arcpy.management.MosaicToNewRaster(
             inputRasters,
             workspaceName,
             mosaicBathy,
@@ -1891,17 +1891,17 @@ class Add_Profile_Attributes_Low_Tool:
         # generate bounding rectangle
         MbrFeatClass = "bounding_rectangle"
         itemList1.append(MbrFeatClass)
-        arcpy.MinimumBoundingGeometry_management(
+        arcpy.management.MinimumBoundingGeometry(
             inFeatClass, MbrFeatClass, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
         )
-        noFeat = int(arcpy.GetCount_management(inFeatClass).getOutput(0))
-        noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+        noFeat = int(arcpy.management.GetCount(inFeatClass).getOutput(0))
+        noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
         arcpy.AddMessage("noFeat: " + str(noFeat))
         arcpy.AddMessage("noRectangle: " + str(noRectangle))
         # Number of features in the bounding rectangle is expected to be the same as in the input featureclass
         # if not, regenerate the bounding rectangle up to three times
         if noRectangle < noFeat:
-            arcpy.MinimumBoundingGeometry_management(
+            arcpy.management.MinimumBoundingGeometry(
                 inFeatClass,
                 MbrFeatClass,
                 "RECTANGLE_BY_WIDTH",
@@ -1909,9 +1909,9 @@ class Add_Profile_Attributes_Low_Tool:
                 "",
                 "MBG_FIELDS",
             )
-            noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+            noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
             if noRectangle < noFeat:
-                arcpy.MinimumBoundingGeometry_management(
+                arcpy.management.MinimumBoundingGeometry(
                     inFeatClass,
                     MbrFeatClass,
                     "RECTANGLE_BY_WIDTH",
@@ -1919,9 +1919,9 @@ class Add_Profile_Attributes_Low_Tool:
                     "",
                     "MBG_FIELDS",
                 )
-                noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+                noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
                 if noRectangle < noFeat:
-                    arcpy.MinimumBoundingGeometry_management(
+                    arcpy.management.MinimumBoundingGeometry(
                         inFeatClass,
                         MbrFeatClass,
                         "RECTANGLE_BY_WIDTH",
@@ -1930,7 +1930,7 @@ class Add_Profile_Attributes_Low_Tool:
                         "MBG_FIELDS",
                     )
                     noRectangle = int(
-                        arcpy.GetCount_management(MbrFeatClass).getOutput(0)
+                        arcpy.management.GetCount(MbrFeatClass).getOutput(0)
                     )
                     if noRectangle < noFeat:
                         arcpy.AddMessage(
@@ -1946,7 +1946,7 @@ class Add_Profile_Attributes_Low_Tool:
         for row in cursor:
             # only do this every 100 iterations
             if k % 100 == 1:
-                arcpy.Compact_management(
+                arcpy.management.Compact(
                     workspaceName
                 )  # compact the geodatabase to reduce its size and potentially improve the performance
                 arcpy.AddMessage("Compacted the geodatabase")
@@ -1962,13 +1962,13 @@ class Add_Profile_Attributes_Low_Tool:
                 mergeList.append(inFeat)
 
                 # select the feature
-                arcpy.Select_analysis(inFeatClass, inFeat, whereClause)
+                arcpy.analysis.Select(inFeatClass, inFeat, whereClause)
 
                 boundFeat = workspaceName + "/" + "boundFeat_" + str(featID)
                 itemList.append(boundFeat)
 
                 # select the feature
-                arcpy.Select_analysis(MbrFeatClass, boundFeat, whereClause)
+                arcpy.analysis.Select(MbrFeatClass, boundFeat, whereClause)
 
                 profilePointFC = workspaceName + "/" + "profilePointFC"
                 itemList.append(profilePointFC)
@@ -2009,7 +2009,7 @@ class Add_Profile_Attributes_Low_Tool:
                 ExtractValuesToPoints(profilePointFC, mosaicBathy, profilePointFC1)
                 arcpy.AddMessage("extract depth values done")
                 # Add x and y
-                arcpy.AddXY_management(profilePointFC1)
+                arcpy.management.AddXY(profilePointFC1)
                 arcpy.AddMessage("Add x and y done")
                 # export the table to a csv file
                 outCSV = tempFolder + "/" + "profilePointFC1.csv"
@@ -2019,7 +2019,7 @@ class Add_Profile_Attributes_Low_Tool:
                 if os.path.isfile(schemaFile):
                     os.remove(schemaFile)
 
-                arcpy.CopyRows_management(profilePointFC1, outCSV)
+                arcpy.management.CopyRows(profilePointFC1, outCSV)
                 arcpy.AddMessage(outCSV + " is generated")
                 # read in the csv file as pandas dataframe
                 points = pd.read_csv(outCSV, sep=",", header=0)
@@ -2093,7 +2093,7 @@ class Add_Profile_Attributes_Low_Tool:
                     if field in field_names:
                         arcpy.AddMessage(field + " exists")
                     else:
-                        arcpy.AddField_management(
+                        arcpy.management.AddField(
                             inFeat, field, fieldType, field_length=fieldLength
                         )
 
@@ -2104,7 +2104,7 @@ class Add_Profile_Attributes_Low_Tool:
                 for field in fieldList:
                     # calculate string to a text field, the string must be enclosed by double quote
                     expression = '"' + valueList[i] + '"'
-                    arcpy.CalculateField_management(
+                    arcpy.management.CalculateField(
                         inFeat, field, expression, "PYTHON3"
                     )
                     i += 1
@@ -2124,7 +2124,7 @@ class Add_Profile_Attributes_Low_Tool:
         del cursor, row
         # merge all individual features together
         mergedFeat = "mergedFeat"
-        arcpy.Merge_management(mergeList, mergedFeat)
+        arcpy.management.Merge(mergeList, mergedFeat)
         arcpy.AddMessage("merged all done")
 
         HelperFunctions.deleteDataItems(itemList1)
@@ -2143,14 +2143,14 @@ class Add_Profile_Attributes_Low_Tool:
 
         arcpy.AddMessage("Profile attributes added and calculated")
 
-        arcpy.Delete_management(mergedFeat)
+        arcpy.management.Delete(mergedFeat)
 
         if len(failedIDList) > 0:
             arcpy.AddMessage("Failed on the following featID(s):" + str(failedIDList))
             arcpy.AddMessage("You may want to re-run only these features")
 
         # compact the geodatabase to reduce its size
-        arcpy.Compact_management(workspaceName)
+        arcpy.management.Compact(workspaceName)
         arcpy.AddMessage("Compacted the geodatabase")
 
         return

@@ -968,7 +968,7 @@ def roundNumber(a):
     return b
                     """
         expression = "roundNumber(!contour!)"
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             outContour, fieldName, expression, "PYTHON3", codeblock
         )
         itemList = []
@@ -1054,7 +1054,7 @@ def roundNumber(a):
                     if fieldName in field_names:
                         arcpy.AddMessage(fieldName + " exists and will be recalculated")
                     else:
-                        arcpy.AddField_management(
+                        arcpy.management.AddField(
                             dissolvedFeat, fieldName, fieldType, fieldPrecision, fieldScale
                         )
 
@@ -1067,7 +1067,7 @@ def roundNumber(a):
                             + "contour"
                             + "!"
                     )
-                    arcpy.CalculateField_management(
+                    arcpy.management.CalculateField(
                         dissolvedFeat, fieldName, expression, "PYTHON3"
                     )
                     # further select only those features that have negative depth difference smaller than a negative
@@ -1239,11 +1239,11 @@ def roundNumber(a):
 
             # delete all temporary workspaces and folders
             for workspace in workspaceList:
-                arcpy.Delete_management(workspace)
+                arcpy.management.Delete(workspace)
             arcpy.AddMessage("All temporary workspaces are deleted")
 
             for folder in tempfolderList:
-                arcpy.Delete_management(folder)
+                arcpy.management.Delete(folder)
             arcpy.AddMessage("All temporary folders are deleted")
         else:  # no feature in the second selection, just copy the first selection
             arcpy.management.Copy(outFeat1_Selected1, outFeat)
@@ -1393,7 +1393,7 @@ class PseudoContourBL_Tool(object):
                             if bathyRas == lyr.name:
                                 bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
-                minResult = arcpy.GetRasterProperties_management(bathyRas, "MINIMUM")
+                minResult = arcpy.management.GetRasterProperties(bathyRas, "MINIMUM")
                 minValue = minResult.getOutput(0)
                 outCon = Con(Raster(bathyRas) >= float(minValue), 1)
                 tempTab = "tempTable"
@@ -1404,8 +1404,8 @@ class PseudoContourBL_Tool(object):
                 area = row.getValue("AREA")
                 # the default maximum area threshold is one-third of the total area, using SquareKilometers as unit
                 area = int(round(area / 1000000 / 3, 0))
-                arcpy.Delete_management(outCon)
-                arcpy.Delete_management(tempTab)
+                arcpy.management.Delete(outCon)
+                arcpy.management.Delete(tempTab)
                 areaThreshold = str(area) + " SquareKilometers"
                 parameters[8].value = areaThreshold
 
@@ -1636,7 +1636,7 @@ class PseudoContourBL_Tool(object):
                     if fieldName in field_names:
                         arcpy.AddMessage(fieldName + " exists and will be recalculated")
                     else:
-                        arcpy.AddField_management(
+                        arcpy.management.AddField(
                             dissolvedFeat, fieldName, fieldType, fieldPrecision, fieldScale
                         )
 
@@ -1649,7 +1649,7 @@ class PseudoContourBL_Tool(object):
                             + "contour"
                             + "!"
                     )
-                    arcpy.CalculateField_management(
+                    arcpy.management.CalculateField(
                         dissolvedFeat, fieldName, expression, "PYTHON3"
                     )
                     # further select only those features that have negative depth difference smaller than a negative
@@ -1821,11 +1821,11 @@ class PseudoContourBL_Tool(object):
 
             # delete all temporary workspaces and folders
             for workspace in workspaceList:
-                arcpy.Delete_management(workspace)
+                arcpy.management.Delete(workspace)
             arcpy.AddMessage("All temporary workspaces are deleted")
 
             for folder in tempfolderList:
-                arcpy.Delete_management(folder)
+                arcpy.management.Delete(folder)
             arcpy.AddMessage("All temporary folders are deleted")
         else:  # no feature in the second selection, just copy the first selection
             arcpy.management.Copy(outFeat1_Selected1, outFeat)
@@ -1970,7 +1970,7 @@ class helpers:
         # The intension is to calculate TPI with a defined tpiRadius only once,
         # as the calculation may takes a long time depending on the radius value and the size of the bathymetric grid.
         if arcpy.Exists(tpiRas1):
-            arcpy.Copy_management(tpiRas1, tpiRas)
+            arcpy.management.Copy(tpiRas1, tpiRas)
             arcpy.AddMessage(tpiRas + " exists and will be used")
         elif tpiRadius == 0:  # you have to set a radius greater than 0
             arcpy.AddMessage(
@@ -1981,15 +1981,15 @@ class helpers:
             arcpy.AddMessage("calculating TPI...")
             HelperFunctions.calculateTPI(bathyRas, tpiRadius, tpiRas)
         # copy the TPI raster to a backup directory
-        arcpy.Copy_management(tpiRas, tpiRas1)
+        arcpy.management.Copy(tpiRas, tpiRas1)
 
         # obtain spatial mean and spatial standard deviation of the TPI grid
-        tpiSTDResult = arcpy.GetRasterProperties_management(tpiRas, "STD")
+        tpiSTDResult = arcpy.management.GetRasterProperties(tpiRas, "STD")
         stdText = tpiSTDResult.getOutput(0)
         if stdText.find(",") > 0:
             stdText = HelperFunctions.convertDecimalSeparator(stdText)
         tpiSTD = float(stdText)
-        tpiMEANResult = arcpy.GetRasterProperties_management(tpiRas, "MEAN")
+        tpiMEANResult = arcpy.management.GetRasterProperties(tpiRas, "MEAN")
         meanText = tpiMEANResult.getOutput(0)
         if meanText.find(",") > 0:
             meanText = HelperFunctions.convertDecimalSeparator(meanText)
@@ -2003,12 +2003,12 @@ class helpers:
 
         # convert selected areas to polygons
         tpiPoly1 = tempWS + "/" + "tpiC_poly"
-        arcpy.RasterToPolygon_conversion(tpiClassRas1, tpiPoly1, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(tpiClassRas1, tpiPoly1, "NO_SIMPLIFY")
         arcpy.AddMessage("convert raster to polygon done")
 
         # add the "AREA_GEO" field to the polygons
         areaUnit1 = "SQUARE_KILOMETERS"
-        arcpy.AddGeometryAttributes_management(tpiPoly1, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.management.AddGeometryAttributes(tpiPoly1, "AREA_GEODESIC", "", areaUnit1)
         # convert the input area unit to "SQUARE_KILOMETERS"
         converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThreshold)
@@ -2016,11 +2016,11 @@ class helpers:
 
         # further select areas based on the input area threshold
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(tpiPoly1, outFeat, where_clause)
+        arcpy.analysis.Select(tpiPoly1, outFeat, where_clause)
         arcpy.AddMessage("selection by area done")
 
-        arcpy.Delete_management(tpiPoly1)
-        arcpy.Delete_management(tpiClassRas1)
+        arcpy.management.Delete(tpiPoly1)
+        arcpy.management.Delete(tpiClassRas1)
         HelperFunctions.deleteAllFields(outFeat)
 
         arcpy.AddMessage("TPI tool is done")
@@ -2059,7 +2059,7 @@ class helpers:
         # The intension is to calculate positive openness with a defined noRadius only once,
         # as the calculation may takes a long time depending on the radius value and the size of the bathymetric grid.
         if arcpy.Exists(poRas1):
-            arcpy.CopyRaster_management(poRas1, poRas)
+            arcpy.management.CopyRaster(poRas1, poRas)
             arcpy.AddMessage(poRas + " exists and will be used")
         elif poRadius == 0:  # you have to set the radius > 0
             arcpy.AddMessage(
@@ -2072,7 +2072,7 @@ class helpers:
             HelperFunctions.calculateOpenness(
                 bathyRas, poRadius, opennessParameter, poRas, tempWS, messages
             )
-        arcpy.CopyRaster_management(poRas, poRas1)
+        arcpy.management.CopyRaster(poRas, poRas1)
 
         interimDataList = []
 
@@ -2095,16 +2095,16 @@ class helpers:
         # convert sinks to polygons
         sinksPoly = tempWS + "/" + "sinks_poly"
         interimDataList.append(sinksPoly)
-        arcpy.RasterToPolygon_conversion(sinkRas, sinksPoly, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(sinkRas, sinksPoly, "NO_SIMPLIFY")
         arcpy.AddMessage("convert sinks to polygon done")
 
         # select first set of areas (features) areas with po <= poThresholdLarge
-        poSTDResult = arcpy.GetRasterProperties_management(poRas, "STD")
+        poSTDResult = arcpy.management.GetRasterProperties(poRas, "STD")
         stdText = poSTDResult.getOutput(0)
         if stdText.find(",") > 0:
             stdText = HelperFunctions.convertDecimalSeparator(stdText)
         poSTD = float(stdText)
-        poMEANResult = arcpy.GetRasterProperties_management(poRas, "MEAN")
+        poMEANResult = arcpy.management.GetRasterProperties(poRas, "MEAN")
         meanText = poMEANResult.getOutput(0)
         if meanText.find(",") > 0:
             meanText = HelperFunctions.convertDecimalSeparator(meanText)
@@ -2125,17 +2125,17 @@ class helpers:
         # convert selected areas to polygons
         poPoly1 = tempWS + "/" + "poC_poly"
         interimDataList.append(poPoly1)
-        arcpy.RasterToPolygon_conversion(poClassRas1, poPoly1, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(poClassRas1, poPoly1, "NO_SIMPLIFY")
 
         poPoly2 = tempWS + "/" + "poC1_poly"
         interimDataList.append(poPoly2)
-        arcpy.RasterToPolygon_conversion(poClassRas2, poPoly2, "NO_SIMPLIFY", "VALUE")
+        arcpy.conversion.RasterToPolygon(poClassRas2, poPoly2, "NO_SIMPLIFY", "VALUE")
         arcpy.AddMessage("convert raster to polygon done")
 
         # add the "AREA_GEO" field to the polygons
         areaUnit1 = "SQUARE_KILOMETERS"
-        arcpy.AddGeometryAttributes_management(poPoly1, "AREA_GEODESIC", "", areaUnit1)
-        arcpy.AddGeometryAttributes_management(poPoly2, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.management.AddGeometryAttributes(poPoly1, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.management.AddGeometryAttributes(poPoly2, "AREA_GEODESIC", "", areaUnit1)
 
         # convert the input area unit to "SQUARE_KILOMETERS"
         converter = HelperFunctions.areaUnitConverter(areaUnit)
@@ -2145,35 +2145,35 @@ class helpers:
         poPoly1_selected = tempWS + "/" + "poC_poly_selected"
         interimDataList.append(poPoly1_selected)
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(poPoly1, poPoly1_selected, where_clause)
+        arcpy.analysis.Select(poPoly1, poPoly1_selected, where_clause)
 
         poPoly2_selected = tempWS + "/" + "poC1_poly_selected"
         interimDataList.append(poPoly2_selected)
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(poPoly2, poPoly2_selected, where_clause)
+        arcpy.analysis.Select(poPoly2, poPoly2_selected, where_clause)
 
         # select based on location
         # select from the first set of features that contain 'pits'
         poPoly1_selected1 = tempWS + "/" + "poC_poly_selected1"
         interimDataList.append(poPoly1_selected1)
         layerName1 = "lyr1"
-        arcpy.MakeFeatureLayer_management(poPoly1_selected, layerName1)
-        arcpy.SelectLayerByLocation_management(layerName1, "intersect", sinksPoly)
-        arcpy.CopyFeatures_management(layerName1, poPoly1_selected1)
+        arcpy.management.MakeFeatureLayer(poPoly1_selected, layerName1)
+        arcpy.management.SelectLayerByLocation(layerName1, "intersect", sinksPoly)
+        arcpy.management.CopyFeatures(layerName1, poPoly1_selected1)
         arcpy.AddMessage("select by location done")
         # select from the second set of features that contain 'pits'
         poPoly2_selected1 = tempWS + "/" + "poC1_poly_selected1"
         interimDataList.append(poPoly2_selected1)
         layerName2 = "lyr2"
-        arcpy.MakeFeatureLayer_management(poPoly2_selected, layerName2)
-        arcpy.SelectLayerByLocation_management(layerName2, "intersect", sinksPoly)
-        arcpy.CopyFeatures_management(layerName2, poPoly2_selected1)
+        arcpy.management.MakeFeatureLayer(poPoly2_selected, layerName2)
+        arcpy.management.SelectLayerByLocation(layerName2, "intersect", sinksPoly)
+        arcpy.management.CopyFeatures(layerName2, poPoly2_selected1)
         arcpy.AddMessage("select by location done")
 
         # spatial join to join attributes
         joinedFeat = tempWS + "/" + "Feats_joined"
         interimDataList.append(joinedFeat)
-        arcpy.SpatialJoin_analysis(
+        arcpy.analysis.SpatialJoin(
             poPoly2_selected1,
             poPoly1_selected1,
             joinedFeat,
@@ -2190,31 +2190,31 @@ class helpers:
         joinedFeat_selected = tempWS + "/" + "Feats_joined_selected"
         interimDataList.append(joinedFeat_selected)
         where_clause = '"Join_Count" >= 2'
-        arcpy.Select_analysis(joinedFeat, joinedFeat_selected, where_clause)
+        arcpy.analysis.Select(joinedFeat, joinedFeat_selected, where_clause)
         # select based on location
         poPoly1_selected2 = tempWS + "/" + "poC_poly_selected2"
         interimDataList.append(poPoly1_selected2)
         layerName3 = "lyr3"
-        arcpy.MakeFeatureLayer_management(poPoly1_selected1, layerName3)
-        arcpy.SelectLayerByLocation_management(
+        arcpy.management.MakeFeatureLayer(poPoly1_selected1, layerName3)
+        arcpy.management.SelectLayerByLocation(
             layerName3, "intersect", joinedFeat_selected
         )
-        arcpy.CopyFeatures_management(layerName3, poPoly1_selected2)
+        arcpy.management.CopyFeatures(layerName3, poPoly1_selected2)
         arcpy.AddMessage("select by location done")
         # If a feature from the second set intersects only one features from the first set, keep the feature from the second set
         joinedFeat_selected1 = tempWS + "/" + "Feats_joined_selected1"
         interimDataList.append(joinedFeat_selected1)
         where_clause = '"Join_Count" < 2'
-        arcpy.Select_analysis(joinedFeat, joinedFeat_selected1, where_clause)
+        arcpy.analysis.Select(joinedFeat, joinedFeat_selected1, where_clause)
         arcpy.AddMessage("select by attribute done")
 
         # merge the two subsets of features to form the final set of Bathymetric Low features
 
         mergedFeat = tempWS + "/" + "Feats_merged"
         interimDataList.append(mergedFeat)
-        arcpy.Merge_management([poPoly1_selected2, joinedFeat_selected1], mergedFeat)
+        arcpy.management.Merge([poPoly1_selected2, joinedFeat_selected1], mergedFeat)
         arcpy.AddMessage("merge done")
-        arcpy.Copy_management(mergedFeat, outFeat)
+        arcpy.management.Copy(mergedFeat, outFeat)
 
         # delete intermediate results
         HelperFunctions.deleteDataItems(interimDataList)
@@ -2262,7 +2262,7 @@ class helpers:
         # The intension is to calculate CI only once,
         # as the calculation may takes a long time depending on the radius value and the size of the bathymetric grid.
         if arcpy.Exists(ciRas1):
-            arcpy.CopyRaster_management(ciRas1, ciRas)
+            arcpy.management.CopyRaster(ciRas1, ciRas)
             arcpy.AddMessage(ciRas + " exists and will be used")
         else:
             arcpy.AddMessage("calculating CI...")
@@ -2283,7 +2283,7 @@ class helpers:
             # call the helper function to calculate CI
             self.calculateCI(aspectRas, ciRas, tempFolder)
         # copy the CI raster to a backup directory
-        arcpy.CopyRaster_management(ciRas, ciRas1)
+        arcpy.management.CopyRaster(ciRas, ciRas1)
 
         # calculate the TPI
         tpiRasName = tpiRas[tpiRas.rfind("/") + 1 :]
@@ -2292,7 +2292,7 @@ class helpers:
         # The intension is to calculate TPI with a defined tpiRadius only once,
         # as the calculation may takes a long time depending on the radius value and the size of the bathymetric grid.
         if arcpy.Exists(tpiRas1):
-            arcpy.CopyRaster_management(tpiRas1, tpiRas)
+            arcpy.management.CopyRaster(tpiRas1, tpiRas)
             arcpy.AddMessage(tpiRas + " exists and will be used")
         elif tpiRadius == 0:  # you have to set radius > 0
             arcpy.AddMessage(
@@ -2303,16 +2303,16 @@ class helpers:
             arcpy.AddMessage("calculating TPI...")
             HelperFunctions.calculateTPI(bathyRas1, tpiRadius, tpiRas)
         # copy the TPI raster to a backup directory
-        arcpy.CopyRaster_management(tpiRas, tpiRas1)
+        arcpy.management.CopyRaster(tpiRas, tpiRas1)
 
         # obtain spatial mean and standard deviation of the CI grid
         # select CI based on the threshold
-        ciSTDResult = arcpy.GetRasterProperties_management(ciRas, "STD")
+        ciSTDResult = arcpy.management.GetRasterProperties(ciRas, "STD")
         cistdText = ciSTDResult.getOutput(0)
         if cistdText.find(",") > 0:
             cistdText = HelperFunctions.convertDecimalSeparator(cistdText)
         ciSTD = float(cistdText)
-        ciMEANResult = arcpy.GetRasterProperties_management(ciRas, "MEAN")
+        ciMEANResult = arcpy.management.GetRasterProperties(ciRas, "MEAN")
         cimeanText = ciMEANResult.getOutput(0)
         if cimeanText.find(",") > 0:
             cimeanText = HelperFunctions.convertDecimalSeparator(cimeanText)
@@ -2325,12 +2325,12 @@ class helpers:
         arcpy.AddMessage("CI selection done")
 
         # select TPI based on the threshold
-        tpiSTDResult = arcpy.GetRasterProperties_management(tpiRas, "STD")
+        tpiSTDResult = arcpy.management.GetRasterProperties(tpiRas, "STD")
         tpistdText = tpiSTDResult.getOutput(0)
         if tpistdText.find(",") > 0:
             tpistdText = HelperFunctions.convertDecimalSeparator(tpistdText)
         tpiSTD = float(tpistdText)
-        tpiMEANResult = arcpy.GetRasterProperties_management(tpiRas, "MEAN")
+        tpiMEANResult = arcpy.management.GetRasterProperties(tpiRas, "MEAN")
         tpimeanText = tpiMEANResult.getOutput(0)
         if tpimeanText.find(",") > 0:
             tpimeanText = HelperFunctions.convertDecimalSeparator(tpimeanText)
@@ -2346,7 +2346,7 @@ class helpers:
         mosaicRas = "em_ciC_tpiC"
         interimDataList.append(mosaicRas)
         inputRasters = [ciClassRas1, tpiClassRas1]
-        arcpy.MosaicToNewRaster_management(
+        arcpy.management.MosaicToNewRaster(
             inputRasters,
             tempWS,
             mosaicRas,
@@ -2363,12 +2363,12 @@ class helpers:
         mosaicRas = tempWS + "/" + "em_ciC_tpiC"
         ci_tpiPoly = tempWS + "/" + "ci_tpiC_poly"
         interimDataList.append(ci_tpiPoly)
-        arcpy.RasterToPolygon_conversion(mosaicRas, ci_tpiPoly, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(mosaicRas, ci_tpiPoly, "NO_SIMPLIFY")
         arcpy.AddMessage("convert raster to polygon done")
 
         # add the "AREA_GEO" field to the polygons
         areaUnit1 = "SQUARE_KILOMETERS"
-        arcpy.AddGeometryAttributes_management(
+        arcpy.management.AddGeometryAttributes(
             ci_tpiPoly, "AREA_GEODESIC", "", areaUnit1
         )
         # convert the input area unit to "SQUARE_KILOMETERS"
@@ -2379,7 +2379,7 @@ class helpers:
         ci_tpiPoly_selected = tempWS + "/" + "ci_tpiC_poly_selected"
         interimDataList.append(ci_tpiPoly_selected)
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(ci_tpiPoly, ci_tpiPoly_selected, where_clause)
+        arcpy.analysis.Select(ci_tpiPoly, ci_tpiPoly_selected, where_clause)
         arcpy.AddMessage("selection by area done")
 
         # eliminate holes in the polygons
@@ -2387,7 +2387,7 @@ class helpers:
         interimDataList.append(ci_tpiPoly_selected1)
         areaThreshold = areaThreshold / converter
         size = str(areaThreshold) + " " + areaUnit
-        arcpy.EliminatePolygonPart_management(
+        arcpy.management.EliminatePolygonPart(
             ci_tpiPoly_selected,
             ci_tpiPoly_selected1,
             "AREA",
@@ -2398,7 +2398,7 @@ class helpers:
         arcpy.AddMessage("elimination holes done")
 
         # copy featureclass
-        arcpy.Copy_management(ci_tpiPoly_selected1, outFeat)
+        arcpy.management.Copy(ci_tpiPoly_selected1, outFeat)
 
         # delete intermediate results
         HelperFunctions.deleteDataItems(interimDataList)

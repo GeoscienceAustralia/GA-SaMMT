@@ -974,7 +974,7 @@ def roundNumber(a):
     return b
                     """
         expression = "roundNumber(!contour!)"
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             outContour, fieldName, expression, "PYTHON3", codeblock
         )
         itemList = []
@@ -1060,7 +1060,7 @@ def roundNumber(a):
                     if fieldName in field_names:
                         arcpy.AddMessage(fieldName + " exists and will be recalculated")
                     else:
-                        arcpy.AddField_management(
+                        arcpy.management.AddField(
                             dissolvedFeat, fieldName, fieldType, fieldPrecision, fieldScale
                         )
 
@@ -1073,7 +1073,7 @@ def roundNumber(a):
                             + "contour"
                             + "!"
                     )
-                    arcpy.CalculateField_management(
+                    arcpy.management.CalculateField(
                         dissolvedFeat, fieldName, expression, "PYTHON3"
                     )
                     # further select only those features that have positive depth difference greater than a positive
@@ -1246,11 +1246,11 @@ def roundNumber(a):
 
             # delete all temporary workspaces and folders
             for workspace in workspaceList:
-                arcpy.Delete_management(workspace)
+                arcpy.management.Delete(workspace)
             arcpy.AddMessage("All temporary workspaces are deleted")
 
             for folder in tempfolderList:
-                arcpy.Delete_management(folder)
+                arcpy.management.Delete(folder)
             arcpy.AddMessage("All temporary folders are deleted")
         else:  # no feature in the second selection, just copy the first selection
             arcpy.management.Copy(outFeat1_Selected1, outFeat)
@@ -1399,7 +1399,7 @@ class PseudoContourBH_Tool(object):
                             if bathyRas == lyr.name:
                                 bathyRas = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
 
-                minResult = arcpy.GetRasterProperties_management(bathyRas, "MINIMUM")
+                minResult = arcpy.management.GetRasterProperties(bathyRas, "MINIMUM")
                 minValue = minResult.getOutput(0)
                 outCon = Con(Raster(bathyRas) >= float(minValue), 1)
                 tempTab = "tempTable"
@@ -1410,8 +1410,8 @@ class PseudoContourBH_Tool(object):
                 area = row.getValue("AREA")
                 # the default maximum area threshold is one-third of the total area, using SquareKilometers as unit
                 area = int(round(area / 1000000 / 3, 0))
-                arcpy.Delete_management(outCon)
-                arcpy.Delete_management(tempTab)
+                arcpy.management.Delete(outCon)
+                arcpy.management.Delete(tempTab)
                 areaThreshold = str(area) + " SquareKilometers"
                 parameters[8].value = areaThreshold
 
@@ -1642,7 +1642,7 @@ class PseudoContourBH_Tool(object):
                     if fieldName in field_names:
                         arcpy.AddMessage(fieldName + " exists and will be recalculated")
                     else:
-                        arcpy.AddField_management(
+                        arcpy.management.AddField(
                             dissolvedFeat, fieldName, fieldType, fieldPrecision, fieldScale
                         )
 
@@ -1655,7 +1655,7 @@ class PseudoContourBH_Tool(object):
                             + "contour"
                             + "!"
                     )
-                    arcpy.CalculateField_management(
+                    arcpy.management.CalculateField(
                         dissolvedFeat, fieldName, expression, "PYTHON3"
                     )
                     # further select only those features that have positive depth difference greater than a positve
@@ -1827,11 +1827,11 @@ class PseudoContourBH_Tool(object):
 
             # delete all temporary workspaces and folders
             for workspace in workspaceList:
-                arcpy.Delete_management(workspace)
+                arcpy.management.Delete(workspace)
             arcpy.AddMessage("All temporary workspaces are deleted")
 
             for folder in tempfolderList:
-                arcpy.Delete_management(folder)
+                arcpy.management.Delete(folder)
             arcpy.AddMessage("All temporary folders are deleted")
         else:  # no feature in the second selection, just copy the first selection
             arcpy.management.Copy(outFeat1_Selected1, outFeat)
@@ -1856,12 +1856,12 @@ class helpers:
         # lmiRas: output LMI grid
 
         # spatial mean of the bathymetry grid
-        meanResult = arcpy.GetRasterProperties_management(bathy, "MEAN")
+        meanResult = arcpy.management.GetRasterProperties(bathy, "MEAN")
         meanText = meanResult.getOutput(0)
         if meanText.find(",") > 0:
             meanText = HelperFunctions.convertDecimalSeparator(meanText)
         # spatial standard deviation of the bathymetry grid
-        stdResult = arcpy.GetRasterProperties_management(bathy, "STD")
+        stdResult = arcpy.management.GetRasterProperties(bathy, "STD")
         stdText = stdResult.getOutput(0)
         if stdText.find(",") > 0:
             stdText = HelperFunctions.convertDecimalSeparator(stdText)
@@ -1894,28 +1894,28 @@ class helpers:
             idV = row.getValue("Id")
             arcpy.AddMessage(str(polyID) + ";" + str(idV))
             whereClause = '"OBJECTID" = ' + str(polyID)
-            arcpy.Select_analysis(inFeat, temp1, whereClause)
+            arcpy.analysis.Select(inFeat, temp1, whereClause)
             extractedRas = tempWS + "/" + "extract_" + str(polyID)
             if arcpy.Exists(extractedRas):
-                arcpy.Delete_management(extractedRas)
+                arcpy.management.Delete(extractedRas)
             # extract bathymetry grid for the area covered by the input feature
             outMask1 = ExtractByMask(bathy, temp1)
             outMask1.save(extractedRas)
             # select proportion of the extracted raster with a condition (.= Threshold)
             extractedRas1 = tempWS + "/" + "extract_" + str(polyID) + "_1"
             if arcpy.Exists(extractedRas1):
-                arcpy.Delete_management(extractedRas1)
-            STDResult = arcpy.GetRasterProperties_management(extractedRas, "STD")
+                arcpy.management.Delete(extractedRas1)
+            STDResult = arcpy.management.GetRasterProperties(extractedRas, "STD")
             stdText = STDResult.getOutput(0)
             if stdText.find(",") > 0:
                 stdText = HelperFunctions.convertDecimalSeparator(stdText)
             STD = float(stdText)
-            MEANResult = arcpy.GetRasterProperties_management(extractedRas, "MEAN")
+            MEANResult = arcpy.management.GetRasterProperties(extractedRas, "MEAN")
             meanText = MEANResult.getOutput(0)
             if meanText.find(",") > 0:
                 meanText = HelperFunctions.convertDecimalSeparator(meanText)
             Mean = float(meanText)
-            MAXResult = arcpy.GetRasterProperties_management(extractedRas, "MAXIMUM")
+            MAXResult = arcpy.management.GetRasterProperties(extractedRas, "MAXIMUM")
             maxText = MAXResult.getOutput(0)
             if maxText.find(",") > 0:
                 maxText = HelperFunctions.convertDecimalSeparator(maxText)
@@ -1931,7 +1931,7 @@ class helpers:
 
             # convert selected areas to polygons
             extractedFeat = extractedRas1 + "_poly"
-            arcpy.RasterToPolygon_conversion(
+            arcpy.conversion.RasterToPolygon(
                 extractedRas1,
                 extractedFeat,
                 "NO_SIMPLIFY",
@@ -1939,9 +1939,9 @@ class helpers:
                 "MULTIPLE_OUTER_PART",
             )
             inFeats.append(extractedFeat)
-            arcpy.Delete_management(temp1)
-            arcpy.Delete_management(extractedRas)
-            arcpy.Delete_management(extractedRas1)
+            arcpy.management.Delete(temp1)
+            arcpy.management.Delete(extractedRas)
+            arcpy.management.Delete(extractedRas1)
         del row, cursor
 
         return inFeats
@@ -1976,7 +1976,7 @@ class helpers:
         # The intension is to calculate TPI with a defined tpiRadius only once,
         # as the calculation may takes a long time depending on the radius value and the size of the bathymetric grid.
         if arcpy.Exists(tpiRas1):
-            arcpy.Copy_management(tpiRas1, tpiRas)
+            arcpy.management.Copy(tpiRas1, tpiRas)
             arcpy.AddMessage(tpiRas + " exists and will be used")
         elif tpiRadius == 0:  # you have to set a radius greater than 0
             arcpy.AddMessage(
@@ -1987,16 +1987,16 @@ class helpers:
             arcpy.AddMessage("calculating TPI...")
             HelperFunctions.calculateTPI(bathyRas, tpiRadius, tpiRas)
         # copy the TPI raster to a backup directory
-        arcpy.Copy_management(tpiRas, tpiRas1)
+        arcpy.management.Copy(tpiRas, tpiRas1)
 
         # obtain spatial mean and spatial standard deviation of the TPI grid
-        tpiSTDResult = arcpy.GetRasterProperties_management(tpiRas, "STD")
+        tpiSTDResult = arcpy.management.GetRasterProperties(tpiRas, "STD")
         stdText = tpiSTDResult.getOutput(0)
         if stdText.find(",") > 0:
             stdText = HelperFunctions.convertDecimalSeparator(stdText)
 
         tpiSTD = float(stdText)
-        tpiMEANResult = arcpy.GetRasterProperties_management(tpiRas, "MEAN")
+        tpiMEANResult = arcpy.management.GetRasterProperties(tpiRas, "MEAN")
         meanText = tpiMEANResult.getOutput(0)
         if meanText.find(",") > 0:
             meanText = HelperFunctions.convertDecimalSeparator(stdText)
@@ -2010,12 +2010,12 @@ class helpers:
 
         # convert selected areas to polygons
         tpiPoly1 = tempWS + "/" + "tpiC_poly"
-        arcpy.RasterToPolygon_conversion(tpiClassRas1, tpiPoly1, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(tpiClassRas1, tpiPoly1, "NO_SIMPLIFY")
         arcpy.AddMessage("convert raster to polygon done")
 
         # add the "AREA_GEO" field to the polygons
         areaUnit1 = "SQUARE_KILOMETERS"
-        arcpy.AddGeometryAttributes_management(tpiPoly1, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.management.AddGeometryAttributes(tpiPoly1, "AREA_GEODESIC", "", areaUnit1)
         # convert the input area unit to "SQUARE_KILOMETERS"
         converter = HelperFunctions.areaUnitConverter(areaUnit)
         areaThreshold = converter * float(areaThreshold)
@@ -2023,11 +2023,11 @@ class helpers:
 
         # further select areas based on the input area threshold
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(tpiPoly1, outFeat, where_clause)
+        arcpy.analysis.Select(tpiPoly1, outFeat, where_clause)
         arcpy.AddMessage("selection by area done")
 
-        arcpy.Delete_management(tpiPoly1)
-        arcpy.Delete_management(tpiClassRas1)
+        arcpy.management.Delete(tpiPoly1)
+        arcpy.management.Delete(tpiClassRas1)
         HelperFunctions.deleteAllFields(outFeat)
         arcpy.AddMessage("TPI tool is done")
         return
@@ -2068,7 +2068,7 @@ class helpers:
         # The intension is to calculate TPI with a defined tpiRadius only once,
         # as the calculation may takes a long time depending on the radius value and the size of the bathymetric grid.
         if arcpy.Exists(tpiRas1):
-            arcpy.Copy_management(tpiRas1, tpiRas)
+            arcpy.management.Copy(tpiRas1, tpiRas)
             arcpy.AddMessage(tpiRas + " exists and will be used")
         elif tpiRadius == 0:  # you have to set a radius greater than 0
             arcpy.AddMessage(
@@ -2079,19 +2079,19 @@ class helpers:
             arcpy.AddMessage("calculating TPI...")
             HelperFunctions.calculateTPI(bathyRas, tpiRadius, tpiRas)
         # copy the TPI raster to a backup directory
-        arcpy.Copy_management(tpiRas, tpiRas1)
+        arcpy.management.Copy(tpiRas, tpiRas1)
 
         interimDataList = []
 
         # obtain spatial mean and standard deviation of the TPI raster
         # select first set of areas (features) with TPI >= tpiThresholdLarge
         # obtain spatial mean and spatial standard deviation of the TPI grid
-        tpiSTDResult = arcpy.GetRasterProperties_management(tpiRas, "STD")
+        tpiSTDResult = arcpy.management.GetRasterProperties(tpiRas, "STD")
         stdText = tpiSTDResult.getOutput(0)
         if stdText.find(",") > 0:
             stdText = HelperFunctions.convertDecimalSeparator(stdText)
         tpiSTD = float(stdText)
-        tpiMEANResult = arcpy.GetRasterProperties_management(tpiRas, "MEAN")
+        tpiMEANResult = arcpy.management.GetRasterProperties(tpiRas, "MEAN")
         meanText = tpiMEANResult.getOutput(0)
         if meanText.find(",") > 0:
             meanText = HelperFunctions.convertDecimalSeparator(stdText)
@@ -2112,17 +2112,17 @@ class helpers:
         # convert selected areas to polygons
         tpiPoly1 = tempWS + "/" + "tpiC_poly"
         interimDataList.append(tpiPoly1)
-        arcpy.RasterToPolygon_conversion(tpiClassRas1, tpiPoly1, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(tpiClassRas1, tpiPoly1, "NO_SIMPLIFY")
 
         tpiPoly2 = tempWS + "/" + "tpiC1_poly"
         interimDataList.append(tpiPoly2)
-        arcpy.RasterToPolygon_conversion(tpiClassRas2, tpiPoly2, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(tpiClassRas2, tpiPoly2, "NO_SIMPLIFY")
         arcpy.AddMessage("convert raster to polygon done")
 
         # add the "AREA_GEO" field to the polygons
         areaUnit1 = "SQUARE_KILOMETERS"
-        arcpy.AddGeometryAttributes_management(tpiPoly1, "AREA_GEODESIC", "", areaUnit1)
-        arcpy.AddGeometryAttributes_management(tpiPoly2, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.management.AddGeometryAttributes(tpiPoly1, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.management.AddGeometryAttributes(tpiPoly2, "AREA_GEODESIC", "", areaUnit1)
 
         # convert the input area unit to "SQUARE_KILOMETERS"
         converter = HelperFunctions.areaUnitConverter(areaUnit)
@@ -2132,7 +2132,7 @@ class helpers:
         tpiPoly1_selected = tempWS + "/" + "tpiC_poly_selected"
         interimDataList.append(tpiPoly1_selected)
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(tpiPoly1, tpiPoly1_selected, where_clause)
+        arcpy.analysis.Select(tpiPoly1, tpiPoly1_selected, where_clause)
         arcpy.AddMessage("selection by area done")
 
         # select based on location
@@ -2140,25 +2140,25 @@ class helpers:
         tpiPoly2_selected = tempWS + "/" + "tpiC1_poly_selected"
         interimDataList.append(tpiPoly2_selected)
         layerName1 = "lyr1"
-        arcpy.MakeFeatureLayer_management(tpiPoly2, layerName1)
-        arcpy.SelectLayerByLocation_management(
+        arcpy.management.MakeFeatureLayer(tpiPoly2, layerName1)
+        arcpy.management.SelectLayerByLocation(
             layerName1, "intersect", tpiPoly1_selected
         )
-        arcpy.CopyFeatures_management(layerName1, tpiPoly2_selected)
+        arcpy.management.CopyFeatures(layerName1, tpiPoly2_selected)
         arcpy.AddMessage("select by location done")
 
         # further select areas based on the input area threshold
         tpiPoly2_selected1 = tempWS + "/" + "tpiC1_poly_selected1"
         interimDataList.append(tpiPoly2_selected1)
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(tpiPoly2_selected, tpiPoly2_selected1, where_clause)
+        arcpy.analysis.Select(tpiPoly2_selected, tpiPoly2_selected1, where_clause)
         arcpy.AddMessage("selection by area done")
 
         # The follwing bits are key diferences from the TPI tool.
         # The general idea is to use TPI method to identify the first group of Bathymetric High features (codes above).
         # The areas of identified features are then removed (substracted) from the bathymetric grid.
         # We then apply LMI method on the remaining bathymetric grid and identify additional Bathymetric High features.
-        count = int(arcpy.GetCount_management(tpiPoly2_selected1)[0])
+        count = int(arcpy.management.GetCount(tpiPoly2_selected1)[0])
         if (
             count > 50
         ):  # If more than 50 features in the second set, we will only work on the 50 largest features to save time
@@ -2172,17 +2172,17 @@ class helpers:
             sortFeat = tempWS + "/" + "tpiC1_poly_selected1_sorted"
             interimDataList.append(sortFeat)
             sort_field = [["AREA_GEO", "DESCENDING"]]
-            arcpy.Sort_management(tpiPoly2_selected1, sortFeat, sort_field)
+            arcpy.management.Sort(tpiPoly2_selected1, sortFeat, sort_field)
             # select the largest 50 features and extractMask for these features
             tpiPoly2_selected1_1 = tempWS + "/" + "tpiC1_poly_selected1_1"
             interimDataList.append(tpiPoly2_selected1_1)
             where_clause = '"OBJECTID" <= 50'
-            arcpy.Select_analysis(sortFeat, tpiPoly2_selected1_1, where_clause)
+            arcpy.analysis.Select(sortFeat, tpiPoly2_selected1_1, where_clause)
             # select the remaining features
             tpiPoly2_selected1_2 = tempWS + "/" + "tpiC1_poly_selected1_2"
             interimDataList.append(tpiPoly2_selected1_2)
             where_clause = '"OBJECTID" > 50'
-            arcpy.Select_analysis(sortFeat, tpiPoly2_selected1_2, where_clause)
+            arcpy.analysis.Select(sortFeat, tpiPoly2_selected1_2, where_clause)
 
             # calling the helper function to extract rasters from the bathymetry data one by one based on the selected polygons above
             # for each extracted raster, select area with value >= threshold
@@ -2196,8 +2196,8 @@ class helpers:
         # merge inFeats resulted from the extractMask function
         extractPoly = tempWS + "/" + "extracted_merged"
         interimDataList.append(extractPoly)
-        arcpy.Merge_management(extractedFeats, extractPoly)
-        arcpy.AddGeometryAttributes_management(
+        arcpy.management.Merge(extractedFeats, extractPoly)
+        arcpy.management.AddGeometryAttributes(
             extractPoly, "AREA_GEODESIC", "", areaUnit1
         )
         arcpy.AddMessage("merging done")
@@ -2229,12 +2229,12 @@ class helpers:
         self.calculateLMI(bathyRas1, lmiWeightFile, lmiRas)
 
         # select areas with LMI >= lmiThreshold
-        lmiSTDResult = arcpy.GetRasterProperties_management(lmiRas, "STD")
+        lmiSTDResult = arcpy.management.GetRasterProperties(lmiRas, "STD")
         lmiSTDText = lmiSTDResult.getOutput(0)
         if lmiSTDText.find(",") > 0:
             lmiSTDText = HelperFunctions.convertDecimalSeparator(lmiSTDText)
         lmiSTD = float(lmiSTDText)
-        lmiMEANResult = arcpy.GetRasterProperties_management(lmiRas, "MEAN")
+        lmiMEANResult = arcpy.management.GetRasterProperties(lmiRas, "MEAN")
         lmiMeanText = lmiMEANResult.getOutput(0)
         if lmiMeanText.find(",") > 0:
             lmiMeanText = HelperFunctions.convertDecimalSeparator(lmiMeanText)
@@ -2249,8 +2249,8 @@ class helpers:
         # convert selected areas to polygons
         lmiPoly = tempWS + "/" + "LMI_1C_poly"
         interimDataList.append(lmiPoly)
-        arcpy.RasterToPolygon_conversion(lmiClassRas, lmiPoly, "NO_SIMPLIFY")
-        arcpy.AddGeometryAttributes_management(lmiPoly, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.conversion.RasterToPolygon(lmiClassRas, lmiPoly, "NO_SIMPLIFY")
+        arcpy.management.AddGeometryAttributes(lmiPoly, "AREA_GEODESIC", "", areaUnit1)
         arcpy.AddMessage("convert raster to polygon done")
 
         # select based on location
@@ -2258,9 +2258,9 @@ class helpers:
         lmiPoly_selected = tempWS + "/" + "LMI_1C_poly_selected"
         interimDataList.append(lmiPoly_selected)
         layerName2 = "lyr2"
-        arcpy.MakeFeatureLayer_management(lmiPoly, layerName2)
-        arcpy.SelectLayerByLocation_management(layerName2, "intersect", extractPoly)
-        arcpy.CopyFeatures_management(layerName2, lmiPoly_selected)
+        arcpy.management.MakeFeatureLayer(lmiPoly, layerName2)
+        arcpy.management.SelectLayerByLocation(layerName2, "intersect", extractPoly)
+        arcpy.management.CopyFeatures(layerName2, lmiPoly_selected)
         arcpy.AddMessage("select by location done")
 
         # use union analysis to merge the second set of features identified by the TPI methods and the features identified by the LMI method
@@ -2272,20 +2272,20 @@ class helpers:
         interimDataList.append(unionFeat)
         # note that using "NO_GAPS" option is able to fill holes. This would be good to fill small holes. But it also would potentially fill data gaps that should be kept.
         # We therefore decide to use "GAPS" option
-        arcpy.Union_analysis(inFeats, unionFeat, "ALL", "#", "GAPS")
+        arcpy.analysis.Union(inFeats, unionFeat, "ALL", "#", "GAPS")
         arcpy.AddMessage("union done")
 
         # further select areas based on the input area threshold
         extractPoly_selected = tempWS + "/" + "extracted_mosaic_poly_selected"
         interimDataList.append(extractPoly_selected)
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(extractPoly, extractPoly_selected, where_clause)
+        arcpy.analysis.Select(extractPoly, extractPoly_selected, where_clause)
         arcpy.AddMessage("selection by area done")
 
         # use spatial join to join the attributes
         joinedFeat = tempWS + "/" + "unionFeat_joined"
         interimDataList.append(joinedFeat)
-        arcpy.SpatialJoin_analysis(
+        arcpy.analysis.SpatialJoin(
             unionFeat,
             extractPoly_selected,
             joinedFeat,
@@ -2300,10 +2300,10 @@ class helpers:
         dissolvedFeat = tempWS + "/" + "unionFeat_joined_dissolved"
         interimDataList.append(dissolvedFeat)
         dissolveField = "gridcode_12"
-        arcpy.Dissolve_management(
+        arcpy.management.Dissolve(
             joinedFeat, dissolvedFeat, dissolveField, "#", "SINGLE_PART"
         )
-        arcpy.AddGeometryAttributes_management(
+        arcpy.management.AddGeometryAttributes(
             dissolvedFeat, "AREA_GEODESIC", "", areaUnit1
         )
         arcpy.AddMessage("dissolve done")
@@ -2314,21 +2314,21 @@ class helpers:
             tpiPoly1_selected1 = tempWS + "/" + "tpiC_poly_selected1"
             interimDataList.append(tpiPoly1_selected1)
             newLayerName = "lyrNew"
-            arcpy.MakeFeatureLayer_management(tpiPoly1_selected, newLayerName)
-            arcpy.SelectLayerByLocation_management(
+            arcpy.management.MakeFeatureLayer(tpiPoly1_selected, newLayerName)
+            arcpy.management.SelectLayerByLocation(
                 newLayerName, "intersect", dissolvedFeat, "#", "NEW_SELECTION", "INVERT"
             )
-            arcpy.CopyFeatures_management(newLayerName, tpiPoly1_selected1)
+            arcpy.management.CopyFeatures(newLayerName, tpiPoly1_selected1)
             arcpy.AddMessage("select by location done")
             # merge
             mergedFeat = tempWS + "/" + "unionFeat_joined_dissolved_merged"
             interimDataList.append(mergedFeat)
-            arcpy.Merge_management([tpiPoly1_selected1, dissolvedFeat], mergedFeat)
+            arcpy.management.Merge([tpiPoly1_selected1, dissolvedFeat], mergedFeat)
 
             mergedFeat1 = tempWS + "/" + "unionFeat_joined_dissolved_merged1"
             interimDataList.append(mergedFeat1)
-            arcpy.MultipartToSinglepart_management(mergedFeat, mergedFeat1)
-            arcpy.AddGeometryAttributes_management(
+            arcpy.management.MultipartToSinglepart(mergedFeat, mergedFeat1)
+            arcpy.management.AddGeometryAttributes(
                 mergedFeat1, "AREA_GEODESIC", "", areaUnit1
             )
 
@@ -2338,28 +2338,28 @@ class helpers:
         where_clause = '"AREA_GEO" < ' + str(areaThreshold)
         layerName3 = "lyr3"
         if count > 50:  # if more than 50 features, uses the merged features
-            arcpy.MakeFeatureLayer_management(mergedFeat1, layerName3)
+            arcpy.management.MakeFeatureLayer(mergedFeat1, layerName3)
         else:  # otherwise, uses the dissolved features
-            arcpy.MakeFeatureLayer_management(dissolvedFeat, layerName3)
-        arcpy.SelectLayerByAttribute_management(
+            arcpy.management.MakeFeatureLayer(dissolvedFeat, layerName3)
+        arcpy.management.SelectLayerByAttribute(
             layerName3, "NEW_SELECTION", where_clause
         )
-        arcpy.Eliminate_management(layerName3, eliminatedFeat, "AREA")
+        arcpy.management.Eliminate(layerName3, eliminatedFeat, "AREA")
         arcpy.AddMessage("eliminate by area done")
 
         # delete features based on the area attribute
         where_clause = '"AREA_GEO" < ' + str(areaThreshold)
         layerName4 = "lyr4"
-        arcpy.MakeFeatureLayer_management(eliminatedFeat, layerName4)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(eliminatedFeat, layerName4)
+        arcpy.management.SelectLayerByAttribute(
             layerName4, "NEW_SELECTION", where_clause
         )
-        if int(arcpy.GetCount_management(layerName4)[0]) > 0:
-            arcpy.DeleteFeatures_management(layerName4)
+        if int(arcpy.management.GetCount(layerName4)[0]) > 0:
+            arcpy.management.DeleteFeatures(layerName4)
         arcpy.AddMessage("delete features by area done")
 
         # copy the resulted features to the output featureclass
-        arcpy.Copy_management(eliminatedFeat, outFeat)
+        arcpy.management.Copy(eliminatedFeat, outFeat)
 
         # delete intermediate results
         if len(extractedFeats) > 0:
@@ -2404,7 +2404,7 @@ class helpers:
         # The intension is to calculate negative openness with a defined noRadius only once,
         # as the calculation may takes a long time depending on the radius value and the size of the bathymetric grid.
         if arcpy.Exists(noRas1):
-            arcpy.CopyRaster_management(noRas1, noRas)
+            arcpy.management.CopyRaster(noRas1, noRas)
             arcpy.AddMessage(noRas + " exists and will be used")
         elif noRadius == 0:  # you have to set the radius > 0
             arcpy.AddMessage(
@@ -2418,7 +2418,7 @@ class helpers:
                 bathyRas, noRadius, opennessParameter, noRas, tempWS, messages
             )
         # copy the negative openness grid to a backup directory
-        arcpy.CopyRaster_management(noRas, noRas1)
+        arcpy.management.CopyRaster(noRas, noRas1)
 
         interimDataList = []
 
@@ -2446,17 +2446,17 @@ class helpers:
         # convert sinks to polygons
         sinksPoly = tempWS + "/" + "sinks_poly"
         interimDataList.append(sinksPoly)
-        arcpy.RasterToPolygon_conversion(sinkRas, sinksPoly, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(sinkRas, sinksPoly, "NO_SIMPLIFY")
         arcpy.AddMessage("convert sinks to polygon done")
 
         # select first set of areas (features) with no <= noThresholdLarge
 
-        noSTDResult = arcpy.GetRasterProperties_management(noRas, "STD")
+        noSTDResult = arcpy.management.GetRasterProperties(noRas, "STD")
         noSTDText = noSTDResult.getOutput(0)
         if noSTDText.find(",") > 0:
             noSTDText = HelperFunctions.convertDecimalSeparator(noSTDText)
         noSTD = float(noSTDText)
-        noMEANResult = arcpy.GetRasterProperties_management(noRas, "MEAN")
+        noMEANResult = arcpy.management.GetRasterProperties(noRas, "MEAN")
         noMeanText = noMEANResult.getOutput(0)
         if noMeanText.find(",") > 0:
             noMeanText = HelperFunctions.convertDecimalSeparator(noMeanText)
@@ -2478,17 +2478,17 @@ class helpers:
         # convert selected areas to polygons
         noPoly1 = tempWS + "/" + "noC_poly"
         interimDataList.append(noPoly1)
-        arcpy.RasterToPolygon_conversion(noClassRas1, noPoly1, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(noClassRas1, noPoly1, "NO_SIMPLIFY")
 
         noPoly2 = tempWS + "/" + "noC1_poly"
         interimDataList.append(noPoly2)
-        arcpy.RasterToPolygon_conversion(noClassRas2, noPoly2, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(noClassRas2, noPoly2, "NO_SIMPLIFY")
         arcpy.AddMessage("convert raster to polygon done")
 
         # add the "AREA_GEO" field to the polygons
         areaUnit1 = "SQUARE_KILOMETERS"
-        arcpy.AddGeometryAttributes_management(noPoly1, "AREA_GEODESIC", "", areaUnit1)
-        arcpy.AddGeometryAttributes_management(noPoly2, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.management.AddGeometryAttributes(noPoly1, "AREA_GEODESIC", "", areaUnit1)
+        arcpy.management.AddGeometryAttributes(noPoly2, "AREA_GEODESIC", "", areaUnit1)
 
         # convert the input area unit to "SQUARE_KILOMETERS"
         converter = HelperFunctions.areaUnitConverter(areaUnit)
@@ -2498,36 +2498,36 @@ class helpers:
         noPoly1_selected = tempWS + "/" + "noC_poly_selected"
         interimDataList.append(noPoly1_selected)
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(noPoly1, noPoly1_selected, where_clause)
+        arcpy.analysis.Select(noPoly1, noPoly1_selected, where_clause)
 
         noPoly2_selected = tempWS + "/" + "noC1_poly_selected"
         interimDataList.append(noPoly2_selected)
         where_clause = '"AREA_GEO" >= ' + str(areaThreshold)
-        arcpy.Select_analysis(noPoly2, noPoly2_selected, where_clause)
+        arcpy.analysis.Select(noPoly2, noPoly2_selected, where_clause)
 
         # select based on location
         # select from the first set of features that contain 'tops'
         noPoly1_selected1 = tempWS + "/" + "noC_poly_selected1"
         interimDataList.append(noPoly1_selected1)
         layerName1 = "lyr1"
-        arcpy.MakeFeatureLayer_management(noPoly1_selected, layerName1)
-        arcpy.SelectLayerByLocation_management(layerName1, "contains", sinksPoly)
-        arcpy.CopyFeatures_management(layerName1, noPoly1_selected1)
+        arcpy.management.MakeFeatureLayer(noPoly1_selected, layerName1)
+        arcpy.management.SelectLayerByLocation(layerName1, "contains", sinksPoly)
+        arcpy.management.CopyFeatures(layerName1, noPoly1_selected1)
         arcpy.AddMessage("select by location done")
         # select from the second set of features that contain 'tops'
         noPoly2_selected1 = tempWS + "/" + "noC1_poly_selected1"
         interimDataList.append(noPoly2_selected1)
         layerName2 = "lyr2"
-        arcpy.MakeFeatureLayer_management(noPoly2_selected, layerName2)
-        arcpy.SelectLayerByLocation_management(layerName2, "contains", sinksPoly)
-        arcpy.CopyFeatures_management(layerName2, noPoly2_selected1)
+        arcpy.management.MakeFeatureLayer(noPoly2_selected, layerName2)
+        arcpy.management.SelectLayerByLocation(layerName2, "contains", sinksPoly)
+        arcpy.management.CopyFeatures(layerName2, noPoly2_selected1)
         arcpy.AddMessage("select by location done")
 
         # spatial join to join attributes
 
         joinedFeat = tempWS + "/" + "Feats_joined"
         interimDataList.append(joinedFeat)
-        arcpy.SpatialJoin_analysis(
+        arcpy.analysis.SpatialJoin(
             noPoly2_selected1,
             noPoly1_selected1,
             joinedFeat,
@@ -2544,17 +2544,17 @@ class helpers:
         joinedFeat_selected = tempWS + "/" + "Feats_joined_selected"
         interimDataList.append(joinedFeat_selected)
         where_clause = '"Join_Count" >= 2'
-        arcpy.Select_analysis(joinedFeat, joinedFeat_selected, where_clause)
+        arcpy.analysis.Select(joinedFeat, joinedFeat_selected, where_clause)
         arcpy.AddMessage("select by attribute done")
         # select based on location
         noPoly1_selected2 = tempWS + "/" + "noC_poly_selected2"
         interimDataList.append(noPoly1_selected2)
         layerName3 = "lyr3"
-        arcpy.MakeFeatureLayer_management(noPoly1_selected1, layerName3)
-        arcpy.SelectLayerByLocation_management(
+        arcpy.management.MakeFeatureLayer(noPoly1_selected1, layerName3)
+        arcpy.management.SelectLayerByLocation(
             layerName3, "intersect", joinedFeat_selected
         )
-        arcpy.CopyFeatures_management(layerName3, noPoly1_selected2)
+        arcpy.management.CopyFeatures(layerName3, noPoly1_selected2)
         arcpy.AddMessage("select by location done")
         arcpy.AddMessage("first subset selection done")
 
@@ -2562,16 +2562,16 @@ class helpers:
         joinedFeat_selected1 = tempWS + "/" + "Feats_joined_selected1"
         interimDataList.append(joinedFeat_selected1)
         where_clause = '"Join_Count" < 2'
-        arcpy.Select_analysis(joinedFeat, joinedFeat_selected1, where_clause)
+        arcpy.analysis.Select(joinedFeat, joinedFeat_selected1, where_clause)
         arcpy.AddMessage("select by attribute done")
         arcpy.AddMessage("second subset selection done")
 
         # merge the two subsets of features to form the final set of Bathymetric High features
         mergedFeat = tempWS + "/" + "Feats_merged"
         interimDataList.append(mergedFeat)
-        arcpy.Merge_management([noPoly1_selected2, joinedFeat_selected1], mergedFeat)
+        arcpy.management.Merge([noPoly1_selected2, joinedFeat_selected1], mergedFeat)
         arcpy.AddMessage("merge done")
-        arcpy.Copy_management(mergedFeat, outFeat)
+        arcpy.management.Copy(mergedFeat, outFeat)
 
         # delete intermediate results
         HelperFunctions.deleteDataItems(interimDataList)

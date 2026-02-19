@@ -251,7 +251,7 @@ class Classify_Bathymetric_Low_Features_Tool:
         if field in field_names:
             arcpy.AddMessage(field + " exists and will be recalculated.")
         else:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inFeatClass, field, fieldType, field_length=fieldLength
             )
 
@@ -554,7 +554,7 @@ class Classify_Bathymetric_High_Features_Tool:
         if field in field_names:
             arcpy.AddMessage(field + " exists and will be recalculated.")
         else:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inFeatClass, field, fieldType, field_length=fieldLength
             )
 
@@ -848,13 +848,13 @@ class Verify_Depression_Tool:
         # select the input bathymetric low features that are originally classified as the Depression
         whereClause = "Morphology_feature = " + "'Depression'"
         depressionFeat = "depressionFeat"
-        arcpy.Select_analysis(inFeatClass, depressionFeat, whereClause)
+        arcpy.analysis.Select(inFeatClass, depressionFeat, whereClause)
         # select the input bathymetric low features that are originally classified as other feature types
         whereClause = "Morphology_feature <> " + "'Depression'"
         otherFeat = "otherFeat"
-        arcpy.Select_analysis(inFeatClass, otherFeat, whereClause)
+        arcpy.analysis.Select(inFeatClass, otherFeat, whereClause)
         # get the cell size of the input bathymetric grid, assuming the cell is square shape
-        result1 = arcpy.GetRasterProperties_management(inBathy, "CELLSIZEX")
+        result1 = arcpy.management.GetRasterProperties(inBathy, "CELLSIZEX")
         cellSize = result1.getOutput(0)
         # get the total number of Depression feature to be verified through the multiprocessing process
         nuFeats = int(arcpy.management.GetCount(depressionFeat)[0])
@@ -915,18 +915,18 @@ class Verify_Depression_Tool:
 
             # delete all temporary workspaces and folders
             for workspace in workspaceList:
-                arcpy.Delete_management(workspace)
+                arcpy.management.Delete(workspace)
             arcpy.AddMessage("All temporary workspaces are deleted")
         else: # if there isn't any depression feature to verify, just copy
-            arcpy.Copy_management(depressionFeat, depressionFeat1)
+            arcpy.management.Copy(depressionFeat, depressionFeat1)
         # merge the updated depression features and the other features to the final output featureclass
-        arcpy.Merge_management([depressionFeat1, otherFeat], outFeatClass)
+        arcpy.management.Merge([depressionFeat1, otherFeat], outFeatClass)
         arcpy.AddMessage("final merge finished")
 
         arcpy.AddMessage("Deleting temporary datasets")
-        arcpy.Delete_management(depressionFeat)
-        arcpy.Delete_management(depressionFeat1)
-        arcpy.Delete_management(otherFeat)
+        arcpy.management.Delete(depressionFeat)
+        arcpy.management.Delete(depressionFeat1)
+        arcpy.management.Delete(otherFeat)
 
         arcpy.AddMessage("Deletion finished")
 
@@ -948,7 +948,7 @@ class helpers:
         # noSplit: the number of subsets to split the depressionFeat into
 
         # calculate the number of features in a subset
-        noFeat = int(arcpy.GetCount_management(depressionFeat).getOutput(0))
+        noFeat = int(arcpy.management.GetCount(depressionFeat).getOutput(0))
         featCount = int(noFeat / noSplit)
 
         workspaceList = []
@@ -968,7 +968,7 @@ class helpers:
         while i <= noSplit:
             # create a File Geodatabase
             gdbName = baseName + str(i) + '.gdb'
-            arcpy.CreateFileGDB_management(path, gdbName)
+            arcpy.management.CreateFileGDB(path, gdbName)
             arcpy.AddMessage(gdbName + ' created')
             workspace = path + '/' + gdbName
             workspaceList.append(workspace)
@@ -987,7 +987,7 @@ class helpers:
             data1 = path + '/' + gdbName + '/' + inBathy
             arcpy.AddMessage(data1)
             bathyList.append(data1)
-            arcpy.Copy_management(inBathy, data1)
+            arcpy.management.Copy(inBathy, data1)
             arcpy.AddMessage(inBathy + ' copied')
             # create a new name based on the basename of a featureclass
             data2 = path + '/' + gdbName + '/' + outFeat + '_' + str(i)

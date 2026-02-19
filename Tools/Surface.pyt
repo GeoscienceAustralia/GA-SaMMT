@@ -354,14 +354,14 @@ class helpers:
         # The intension is to calculate slope raster only once,
         # as the calculation may takes a long time depending on the size of the bathymetric grid.
         if arcpy.Exists(slopeRas1):
-            arcpy.Copy_management(slopeRas1, slopeRas)
+            arcpy.management.Copy(slopeRas1, slopeRas)
             arcpy.AddMessage(slopeRas + " exists and will be used")
         else:
             arcpy.AddMessage("calculating slope...")
             outSlope = Slope(bathyRas)
             outSlope.save(slopeRas)
         # copy the slope raster to a backup directory
-        arcpy.Copy_management(slopeRas, slopeRas1)
+        arcpy.management.Copy(slopeRas, slopeRas1)
 
         # reclassify the slope raster based on the folowing conditions
         arcpy.AddMessage("Reclassifing ...")
@@ -393,11 +393,11 @@ class helpers:
         arcpy.AddMessage("Converting raster to polygon ...")
         outFeat1 = tempWS + "/outFeat_temp1"
         interimDataList.append(outFeat1)
-        arcpy.RasterToPolygon_conversion(MFRasName, outFeat1, "NO_SIMPLIFY", "VALUE")
+        arcpy.conversion.RasterToPolygon(MFRasName, outFeat1, "NO_SIMPLIFY", "VALUE")
         # add and calculate an Area field
         areaUnit1 = "SQUARE_KILOMETERS"
-        arcpy.AddGeometryAttributes_management(outFeat1, "AREA_GEODESIC", "", areaUnit1)
-        result = arcpy.GetCount_management(outFeat1)
+        arcpy.management.AddGeometryAttributes(outFeat1, "AREA_GEODESIC", "", areaUnit1)
+        result = arcpy.management.GetCount(outFeat1)
         count = int(result[0])
 
         # eliminate small polygons
@@ -412,38 +412,38 @@ class helpers:
         interimDataList.append(eliminatedFeat)
 
         layerName = "lyr1"
-        arcpy.MakeFeatureLayer_management(outFeat1, layerName)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(outFeat1, layerName)
+        arcpy.management.SelectLayerByAttribute(
             layerName, "NEW_SELECTION", where_clause
         )
-        result = arcpy.GetCount_management(layerName)
+        result = arcpy.management.GetCount(layerName)
         if int(result[0]) > 0:
             eliminatedFeat = tempWS + "/eliminatedFeat1"
             interimDataList.append(eliminatedFeat)
-            arcpy.Eliminate_management(layerName, eliminatedFeat, "AREA")
-            result = arcpy.GetCount_management(eliminatedFeat)
+            arcpy.management.Eliminate(layerName, eliminatedFeat, "AREA")
+            result = arcpy.management.GetCount(eliminatedFeat)
             countNew = int(result[0])
             if countNew == count:  # nothing to eliminate
-                arcpy.Copy_management(eliminatedFeat, outFeat)
+                arcpy.management.Copy(eliminatedFeat, outFeat)
                 arcpy.AddMessage("Eliminate done. Final features generated.")
             else:
                 count = countNew
                 i = 2
                 while i < 1000:  # continue loop until nothing to eliminate
                     layerName = "lyr" + str(i)
-                    arcpy.MakeFeatureLayer_management(eliminatedFeat, layerName)
-                    arcpy.SelectLayerByAttribute_management(
+                    arcpy.management.MakeFeatureLayer(eliminatedFeat, layerName)
+                    arcpy.management.SelectLayerByAttribute(
                         layerName, "NEW_SELECTION", where_clause
                     )
-                    result = arcpy.GetCount_management(layerName)
+                    result = arcpy.management.GetCount(layerName)
                     if int(result[0]) > 0:
                         eliminatedFeat = tempWS + "/eliminatedFeat" + str(i)
                         interimDataList.append(eliminatedFeat)
-                        arcpy.Eliminate_management(layerName, eliminatedFeat, "AREA")
-                        result = arcpy.GetCount_management(eliminatedFeat)
+                        arcpy.management.Eliminate(layerName, eliminatedFeat, "AREA")
+                        result = arcpy.management.GetCount(eliminatedFeat)
                         countNew = int(result[0])
                         if countNew == count:
-                            arcpy.Copy_management(eliminatedFeat, outFeat)
+                            arcpy.management.Copy(eliminatedFeat, outFeat)
                             arcpy.AddMessage(
                                 "Eliminate done. Final features generated."
                             )
@@ -453,11 +453,11 @@ class helpers:
                             arcpy.AddMessage(str(count))
                             i += 1
                     else:
-                        arcpy.Copy_management(eliminatedFeat, outFeat)
+                        arcpy.management.Copy(eliminatedFeat, outFeat)
                         arcpy.AddMessage("Eliminate done. Final features generated.")
                         break
         else:
-            arcpy.Copy_management(outFeat1, outFeat)
+            arcpy.management.Copy(outFeat1, outFeat)
             arcpy.AddMessage(
                 "Nothing to eliminate. All polygons have area greater than the threshold. Final features generated."
             )
@@ -466,39 +466,39 @@ class helpers:
         fieldName = "surface"
         fieldType = "TEXT"
         fieldLength = 255
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             outFeat, fieldName, fieldType, field_length=fieldLength
         )
 
         where_clause = '"gridcode" = 1'
         layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(outFeat, layerName)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(outFeat, layerName)
+        arcpy.management.SelectLayerByAttribute(
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Plane'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
-        arcpy.Delete_management(layerName)
+        arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
+        arcpy.management.Delete(layerName)
 
         where_clause = '"gridcode" = 2'
         layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(outFeat, layerName)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(outFeat, layerName)
+        arcpy.management.SelectLayerByAttribute(
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Slope'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
-        arcpy.Delete_management(layerName)
+        arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
+        arcpy.management.Delete(layerName)
 
         where_clause = '"gridcode" = 3'
         layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(outFeat, layerName)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(outFeat, layerName)
+        arcpy.management.SelectLayerByAttribute(
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Escarpment'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
-        arcpy.Delete_management(layerName)
+        arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
+        arcpy.management.Delete(layerName)
 
         HelperFunctions.deleteDataItems(interimDataList)
 
@@ -547,11 +547,11 @@ class helpers:
         arcpy.AddMessage("Converting raster to polygon ...")
         outFeat1 = tempWS + "/outFeat_temp1"
         interimDataList.append(outFeat1)
-        arcpy.RasterToPolygon_conversion(MFRasName, outFeat1, "NO_SIMPLIFY", "VALUE")
+        arcpy.conversion.RasterToPolygon(MFRasName, outFeat1, "NO_SIMPLIFY", "VALUE")
         # add and calculate an Area field
         areaUnit1 = "SQUARE_KILOMETERS"
-        arcpy.AddGeometryAttributes_management(outFeat1, "AREA_GEODESIC", "", areaUnit1)
-        result = arcpy.GetCount_management(outFeat1)
+        arcpy.management.AddGeometryAttributes(outFeat1, "AREA_GEODESIC", "", areaUnit1)
+        result = arcpy.management.GetCount(outFeat1)
         count = int(result[0])
 
         # eliminate small polygons
@@ -566,38 +566,38 @@ class helpers:
         interimDataList.append(eliminatedFeat)
 
         layerName = "lyr1"
-        arcpy.MakeFeatureLayer_management(outFeat1, layerName)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(outFeat1, layerName)
+        arcpy.management.SelectLayerByAttribute(
             layerName, "NEW_SELECTION", where_clause
         )
-        result = arcpy.GetCount_management(layerName)
+        result = arcpy.management.GetCount(layerName)
         if int(result[0]) > 0:
             eliminatedFeat = tempWS + "/eliminatedFeat1"
             interimDataList.append(eliminatedFeat)
-            arcpy.Eliminate_management(layerName, eliminatedFeat, "AREA")
-            result = arcpy.GetCount_management(eliminatedFeat)
+            arcpy.management.Eliminate(layerName, eliminatedFeat, "AREA")
+            result = arcpy.management.GetCount(eliminatedFeat)
             countNew = int(result[0])
             if countNew == count:  # nothing to eliminate
-                arcpy.Copy_management(eliminatedFeat, outFeat)
+                arcpy.management.Copy(eliminatedFeat, outFeat)
                 arcpy.AddMessage("Eliminate done. Final features generated.")
             else:
                 count = countNew
                 i = 2
                 while i < 1000:  # continue loop until nothing to eliminate
                     layerName = "lyr" + str(i)
-                    arcpy.MakeFeatureLayer_management(eliminatedFeat, layerName)
-                    arcpy.SelectLayerByAttribute_management(
+                    arcpy.management.MakeFeatureLayer(eliminatedFeat, layerName)
+                    arcpy.management.SelectLayerByAttribute(
                         layerName, "NEW_SELECTION", where_clause
                     )
-                    result = arcpy.GetCount_management(layerName)
+                    result = arcpy.management.GetCount(layerName)
                     if int(result[0]) > 0:
                         eliminatedFeat = tempWS + "/eliminatedFeat" + str(i)
                         interimDataList.append(eliminatedFeat)
-                        arcpy.Eliminate_management(layerName, eliminatedFeat, "AREA")
-                        result = arcpy.GetCount_management(eliminatedFeat)
+                        arcpy.management.Eliminate(layerName, eliminatedFeat, "AREA")
+                        result = arcpy.management.GetCount(eliminatedFeat)
                         countNew = int(result[0])
                         if countNew == count:
-                            arcpy.Copy_management(eliminatedFeat, outFeat)
+                            arcpy.management.Copy(eliminatedFeat, outFeat)
                             arcpy.AddMessage(
                                 "Eliminate done. Final features generated."
                             )
@@ -607,11 +607,11 @@ class helpers:
                             arcpy.AddMessage(str(count))
                             i += 1
                     else:
-                        arcpy.Copy_management(eliminatedFeat, outFeat)
+                        arcpy.management.Copy(eliminatedFeat, outFeat)
                         arcpy.AddMessage("Eliminate done. Final features generated.")
                         break
         else:
-            arcpy.Copy_management(outFeat1, outFeat)
+            arcpy.management.Copy(outFeat1, outFeat)
             arcpy.AddMessage(
                 "Nothing to eliminate. All polygons have area greater than the threshold. Final features generated."
             )
@@ -620,38 +620,38 @@ class helpers:
         fieldName = "surface"
         fieldType = "TEXT"
         fieldLength = 255
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             outFeat, fieldName, fieldType, field_length=fieldLength
         )
 
         where_clause = '"gridcode" = 1'
         layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(outFeat, layerName)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(outFeat, layerName)
+        arcpy.management.SelectLayerByAttribute(
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Plane'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
-        arcpy.Delete_management(layerName)
+        arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
+        arcpy.management.Delete(layerName)
 
         where_clause = '"gridcode" = 2'
         layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(outFeat, layerName)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(outFeat, layerName)
+        arcpy.management.SelectLayerByAttribute(
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Slope'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
-        arcpy.Delete_management(layerName)
+        arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
+        arcpy.management.Delete(layerName)
 
         where_clause = '"gridcode" = 3'
         layerName = "tempLyr"
-        arcpy.MakeFeatureLayer_management(outFeat, layerName)
-        arcpy.SelectLayerByAttribute_management(
+        arcpy.management.MakeFeatureLayer(outFeat, layerName)
+        arcpy.management.SelectLayerByAttribute(
             layerName, "NEW_SELECTION", where_clause
         )
         expression = "'Escarpment'"
-        arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
-        arcpy.Delete_management(layerName)
+        arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
+        arcpy.management.Delete(layerName)
 
         HelperFunctions.deleteDataItems(interimDataList)

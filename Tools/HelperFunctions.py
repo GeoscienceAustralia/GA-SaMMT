@@ -78,7 +78,7 @@ def deleteDataItems(inDataList):
     else:
         for item in inDataList:
             arcpy.AddMessage("Deleting " + item)
-            arcpy.Delete_management(item)
+            arcpy.management.Delete(item)
     return
 
 # This function deletes all unnecessary fields from the input featureclass
@@ -89,7 +89,7 @@ def deleteAllFields(inFeat):
     for field in fields:
         if not field.required:
             fieldList.append(field.name)
-    arcpy.DeleteField_management(inFeat, fieldList)
+    arcpy.management.DeleteField(inFeat, fieldList)
 
 
 # This function calculates a converter value for the input area unit. The base unit is "SquareKilometers".
@@ -280,7 +280,7 @@ def calculateOpenness(
             outArray, pnt, cellSize, cellSize, -9999
         )
         if spatialReference.name != "Unknown":
-            arcpy.DefineProjection_management(newRaster, spatialReference)
+            arcpy.management.DefineProjection(newRaster, spatialReference)
         # Set nodata where nodata in the input DEM
         newRaster = SetNull(IsNull(bathyRas), newRaster)
         newRaster.save(outRas)
@@ -312,7 +312,7 @@ def calculateOpenness(
                 itemList.append(ras)
                 newRaster.save(ras)
                 if spatialReference.name != "Unknown":
-                    arcpy.DefineProjection_management(ras, spatialReference)
+                    arcpy.management.DefineProjection(ras, spatialReference)
                 ymin = ymin + hh * cellSize
 
                 j -= 1
@@ -325,7 +325,7 @@ def calculateOpenness(
         del outArray  # release memory
         tempRaster = "tempRaster"
 
-        arcpy.MosaicToNewRaster_management(
+        arcpy.management.MosaicToNewRaster(
             itemList,
             tempWS,
             tempRaster,
@@ -366,19 +366,19 @@ def addField(inFeat, joinFeat, fieldName, inID, joinID, expression):
     if fieldName in field_names:
         arcpy.AddMessage(fieldName + " exists and will be recalculated")
     else:
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             inFeat, fieldName, fieldType, fieldPrecision, fieldScale
         )
 
     layerName = "tempLyr"
-    arcpy.MakeFeatureLayer_management(inFeat, layerName)
-    arcpy.AddJoin_management(layerName, inID, joinFeat, joinID, "KEEP_ALL")
+    arcpy.management.MakeFeatureLayer(inFeat, layerName)
+    arcpy.management.AddJoin(layerName, inID, joinFeat, joinID, "KEEP_ALL")
 
-    arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
+    arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
 
     arcpy.RemoveJoin_management(layerName, joinFeat)
 
-    arcpy.Delete_management(layerName)
+    arcpy.management.Delete(layerName)
     arcpy.AddMessage(fieldName + " added and calculated")
     return
 
@@ -390,7 +390,7 @@ def splitFeat(workspace, inFeat, mergeFeat, joinFeat, selectFeat, noSplit):
     # selectFeat: the basename for a featureclass
     # noSplit: the number of subsets to split the inFeat into
 
-    noFeat = int(arcpy.GetCount_management(inFeat).getOutput(0))
+    noFeat = int(arcpy.management.GetCount(inFeat).getOutput(0))
     featCount = int(noFeat / noSplit)
 
     featList = []
@@ -410,7 +410,7 @@ def splitFeat(workspace, inFeat, mergeFeat, joinFeat, selectFeat, noSplit):
     while i <= noSplit:
         # create a File Geodatabase
         gdbName = baseName + str(i) + '.gdb'
-        arcpy.CreateFileGDB_management(path, gdbName)
+        arcpy.management.CreateFileGDB(path, gdbName)
         arcpy.AddMessage(gdbName + ' created')
         workspace = path + '/' + gdbName
         workspaceList.append(workspace)
@@ -428,16 +428,16 @@ def splitFeat(workspace, inFeat, mergeFeat, joinFeat, selectFeat, noSplit):
         # copy mergeFeat
         data1 = path + '/' + gdbName + '/' + mergeFeat
         mergeFeatList.append(data1)
-        arcpy.Copy_management(mergeFeat, data1)
+        arcpy.management.Copy(mergeFeat, data1)
         arcpy.AddMessage(mergeFeat + ' copied')
         # copy joinFeat
         data2 = path + '/' + gdbName + '/' + joinFeat
         joinFeatList.append(data2)
-        arcpy.Copy_management(joinFeat, data2)
+        arcpy.management.Copy(joinFeat, data2)
         arcpy.AddMessage(joinFeat + ' copied')
         # create temp folder
         folderName = 'temp' + str(i)
-        arcpy.CreateFolder_management(path, folderName)
+        arcpy.management.CreateFolder(path, folderName)
         arcpy.AddMessage(folderName + ' created')
         tempFolder = path + '/' + folderName
         tempfolderList.append(tempFolder)
@@ -462,11 +462,11 @@ def addIDField(inFeat, fieldName):
     if fieldName in field_names:
         arcpy.AddMessage(fieldName + " exists and will be recalculated")
     else:
-        arcpy.AddField_management(inFeat, fieldName, fieldType, fieldPrecision)
+        arcpy.management.AddField(inFeat, fieldName, fieldType, fieldPrecision)
 
     expression = "!OBJECTID!"
 
-    arcpy.CalculateField_management(inFeat, fieldName, expression, "PYTHON3")
+    arcpy.management.CalculateField(inFeat, fieldName, expression, "PYTHON3")
 
     arcpy.AddMessage(fieldName + " added and calculated")
     return
@@ -483,7 +483,7 @@ def keepSelectedFields(inFeat, fieldsTokeep):
             if field.name not in fieldsTokeep:
                 fieldsToDrop.append(field.name)
     if len(fieldsToDrop) > 0:
-        arcpy.DeleteField_management(inFeat, fieldsToDrop)
+        arcpy.management.DeleteField(inFeat, fieldsToDrop)
     return
 
 # This function adds and calculates fields with Text type
@@ -504,19 +504,19 @@ def addTextField(inFeat, joinFeat, fieldName, inID, joinID, expression):
     if fieldName in field_names:
         arcpy.AddMessage(fieldName + " exists and will be recalculated")
     else:
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             inFeat, fieldName, fieldType, field_length=fieldLength
         )
 
     layerName = "tempLyr"
-    arcpy.MakeFeatureLayer_management(inFeat, layerName)
-    arcpy.AddJoin_management(layerName, inID, joinFeat, joinID, "KEEP_ALL")
+    arcpy.management.MakeFeatureLayer(inFeat, layerName)
+    arcpy.management.AddJoin(layerName, inID, joinFeat, joinID, "KEEP_ALL")
 
-    arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
+    arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
 
     arcpy.RemoveJoin_management(layerName, joinFeat)
 
-    arcpy.Delete_management(layerName)
+    arcpy.management.Delete(layerName)
     arcpy.AddMessage(fieldName + " added and calculated")
     return
 
@@ -538,17 +538,17 @@ def addLongField(inFeat, joinFeat, fieldName, inID, joinID, expression):
     if fieldName in field_names:
         arcpy.AddMessage(fieldName + " exists and will be recalculated")
     else:
-        arcpy.AddField_management(inFeat, fieldName, fieldType, fieldPrecision)
+        arcpy.management.AddField(inFeat, fieldName, fieldType, fieldPrecision)
 
     layerName = "tempLyr"
-    arcpy.MakeFeatureLayer_management(inFeat, layerName)
-    arcpy.AddJoin_management(layerName, inID, joinFeat, joinID, "KEEP_ALL")
+    arcpy.management.MakeFeatureLayer(inFeat, layerName)
+    arcpy.management.AddJoin(layerName, inID, joinFeat, joinID, "KEEP_ALL")
 
-    arcpy.CalculateField_management(layerName, fieldName, expression, "PYTHON3")
+    arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
 
     arcpy.RemoveJoin_management(layerName, joinFeat)
 
-    arcpy.Delete_management(layerName)
+    arcpy.management.Delete(layerName)
     arcpy.AddMessage(fieldName + " added and calculated")
     return
 
@@ -561,7 +561,7 @@ def deleteSelectedField(inFeat, fieldName):
     field_names = [f.name for f in fields]
     if fieldName in field_names:
         arcpy.AddMessage(fieldName + " exists and will be deleted")
-        arcpy.DeleteField_management(inFeat, [fieldName])
+        arcpy.management.DeleteField(inFeat, [fieldName])
     else:
         arcpy.AddMessage(fieldName + " does not exist")
 

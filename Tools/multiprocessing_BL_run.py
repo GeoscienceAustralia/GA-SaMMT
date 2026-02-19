@@ -30,11 +30,11 @@ def addIDField(inFeat, fieldName):
     if fieldName in field_names:
         arcpy.AddMessage(fieldName + " exists and will be recalculated")
     else:
-        arcpy.AddField_management(inFeat, fieldName, fieldType, fieldPrecision)
+        arcpy.management.AddField(inFeat, fieldName, fieldType, fieldPrecision)
 
     expression = "!OBJECTID!"
 
-    arcpy.CalculateField_management(inFeat, fieldName, expression, "PYTHON_9.3")
+    arcpy.management.CalculateField(inFeat, fieldName, expression, "PYTHON_9.3")
 
     arcpy.AddMessage(fieldName + " added and calculated")
     return
@@ -51,7 +51,7 @@ def splitFeat(workspace, inFeat, inBathy, inSlope, noSplit):
     # inSlope: input slope grid
     # noSplit: the number of subsets to split the inFeat into
 
-    noFeat = int(arcpy.GetCount_management(inFeat).getOutput(0))
+    noFeat = int(arcpy.management.GetCount(inFeat).getOutput(0))
     featCount = int(noFeat / noSplit)
 
     featList = []
@@ -75,7 +75,7 @@ def splitFeat(workspace, inFeat, inBathy, inSlope, noSplit):
     while i <= noSplit:
         # create a File Geodatabase
         gdbName = baseName + str(i) + '.gdb'
-        arcpy.CreateFileGDB_management(path, gdbName)
+        arcpy.management.CreateFileGDB(path, gdbName)
         arcpy.AddMessage(gdbName + ' created')
 
         workspace = path + '/' + gdbName
@@ -84,13 +84,13 @@ def splitFeat(workspace, inFeat, inBathy, inSlope, noSplit):
         # copy inBathy
         data1 = path + '/' + gdbName + '/' + inBathy
         bathyList.append(data1)
-        arcpy.Copy_management(inBathy, data1)
+        arcpy.management.Copy(inBathy, data1)
         arcpy.AddMessage(inBathy + ' copied')
 
         # copy inSlope
         data2 = path + '/' + gdbName + '/' + inSlope
         slopeList.append(data2)
-        arcpy.Copy_management(inSlope, data2)
+        arcpy.management.Copy(inSlope, data2)
         arcpy.AddMessage(inSlope + ' copied')
 
         # select a subset of inFeat depending on the number of splits
@@ -107,7 +107,7 @@ def splitFeat(workspace, inFeat, inBathy, inSlope, noSplit):
 
         # create temp folder
         folderName = 'temp' + str(i)
-        arcpy.CreateFolder_management(path, folderName)
+        arcpy.management.CreateFolder(path, folderName)
         arcpy.AddMessage(folderName + ' created')
         tempFolder = path + '/' + folderName
         tempfolderList.append(tempFolder)
@@ -248,32 +248,32 @@ if __name__ == '__main__':
 
     # merge the subsets of the input features
     outFeatClass = "mergedFeat"
-    arcpy.Merge_management(featList, outFeatClass)
+    arcpy.management.Merge(featList, outFeatClass)
     outFeatClass1 = "mergedFeat1"
-    arcpy.Merge_management(headFeatList, outFeatClass1)
+    arcpy.management.Merge(headFeatList, outFeatClass1)
     outFeatClass2 = "mergedFeat2"
-    arcpy.Merge_management(footFeatList, outFeatClass2)
+    arcpy.management.Merge(footFeatList, outFeatClass2)
     arcpy.AddMessage('final merge done')
     # copy the merged features and replace the input featureclass
-    arcpy.Copy_management(outFeatClass, inFeatClass)
-    arcpy.Copy_management(outFeatClass1, headFeatClass)
-    arcpy.Copy_management(outFeatClass2, footFeatClass)
+    arcpy.management.Copy(outFeatClass, inFeatClass)
+    arcpy.management.Copy(outFeatClass1, headFeatClass)
+    arcpy.management.Copy(outFeatClass2, footFeatClass)
     arcpy.AddMessage('final copy done')
-    arcpy.Delete_management(outFeatClass)
-    arcpy.Delete_management(outFeatClass1)
-    arcpy.Delete_management(outFeatClass2)
+    arcpy.management.Delete(outFeatClass)
+    arcpy.management.Delete(outFeatClass1)
+    arcpy.management.Delete(outFeatClass2)
 
     # compact the geodatabase to reduce its size
-    arcpy.Compact_management(workspaceName)
+    arcpy.management.Compact(workspaceName)
     arcpy.AddMessage("Compacted the geodatabase")
 
     # delete all temporary workspaces and folders
     for workspace in workspaceList:
-        arcpy.Delete_management(workspace)
+        arcpy.management.Delete(workspace)
     arcpy.AddMessage("All temporary workspaces are deleted")
 
     for folder in tempfolderList:
-        arcpy.Delete_management(folder)
+        arcpy.management.Delete(folder)
     arcpy.AddMessage("All temporary folders are deleted")
 
     time2 = datetime.now()

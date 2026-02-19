@@ -259,7 +259,7 @@ class Merge_Connected_Features_Tool:
         angle = "NO_ANGLE"
         closest = "ALL"
         searchRadius = "100 Meters"
-        arcpy.GenerateNearTable_analysis(
+        arcpy.analysis.GenerateNearTable(
             inFeat,
             inFeat,
             outTable,
@@ -293,7 +293,7 @@ class Merge_Connected_Features_Tool:
             size == 0
         ):  # if no features are connected, simply copy the input featureclass to the outputs
             arcpy.AddMessage("There are not connected features")
-            arcpy.Copy_management(inFeat, dissolveFeat2)
+            arcpy.management.Copy(inFeat, dissolveFeat2)
         else:  # if there are connected features, do the followings
             arcpy.AddMessage(str(size) + " total features are connected")
 
@@ -312,7 +312,7 @@ class Merge_Connected_Features_Tool:
             dissolveFeat = "dissolveFeat"
             itemList.append(dissolveFeat)
             # dissolve all connected features that have same featIDs
-            arcpy.Dissolve_management(inFeat, dissolveFeat, "featID")
+            arcpy.management.Dissolve(inFeat, dissolveFeat, "featID")
             helper.calculateFeatID(dissolveFeat)
 
             # after converting dissolved features (multipart) to single-part features, the features connected
@@ -321,15 +321,15 @@ class Merge_Connected_Features_Tool:
             # multipart to single-part
             singlepartFeat = "dissolve_singlepart"
             itemList.append(singlepartFeat)
-            arcpy.MultipartToSinglepart_management(dissolveFeat, singlepartFeat)
+            arcpy.management.MultipartToSinglepart(dissolveFeat, singlepartFeat)
 
             # get the feature counts of the input features, the multipart dissolved features, and the single-part dissolved features
-            inFeatCount = int(arcpy.GetCount_management(inFeat).getOutput(0))
+            inFeatCount = int(arcpy.management.GetCount(inFeat).getOutput(0))
             dissolveFeatCount = int(
-                arcpy.GetCount_management(dissolveFeat).getOutput(0)
+                arcpy.management.GetCount(dissolveFeat).getOutput(0)
             )
             singlepartFeatCount = int(
-                arcpy.GetCount_management(singlepartFeat).getOutput(0)
+                arcpy.management.GetCount(singlepartFeat).getOutput(0)
             )
 
             if (
@@ -340,7 +340,7 @@ class Merge_Connected_Features_Tool:
                     + str(size)
                     + " features having shared point(s). They have thus been connected."
                 )
-                arcpy.Copy_management(dissolveFeat, dissolveFeat2)
+                arcpy.management.Copy(dissolveFeat, dissolveFeat2)
             elif (
                 dissolveFeatCount == singlepartFeatCount
             ):  # if all connected features are connected by shared borders, copy the input features to outputs
@@ -349,13 +349,13 @@ class Merge_Connected_Features_Tool:
                     + str(size)
                     + " features having shared border(s); They have thus not been connected."
                 )
-                arcpy.Copy_management(inFeat, dissolveFeat2)
+                arcpy.management.Copy(inFeat, dissolveFeat2)
             else:  # if some features are connected by shared points and others are connected by shared borders,
                 # 1. copy the single-part dissolved features as the output featureclass after merging features shared by borders
                 # 2. call the helper function get a count of features sharing borders and generate output featureclass after merging sharing points
                 dissolveFeat1 = "dissolveFeat1"
                 itemList.append(dissolveFeat1)
-                arcpy.Copy_management(singlepartFeat, dissolveFeat1)
+                arcpy.management.Copy(singlepartFeat, dissolveFeat1)
                 count = helper.mergeFeatures(
                     inFeat, dissolveFeat, dissolveFeat1, dissolveFeat2
                 )
@@ -603,7 +603,7 @@ class Connect_Nearby_Linear_Features_Tool:
         # generate bounding rectangle
         MbrFeat = "bounding_rectangle"
         itemList.append(MbrFeat)
-        arcpy.MinimumBoundingGeometry_management(
+        arcpy.management.MinimumBoundingGeometry(
             inFeat, MbrFeat, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
         )
         # add/calculate anlge field to inFeat
@@ -660,16 +660,16 @@ class Connect_Nearby_Linear_Features_Tool:
             + ")"
         )
         arcpy.AddMessage(whereClause)
-        arcpy.Select_analysis(inFeat, inFeat_selected1, whereClause)
+        arcpy.analysis.Select(inFeat, inFeat_selected1, whereClause)
 
         # generate the bounding rectangles for those selected features
         MbrFeat1 = "bounding_rectangle1"
         itemList.append(MbrFeat1)
-        arcpy.MinimumBoundingGeometry_management(
+        arcpy.management.MinimumBoundingGeometry(
             inFeat_selected1, MbrFeat1, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
         )
 
-        inFeatCount = int(arcpy.GetCount_management(inFeat_selected1).getOutput(0))
+        inFeatCount = int(arcpy.management.GetCount(inFeat_selected1).getOutput(0))
         arcpy.AddMessage(str(inFeatCount) + " features selected for connection")
 
         # generate direction points depending on the selected algorithm
@@ -683,7 +683,7 @@ class Connect_Nearby_Linear_Features_Tool:
         # convert rectangle sides to lines
         MbrLines1 = "MbrLines1"
         itemList.append(MbrLines1)
-        arcpy.SplitLine_management(MbrFeat1, MbrLines1)
+        arcpy.management.SplitLine(MbrFeat1, MbrLines1)
         arcpy.AddMessage("MbrLines1 done")
         # add these attributes to the MbrLines1
         geometryFields = [
@@ -691,25 +691,25 @@ class Connect_Nearby_Linear_Features_Tool:
             ["MidX", "CENTROID_X"],
             ["MidY", "CENTROID_Y"],
         ]
-        arcpy.CalculateGeometryAttributes_management(MbrLines1, geometryFields)
+        arcpy.management.CalculateGeometryAttributes(MbrLines1, geometryFields)
         # add a field for the purpose of subsequent selection
         fieldName = "angle_temp"
         fieldType = "LONG"
         fieldPrecision = 15
-        arcpy.AddField_management(MbrLines1, fieldName, fieldType, fieldPrecision)
+        arcpy.management.AddField(MbrLines1, fieldName, fieldType, fieldPrecision)
         expression = "!bearing! - !rectangle_Orientation!"
-        arcpy.CalculateField_management(MbrLines1, fieldName, expression)
+        arcpy.management.CalculateField(MbrLines1, fieldName, expression)
         # select a subset of the lines: two lines from each bounding rectanlge (either N and S or E and W)
         MbrLines1_selected = "MbrLines1_selected"
         itemList.append(MbrLines1_selected)
         whereClause = "((angle_temp <> 0) And (angle_temp <> 180))"
-        arcpy.Select_analysis(MbrLines1, MbrLines1_selected, whereClause)
+        arcpy.analysis.Select(MbrLines1, MbrLines1_selected, whereClause)
         arcpy.AddMessage("MbrLines1 selection done")
         # identify and assign these lines with directional flags
         fieldName = "direction"
         fieldType = "text"
         fieldLength = 10
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             MbrLines1_selected, fieldName, fieldType, field_length=fieldLength
         )
 
@@ -736,7 +736,7 @@ def getDirection(angle1,angle2):
     if(angle1 > 135) & (angle1 <= 180) & (angle2 == -90):
         return 'N'"""
 
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             MbrLines1_selected, fieldName, expression, "PYTHON3", codeblock
         )
         # add and calculate an "angle" field
@@ -744,11 +744,11 @@ def getDirection(angle1,angle2):
         fieldType = "DOUBLE"
         filedPrecision = 15
         fieldScale = 6
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             MbrLines1_selected, fieldName, fieldType, fieldPrecision, fieldScale
         )
         expression = "!rectangle_Orientation!"
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             MbrLines1_selected, fieldName, expression, "PYTHON3"
         )
 
@@ -757,7 +757,7 @@ def getDirection(angle1,angle2):
         # generate directional points featureclass(es) according to the selected algorithm
         if conOption == "Mid points on Minimum Bounding Rectangle":
             # MidX and MidY fields already given the coordinate of the middle point
-            arcpy.XYTableToPoint_management(
+            arcpy.management.XYTableToPoint(
                 MbrLines1_selected, pointFeat, "MidX", "MidY", "#", MbrLines1_selected
             )
             fieldsToKept = ["featID", "angle", "direction"]
@@ -768,7 +768,7 @@ def getDirection(angle1,angle2):
                     if not field.name in fieldsToKept:
                         fieldsToDelete.append(field.name)
 
-            arcpy.DeleteField_management(pointFeat, fieldsToDelete)
+            arcpy.management.DeleteField(pointFeat, fieldsToDelete)
         elif conOption == "Most distant points on feature":
             helper.getDirectionPoints(
                 inFeat_selected1, MbrLines1_selected, tempFolder, pointFeat
@@ -779,7 +779,7 @@ def getDirection(angle1,angle2):
             pointFeat1 = "pointFeat1"
             itemList.append(pointFeat1)
 
-            arcpy.XYTableToPoint_management(
+            arcpy.management.XYTableToPoint(
                 MbrLines1_selected, pointFeat, "MidX", "MidY", "#", MbrLines1_selected
             )
             fieldsToKept = ["featID", "angle", "direction"]
@@ -790,7 +790,7 @@ def getDirection(angle1,angle2):
                     if not field.name in fieldsToKept:
                         fieldsToDelete.append(field.name)
 
-            arcpy.DeleteField_management(pointFeat, fieldsToDelete)
+            arcpy.management.DeleteField(pointFeat, fieldsToDelete)
 
             helper.getDirectionPoints(
                 inFeat_selected1, MbrLines1_selected, tempFolder, pointFeat1
@@ -809,13 +809,13 @@ def getDirection(angle1,angle2):
         itemList.append(pointFeatW)
 
         whereClause = "direction = 'N'"
-        arcpy.Select_analysis(pointFeat, pointFeatN, whereClause)
+        arcpy.analysis.Select(pointFeat, pointFeatN, whereClause)
         whereClause = "direction = 'S'"
-        arcpy.Select_analysis(pointFeat, pointFeatS, whereClause)
+        arcpy.analysis.Select(pointFeat, pointFeatS, whereClause)
         whereClause = "direction = 'E'"
-        arcpy.Select_analysis(pointFeat, pointFeatE, whereClause)
+        arcpy.analysis.Select(pointFeat, pointFeatE, whereClause)
         whereClause = "direction = 'W'"
-        arcpy.Select_analysis(pointFeat, pointFeatW, whereClause)
+        arcpy.analysis.Select(pointFeat, pointFeatW, whereClause)
         # For this combined option, generate another set of direction point features
         if conOption == "Mid points and Most distant points":
             pointFeatN1 = pointFeat1 + "_N"
@@ -828,13 +828,13 @@ def getDirection(angle1,angle2):
             itemList.append(pointFeatW1)
 
             whereClause = "direction = 'N'"
-            arcpy.Select_analysis(pointFeat1, pointFeatN1, whereClause)
+            arcpy.analysis.Select(pointFeat1, pointFeatN1, whereClause)
             whereClause = "direction = 'S'"
-            arcpy.Select_analysis(pointFeat1, pointFeatS1, whereClause)
+            arcpy.analysis.Select(pointFeat1, pointFeatS1, whereClause)
             whereClause = "direction = 'E'"
-            arcpy.Select_analysis(pointFeat1, pointFeatE1, whereClause)
+            arcpy.analysis.Select(pointFeat1, pointFeatE1, whereClause)
             whereClause = "direction = 'W'"
-            arcpy.Select_analysis(pointFeat1, pointFeatW1, whereClause)
+            arcpy.analysis.Select(pointFeat1, pointFeatW1, whereClause)
 
         # generate links based on the direction points
         # For the combined option, create four sets of links
@@ -1095,17 +1095,17 @@ def getDirection(angle1,angle2):
 
             # merge four sets together
             fList = [linksFeatW1E1, linksFeatWE1, linksFeatW1E]
-            arcpy.Append_management(fList, linksFeatWE)
+            arcpy.management.Append(fList, linksFeatWE)
             fList = [linksFeatS1N1, linksFeatSN1, linksFeatS1N]
-            arcpy.Append_management(fList, linksFeatSN)
+            arcpy.management.Append(fList, linksFeatSN)
             fList = [linksFeatW1N1, linksFeatWN1, linksFeatW1N]
-            arcpy.Append_management(fList, linksFeatWN)
+            arcpy.management.Append(fList, linksFeatWN)
             fList = [linksFeatS1E1, linksFeatSE1, linksFeatS1E]
-            arcpy.Append_management(fList, linksFeatSE)
+            arcpy.management.Append(fList, linksFeatSE)
             fList = [linksFeatS1W1, linksFeatSW1, linksFeatS1W]
-            arcpy.Append_management(fList, linksFeatSW)
+            arcpy.management.Append(fList, linksFeatSW)
             fList = [linksFeatE1N1, linksFeatEN1, linksFeatE1N]
-            arcpy.Append_management(fList, linksFeatEN)
+            arcpy.management.Append(fList, linksFeatEN)
         else:
             # create only one set of links
             linksFeatWE = "linkWE"
@@ -1350,7 +1350,7 @@ def getDirection(angle1,angle2):
 
         inFeat1 = "inFeat1"
         itemList.append(inFeat1)
-        arcpy.Copy_management(inFeat, inFeat1)
+        arcpy.management.Copy(inFeat, inFeat1)
         # update the featID
         cursor = arcpy.UpdateCursor(inFeat1)
         i = 0
@@ -1361,7 +1361,7 @@ def getDirection(angle1,angle2):
             i += 1
         del cursor, row
         # merge connected features to generate output featureclass
-        arcpy.Dissolve_management(inFeat1, dissolveFeat, "featID")
+        arcpy.management.Dissolve(inFeat1, dissolveFeat, "featID")
         arcpy.AddMessage("merge done")
         # call the helper function to re-calculate featID the output featureclass
         helper.calculateFeatID(dissolveFeat)
@@ -1643,7 +1643,7 @@ class Connect_Nearby_Linear_HF_Features_Tool:
         # generate bounding rectangle
         MbrFeat = "bounding_rectangle"
         itemList.append(MbrFeat)
-        arcpy.MinimumBoundingGeometry_management(
+        arcpy.management.MinimumBoundingGeometry(
             inFeat, MbrFeat, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
         )
         # add/calculate anlge field to inFeat
@@ -1699,16 +1699,16 @@ class Connect_Nearby_Linear_HF_Features_Tool:
             + ")"
         )
         arcpy.AddMessage(whereClause)
-        arcpy.Select_analysis(inFeat, inFeat_selected1, whereClause)
+        arcpy.analysis.Select(inFeat, inFeat_selected1, whereClause)
 
         # generate the bounding rectangles for those selected features
         MbrFeat1 = "bounding_rectangle1"
         itemList.append(MbrFeat1)
-        arcpy.MinimumBoundingGeometry_management(
+        arcpy.management.MinimumBoundingGeometry(
             inFeat_selected1, MbrFeat1, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
         )
 
-        inFeatCount = int(arcpy.GetCount_management(inFeat_selected1).getOutput(0))
+        inFeatCount = int(arcpy.management.GetCount(inFeat_selected1).getOutput(0))
         arcpy.AddMessage(str(inFeatCount) + " features selected for connection")
 
         # generate direction points depending on the selected algorithm
@@ -1722,7 +1722,7 @@ class Connect_Nearby_Linear_HF_Features_Tool:
         # convert rectangle sides to lines
         MbrLines1 = "MbrLines1"
         itemList.append(MbrLines1)
-        arcpy.SplitLine_management(MbrFeat1, MbrLines1)
+        arcpy.management.SplitLine(MbrFeat1, MbrLines1)
         arcpy.AddMessage("MbrLines1 done")
         # add these attributes to the MbrLines1
         geometryFields = [
@@ -1730,25 +1730,25 @@ class Connect_Nearby_Linear_HF_Features_Tool:
             ["MidX", "CENTROID_X"],
             ["MidY", "CENTROID_Y"],
         ]
-        arcpy.CalculateGeometryAttributes_management(MbrLines1, geometryFields)
+        arcpy.management.CalculateGeometryAttributes(MbrLines1, geometryFields)
         # add a field for the purpose of subsequent selection
         fieldName = "angle_temp"
         fieldType = "LONG"
         fieldPrecision = 15
-        arcpy.AddField_management(MbrLines1, fieldName, fieldType, fieldPrecision)
+        arcpy.management.AddField(MbrLines1, fieldName, fieldType, fieldPrecision)
         expression = "!bearing! - !rectangle_Orientation!"
-        arcpy.CalculateField_management(MbrLines1, fieldName, expression)
+        arcpy.management.CalculateField(MbrLines1, fieldName, expression)
         # select a subset of the lines: two lines from each bounding rectanlge (either N and S or E and W)
         MbrLines1_selected = "MbrLines1_selected"
         itemList.append(MbrLines1_selected)
         whereClause = "((angle_temp <> 0) And (angle_temp <> 180))"
-        arcpy.Select_analysis(MbrLines1, MbrLines1_selected, whereClause)
+        arcpy.analysis.Select(MbrLines1, MbrLines1_selected, whereClause)
         arcpy.AddMessage("MbrLines1 selection done")
         # identify and assign these lines with directional flags
         fieldName = "direction"
         fieldType = "text"
         fieldLength = 10
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             MbrLines1_selected, fieldName, fieldType, field_length=fieldLength
         )
 
@@ -1775,7 +1775,7 @@ def getDirection(angle1,angle2):
     if(angle1 > 135) & (angle1 <= 180) & (angle2 == -90):
         return 'N'"""
 
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             MbrLines1_selected, fieldName, expression, "PYTHON3", codeblock
         )
         # add and calculate an "angle" field
@@ -1783,11 +1783,11 @@ def getDirection(angle1,angle2):
         fieldType = "DOUBLE"
         filedPrecision = 15
         fieldScale = 6
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             MbrLines1_selected, fieldName, fieldType, fieldPrecision, fieldScale
         )
         expression = "!rectangle_Orientation!"
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             MbrLines1_selected, fieldName, expression, "PYTHON3"
         )
 
@@ -1803,7 +1803,7 @@ def getDirection(angle1,angle2):
         mosaicBathy = "mosaicBathy"
         itemList.append(mosaicBathy)
         inputRasters = [inBathy, inFocal]
-        arcpy.MosaicToNewRaster_management(
+        arcpy.management.MosaicToNewRaster(
             inputRasters,
             workspaceName,
             mosaicBathy,
@@ -1822,7 +1822,7 @@ def getDirection(angle1,angle2):
         # generate directional points featureclass
         if conOption == "Mid points on Minimum Bounding Rectangle":
             # MidX and MidY fields already given the coordinate of the middle point
-            arcpy.XYTableToPoint_management(
+            arcpy.management.XYTableToPoint(
                 MbrLines1_selected, pointFeat, "MidX", "MidY", "#", MbrLines1_selected
             )
             fieldsToKept = ["featID", "angle", "direction"]
@@ -1833,8 +1833,8 @@ def getDirection(angle1,angle2):
                     if not field.name in fieldsToKept:
                         fieldsToDelete.append(field.name)
 
-            arcpy.DeleteField_management(pointFeat, fieldsToDelete)
-            arcpy.AddXY_management(pointFeat)
+            arcpy.management.DeleteField(pointFeat, fieldsToDelete)
+            arcpy.management.AddXY(pointFeat)
 
             pointFeat2 = "pointFeat2"
             itemList.append(pointFeat2)
@@ -1846,9 +1846,9 @@ def getDirection(angle1,angle2):
             itemList.append(pointFeat2F)
             itemList.append(pointFeat2H)
             whereClause = "location = 'F'"
-            arcpy.Select_analysis(pointFeat2, pointFeat2F, whereClause)
+            arcpy.analysis.Select(pointFeat2, pointFeat2F, whereClause)
             whereClause = "location = 'H'"
-            arcpy.Select_analysis(pointFeat2, pointFeat2H, whereClause)
+            arcpy.analysis.Select(pointFeat2, pointFeat2H, whereClause)
         elif conOption == "Most distant points on feature":
             helper.getDirectionPoints(
                 inFeat_selected1, MbrLines1_selected, tempFolder, pointFeat
@@ -1862,13 +1862,13 @@ def getDirection(angle1,angle2):
             itemList.append(pointFeat2F)
             itemList.append(pointFeat2H)
             whereClause = "location = 'F'"
-            arcpy.Select_analysis(pointFeat2, pointFeat2F, whereClause)
+            arcpy.analysis.Select(pointFeat2, pointFeat2F, whereClause)
             whereClause = "location = 'H'"
-            arcpy.Select_analysis(pointFeat2, pointFeat2H, whereClause)
+            arcpy.analysis.Select(pointFeat2, pointFeat2H, whereClause)
         elif (
             conOption == "Mid points and Most distant points"
         ):  # generate two set of direction points, one set using Mid points option, the other set using Most distant option
-            arcpy.XYTableToPoint_management(
+            arcpy.management.XYTableToPoint(
                 MbrLines1_selected, pointFeat, "MidX", "MidY", "#", MbrLines1_selected
             )
             fieldsToKept = ["featID", "angle", "direction"]
@@ -1879,8 +1879,8 @@ def getDirection(angle1,angle2):
                     if not field.name in fieldsToKept:
                         fieldsToDelete.append(field.name)
 
-            arcpy.DeleteField_management(pointFeat, fieldsToDelete)
-            arcpy.AddXY_management(pointFeat)
+            arcpy.management.DeleteField(pointFeat, fieldsToDelete)
+            arcpy.management.AddXY(pointFeat)
 
             pointFeat2 = "pointFeat2"
             itemList.append(pointFeat2)
@@ -1890,9 +1890,9 @@ def getDirection(angle1,angle2):
             itemList.append(pointFeat2F)
             itemList.append(pointFeat2H)
             whereClause = "location = 'F'"
-            arcpy.Select_analysis(pointFeat2, pointFeat2F, whereClause)
+            arcpy.analysis.Select(pointFeat2, pointFeat2F, whereClause)
             whereClause = "location = 'H'"
-            arcpy.Select_analysis(pointFeat2, pointFeat2H, whereClause)
+            arcpy.analysis.Select(pointFeat2, pointFeat2H, whereClause)
 
             pointFeat1 = "pointFeat1"
             itemList.append(pointFeat1)
@@ -1908,9 +1908,9 @@ def getDirection(angle1,angle2):
             itemList.append(pointFeat3F)
             itemList.append(pointFeat3H)
             whereClause = "location = 'F'"
-            arcpy.Select_analysis(pointFeat3, pointFeat3F, whereClause)
+            arcpy.analysis.Select(pointFeat3, pointFeat3F, whereClause)
             whereClause = "location = 'H'"
-            arcpy.Select_analysis(pointFeat3, pointFeat3H, whereClause)
+            arcpy.analysis.Select(pointFeat3, pointFeat3H, whereClause)
 
         arcpy.AddMessage("direction points done at " + str(datetime.now()))
 
@@ -1979,7 +1979,7 @@ def getDirection(angle1,angle2):
             outLinksFeat = "links_selected"
             itemList.append(outLinksFeat)
             fcList = [outLinksFeat1, outLinksFeat2, outLinksFeat3, outLinksFeat4]
-            arcpy.Merge_management(fcList, outLinksFeat)
+            arcpy.management.Merge(fcList, outLinksFeat)
         else:
             # create only one set of links
             linksFeat = "links_all"
@@ -2004,62 +2004,62 @@ def getDirection(angle1,angle2):
         linksSN = "linksSN"
         itemList.append(linksSN)
         whereClause = "fromDirection = 'S' And toDirection = 'N'"
-        arcpy.Select_analysis(outLinksFeat, linksSN, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksSN, whereClause)
 
         linksNS = "linksNS"
         itemList.append(linksNS)
         whereClause = "fromDirection = 'N' And toDirection = 'S'"
-        arcpy.Select_analysis(outLinksFeat, linksNS, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksNS, whereClause)
 
         linksEW = "linksEW"
         itemList.append(linksEW)
         whereClause = "fromDirection = 'E' And toDirection = 'W'"
-        arcpy.Select_analysis(outLinksFeat, linksEW, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksEW, whereClause)
 
         linksWE = "linksWE"
         itemList.append(linksWE)
         whereClause = "fromDirection = 'W' And toDirection = 'E'"
-        arcpy.Select_analysis(outLinksFeat, linksWE, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksWE, whereClause)
 
         linksEN = "linksEN"
         itemList.append(linksEN)
         whereClause = "fromDirection = 'E' And toDirection = 'N'"
-        arcpy.Select_analysis(outLinksFeat, linksEN, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksEN, whereClause)
 
         linksNE = "linksNE"
         itemList.append(linksNE)
         whereClause = "fromDirection = 'N' And toDirection = 'E'"
-        arcpy.Select_analysis(outLinksFeat, linksNE, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksNE, whereClause)
 
         linksSW = "linksSW"
         itemList.append(linksSW)
         whereClause = "fromDirection = 'S' And toDirection = 'W'"
-        arcpy.Select_analysis(outLinksFeat, linksSW, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksSW, whereClause)
 
         linksWS = "linksWS"
         itemList.append(linksWS)
         whereClause = "fromDirection = 'W' And toDirection = 'S'"
-        arcpy.Select_analysis(outLinksFeat, linksWS, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksWS, whereClause)
 
         linksSE = "linksSE"
         itemList.append(linksSE)
         whereClause = "fromDirection = 'S' And toDirection = 'E'"
-        arcpy.Select_analysis(outLinksFeat, linksSE, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksSE, whereClause)
 
         linksES = "linksES"
         itemList.append(linksES)
         whereClause = "fromDirection = 'E' And toDirection = 'S'"
-        arcpy.Select_analysis(outLinksFeat, linksES, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksES, whereClause)
 
         linksWN = "linksWN"
         itemList.append(linksWN)
         whereClause = "fromDirection = 'W' And toDirection = 'N'"
-        arcpy.Select_analysis(outLinksFeat, linksWN, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksWN, whereClause)
 
         linksNW = "linksNW"
         itemList.append(linksNW)
         whereClause = "fromDirection = 'N' And toDirection = 'W'"
-        arcpy.Select_analysis(outLinksFeat, linksNW, whereClause)
+        arcpy.analysis.Select(outLinksFeat, linksNW, whereClause)
 
         # further process the links
         outLinkFeatSN1 = "linksSN_1"
@@ -2326,7 +2326,7 @@ def getDirection(angle1,angle2):
 
         inFeat1 = "inFeat1"
         itemList.append(inFeat1)
-        arcpy.Copy_management(inFeat, inFeat1)
+        arcpy.management.Copy(inFeat, inFeat1)
         # update the featID
         cursor = arcpy.UpdateCursor(inFeat1)
         i = 0
@@ -2337,7 +2337,7 @@ def getDirection(angle1,angle2):
             i += 1
         del cursor, row
         # merge connected features to generate output featureclass
-        arcpy.Dissolve_management(inFeat1, dissolveFeat, "featID")
+        arcpy.management.Dissolve(inFeat1, dissolveFeat, "featID")
         arcpy.AddMessage("merge done")
         # call the helper function to re-calculate featID the output featureclass
         helper.calculateFeatID(dissolveFeat)
@@ -2386,11 +2386,11 @@ class helpers:
         if fieldName in field_names:
             arcpy.AddMessage(fieldName + " exists and will be recalculated")
         else:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inFeat, fieldName, fieldType, field_precision=fieldPrecision
             )
         expression = "!OBJECTID!"
-        arcpy.CalculateField_management(inFeat, fieldName, expression)
+        arcpy.management.CalculateField(inFeat, fieldName, expression)
         return
 
     def calculateFeatIDAngle(self, inLinkFeat, originPointFeat, destPointFeat):
@@ -2519,8 +2519,8 @@ class helpers:
         itemList.append(headFeat1)
         itemList.append(footFeat1)
 
-        arcpy.Copy_management(headFeat, headFeat1)
-        arcpy.Copy_management(footFeat, footFeat1)
+        arcpy.management.Copy(headFeat, headFeat1)
+        arcpy.management.Copy(footFeat, footFeat1)
 
         fieldName = "featID"
         HelperFunctions.deleteSelectedField(headFeat1, fieldName)
@@ -2535,8 +2535,8 @@ class helpers:
         itemList.append(headFeat2)
         itemList.append(footFeat2)
         ## use spatial join to copy the featID and rectangle_Orientation fields to the head and foot features
-        arcpy.SpatialJoin_analysis(headFeat1, inFeat, headFeat2)
-        arcpy.SpatialJoin_analysis(footFeat1, inFeat, footFeat2)
+        arcpy.analysis.SpatialJoin(headFeat1, inFeat, headFeat2)
+        arcpy.analysis.SpatialJoin(footFeat1, inFeat, footFeat2)
         # Calculates distances between head and foot features within the input distance threshold (searchRadius)
         nearTable = "head_foot_nearTable"
         itemList.append(nearTable)
@@ -2544,7 +2544,7 @@ class helpers:
         angle = "NO_ANGLE"
         closest = "ALL"
         searchRadius = distThreshold
-        arcpy.GenerateNearTable_analysis(
+        arcpy.analysis.GenerateNearTable(
             headFeat2,
             footFeat2,
             nearTable,
@@ -2725,26 +2725,26 @@ class helpers:
 
         # select individual input features that share points and those stand-alone features
         tempLayer = "tempLyr"
-        arcpy.MakeFeatureLayer_management(inFeat, tempLayer)
-        arcpy.SelectLayerByLocation_management(
+        arcpy.management.MakeFeatureLayer(inFeat, tempLayer)
+        arcpy.management.SelectLayerByLocation(
             tempLayer, "ARE_IDENTICAL_TO", dissolveFeat1
         )
         selectFeat1 = "selectFeat1"
         itemList.append(selectFeat1)
-        arcpy.CopyFeatures_management(tempLayer, selectFeat1)
+        arcpy.management.CopyFeatures(tempLayer, selectFeat1)
         arcpy.AddMessage(selectFeat1 + " done")
         # select dissolved features sharing points and stand-alone features
         tempLayer = "tempLyr"
-        arcpy.MakeFeatureLayer_management(dissolveFeat, tempLayer)
-        arcpy.SelectLayerByLocation_management(tempLayer, "intersect", selectFeat1)
+        arcpy.management.MakeFeatureLayer(dissolveFeat, tempLayer)
+        arcpy.management.SelectLayerByLocation(tempLayer, "intersect", selectFeat1)
         selectFeat2 = "selectFeat2"
         itemList.append(selectFeat2)
-        arcpy.CopyFeatures_management(tempLayer, selectFeat2)
+        arcpy.management.CopyFeatures(tempLayer, selectFeat2)
         arcpy.AddMessage(selectFeat2 + " done")
         # select individual input features sharing borders
         tempLayer = "tempLyr"
-        arcpy.MakeFeatureLayer_management(inFeat, tempLayer)
-        arcpy.SelectLayerByLocation_management(
+        arcpy.management.MakeFeatureLayer(inFeat, tempLayer)
+        arcpy.management.SelectLayerByLocation(
             tempLayer,
             "ARE_IDENTICAL_TO",
             dissolveFeat1,
@@ -2752,19 +2752,19 @@ class helpers:
         )
         selectFeat3 = "selectFeat3"
         itemList.append(selectFeat3)
-        arcpy.CopyFeatures_management(tempLayer, selectFeat3)
+        arcpy.management.CopyFeatures(tempLayer, selectFeat3)
         arcpy.AddMessage(selectFeat3 + " done")
 
-        count = int(arcpy.GetCount_management(selectFeat3).getOutput(0))
+        count = int(arcpy.management.GetCount(selectFeat3).getOutput(0))
         # erase features that share borders from selected dissolved features sharing points and stand-alone features
         erasedFeat = "easedFeat"
         itemList.append(erasedFeat)
-        arcpy.Erase_analysis(selectFeat2, selectFeat3, erasedFeat)
+        arcpy.analysis.Erase(selectFeat2, selectFeat3, erasedFeat)
 
         # select individual input features sharing both borders and points
         tempLayer = "tempLyr"
-        arcpy.MakeFeatureLayer_management(selectFeat3, tempLayer)
-        arcpy.SelectLayerByLocation_management(
+        arcpy.management.MakeFeatureLayer(selectFeat3, tempLayer)
+        arcpy.management.SelectLayerByLocation(
             tempLayer,
             "BOUNDARY_TOUCHES",
             erasedFeat,
@@ -2772,18 +2772,18 @@ class helpers:
         )
         selectFeat3_1 = "selectFeat3_1"
         itemList.append(selectFeat3_1)
-        arcpy.CopyFeatures_management(tempLayer, selectFeat3_1)
+        arcpy.management.CopyFeatures(tempLayer, selectFeat3_1)
         arcpy.AddMessage(selectFeat3_1 + " done")
 
         # erase features that share borders from dissolved features sharing points and stand-alone features
         erasedFeat1 = "easedFeat1"
         itemList.append(erasedFeat1)
-        arcpy.Erase_analysis(dissolveFeat, selectFeat3_1, erasedFeat1)
+        arcpy.analysis.Erase(dissolveFeat, selectFeat3_1, erasedFeat1)
 
         # merge features in the erased and fourth sets
         # which results in output features after merging features sharing points
         inFeats = [erasedFeat1, selectFeat3_1]
-        arcpy.Merge_management(inFeats, dissolveFeat2)
+        arcpy.management.Merge(inFeats, dissolveFeat2)
         itemList.append(tempLayer)
         ##        HelperFunctions.deleteDataItems(itemList)
         return count
@@ -2823,9 +2823,9 @@ class helpers:
         fieldPrecision = 15
         fieldName = "tempID"
         if fieldName not in fieldNames:
-            arcpy.AddField_management(inLinkFeat, fieldName, fieldType, fieldPrecision)
+            arcpy.management.AddField(inLinkFeat, fieldName, fieldType, fieldPrecision)
         expression = "!OBJECTID!"
-        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON3")
+        arcpy.management.CalculateField(inLinkFeat, fieldName, expression, "PYTHON3")
 
         if linkDirection != "FH":
             fieldType = "DOUBLE"
@@ -2833,11 +2833,11 @@ class helpers:
             fieldScale = 6
             fieldName = "idRatio"
             if fieldName not in fieldNames:
-                arcpy.AddField_management(
+                arcpy.management.AddField(
                     inLinkFeat, fieldName, fieldType, fieldPrecision, fieldScale
                 )
             expression = "!ORIG_FID! / !DEST_FID!"
-            arcpy.CalculateField_management(
+            arcpy.management.CalculateField(
                 inLinkFeat, fieldName, expression, "PYTHON3"
             )
 
@@ -2846,7 +2846,7 @@ class helpers:
         fieldScale = 6
         fieldName = "angle_diff"
         if fieldName not in fieldNames:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inLinkFeat, fieldName, fieldType, fieldPrecision, fieldScale
             )
         expression = "getAngle(abs(!angle1! - !angle2!))"
@@ -2858,7 +2858,7 @@ def getAngle(inAngle):
     else:
         return inAngle"""
 
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             inLinkFeat, fieldName, expression, "PYTHON3", codeblock
         )
 
@@ -2867,22 +2867,22 @@ def getAngle(inAngle):
         fieldScale = 6
         fieldName = "X_diff"  # whether the origin feature is to the east or west of the destination feature
         if fieldName not in fieldNames:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inLinkFeat, fieldName, fieldType, fieldPrecision, fieldScale
             )
         expression = "!ORIG_X! - !DEST_X!"
-        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON3")
+        arcpy.management.CalculateField(inLinkFeat, fieldName, expression, "PYTHON3")
 
         fieldType = "DOUBLE"
         fieldPrecision = 15
         fieldScale = 6
         fieldName = "Y_diff"  # whether the origin feature is to the south or north of the destination feature
         if fieldName not in fieldNames:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inLinkFeat, fieldName, fieldType, fieldPrecision, fieldScale
             )
         expression = "!ORIG_Y! - !DEST_Y!"
-        arcpy.CalculateField_management(inLinkFeat, fieldName, expression, "PYTHON3")
+        arcpy.management.CalculateField(inLinkFeat, fieldName, expression, "PYTHON3")
 
         fieldType = "DOUBLE"
         fieldPrecision = 15
@@ -2891,7 +2891,7 @@ def getAngle(inAngle):
             "link_angle"  # orientation of the links in relative to north (0-180)
         )
         if fieldName not in fieldNames:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inLinkFeat, fieldName, fieldType, fieldPrecision, fieldScale
             )
         expression = "getAngle(!X_diff!,!Y_diff!)"
@@ -2907,7 +2907,7 @@ def getAngle(x,y):
     else:
         return inAngle"""
 
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             inLinkFeat, fieldName, expression, "PYTHON3", codeblock
         )
 
@@ -2916,7 +2916,7 @@ def getAngle(x,y):
         fieldScale = 6
         fieldName = "link_angle_diff"
         if fieldName not in fieldNames:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inLinkFeat, fieldName, fieldType, fieldPrecision, fieldScale
             )
         expression = "(getAngle(abs(!angle1! - !link_angle!)) + getAngle(abs(!angle2! - !link_angle!))) / 2"
@@ -2927,7 +2927,7 @@ def getAngle(inAngle):
     else:
         return inAngle"""
 
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             inLinkFeat, fieldName, expression, "PYTHON3", codeblock
         )
 
@@ -2942,10 +2942,10 @@ def getAngle(inAngle):
             whereClause = (
                 "(idRatio <> 1) And (angle_diff < " + str(angleThreshold) + ")"
             )
-        arcpy.Select_analysis(inLinkFeat, linkTempFeat, whereClause)
+        arcpy.analysis.Select(inLinkFeat, linkTempFeat, whereClause)
 
         # further select from the above subset based on the speficied criteria for the link direction
-        inFeatCount = int(arcpy.GetCount_management(linkTempFeat).getOutput(0))
+        inFeatCount = int(arcpy.management.GetCount(linkTempFeat).getOutput(0))
         linkTempFeat1 = "linkTempFeat1"
         # inFeatCount = 0 indicates that there is not any feature satsifying the criterion specified (angle_diff < angleThreshold) for the link direction.
         if inFeatCount > 0:
@@ -3248,14 +3248,14 @@ def getAngle(inAngle):
                     + "))"
                 )
 
-            arcpy.Select_analysis(linkTempFeat, linkTempFeat1, whereClause)
+            arcpy.analysis.Select(linkTempFeat, linkTempFeat1, whereClause)
         else:
-            arcpy.Copy_management(linkTempFeat, linkTempFeat1)
+            arcpy.management.Copy(linkTempFeat, linkTempFeat1)
 
         arcpy.AddMessage("first selection done")
 
         # further selection
-        inFeatCount = int(arcpy.GetCount_management(linkTempFeat1).getOutput(0))
+        inFeatCount = int(arcpy.management.GetCount(linkTempFeat1).getOutput(0))
         if inFeatCount > 0:
             # here is different between the combined option and the other two options
             # the combined option would likely generate multiple records have the same [originID,destID]
@@ -3308,16 +3308,16 @@ def getAngle(inAngle):
                     text = text + str(j) + ","
                 text = text[0:-1] + ")"
                 whereClause = "tempID IN " + text
-                arcpy.Select_analysis(linkTempFeat1, outLinkFeat1, whereClause)
+                arcpy.analysis.Select(linkTempFeat1, outLinkFeat1, whereClause)
 
             else:  # one of the other two options selected
-                arcpy.Copy_management(linkTempFeat1, outLinkFeat1)
+                arcpy.management.Copy(linkTempFeat1, outLinkFeat1)
         else:
-            arcpy.Copy_management(linkTempFeat1, outLinkFeat1)
+            arcpy.management.Copy(linkTempFeat1, outLinkFeat1)
         arcpy.AddMessage("second selection done")
 
         # further selection
-        inFeatCount = int(arcpy.GetCount_management(outLinkFeat1).getOutput(0))
+        inFeatCount = int(arcpy.management.GetCount(outLinkFeat1).getOutput(0))
         if inFeatCount > 0:
             # doing the third selection
             # if multiple records have the same ORIG_FID or DEST_ID (eg., between [1,3] and [1,4] or between [1,10] and [2,10]),
@@ -3370,13 +3370,13 @@ def getAngle(inAngle):
                 text = text + str(i) + ","
             text = text[0:-1] + ")"
             whereClause = "tempID IN " + text
-            arcpy.Select_analysis(outLinkFeat1, outLinkFeat2, whereClause)
+            arcpy.analysis.Select(outLinkFeat1, outLinkFeat2, whereClause)
         else:
-            arcpy.Copy_management(outLinkFeat1, outLinkFeat2)
+            arcpy.management.Copy(outLinkFeat1, outLinkFeat2)
         arcpy.AddMessage("third selection done")
 
-        arcpy.Delete_management(linkTempFeat)
-        arcpy.Delete_management(linkTempFeat1)
+        arcpy.management.Delete(linkTempFeat)
+        arcpy.management.Delete(linkTempFeat1)
 
     # This function gets the indices based on distance and angle criteria
     def getIndex(
@@ -3694,7 +3694,7 @@ def getAngle(inAngle):
         distList = []
 
         for linkFeat in linkFeatList:
-            inFeatCount = int(arcpy.GetCount_management(linkFeat).getOutput(0))
+            inFeatCount = int(arcpy.management.GetCount(linkFeat).getOutput(0))
             arcpy.AddMessage(linkFeat + " has " + str(inFeatCount) + " features.")
             if inFeatCount > 0:
                 cursor = arcpy.SearchCursor(linkFeat)
@@ -3727,17 +3727,17 @@ def getAngle(inAngle):
 
         inFeatVertices = "inFeatVertices"
         # convert each input feature to points;
-        arcpy.FeatureVerticesToPoints_management(inFeatClass, inFeatVertices, "ALL")
+        arcpy.management.FeatureVerticesToPoints(inFeatClass, inFeatVertices, "ALL")
 
         layer1 = "layer1"
-        arcpy.MakeFeatureLayer_management(inFeatVertices, layer1)
+        arcpy.management.MakeFeatureLayer(inFeatVertices, layer1)
         # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-        arcpy.SelectLayerByLocation_management(layer1, "INTERSECT", MbrLineClass)
+        arcpy.management.SelectLayerByLocation(layer1, "INTERSECT", MbrLineClass)
         selectedPoints = "selectedPoints1"
-        arcpy.CopyFeatures_management(layer1, selectedPoints)
+        arcpy.management.CopyFeatures(layer1, selectedPoints)
         # spatial join to append attributes from MbrLineClass
         joinFeat = "joinFeat"
-        arcpy.SpatialJoin_analysis(selectedPoints, MbrLineClass, joinFeat)
+        arcpy.analysis.SpatialJoin(selectedPoints, MbrLineClass, joinFeat)
 
         # only need these attributes, with additional POINT_X and POINT_Y attributes added
         fieldsToKept = ["featID", "rectangle_Orientation", "direction"]
@@ -3748,8 +3748,8 @@ def getAngle(inAngle):
                 if not field.name in fieldsToKept:
                     fieldsToDelete.append(field.name)
 
-        arcpy.DeleteField_management(joinFeat, fieldsToDelete)
-        arcpy.AddXY_management(joinFeat)
+        arcpy.management.DeleteField(joinFeat, fieldsToDelete)
+        arcpy.management.AddXY(joinFeat)
 
         # delete schema.ini which may contains incorrect data types
         schemaFile = tempFolder + "/" + "schema.ini"
@@ -3757,7 +3757,7 @@ def getAngle(inAngle):
             os.remove(schemaFile)
         # export the attributes to a csv file
         csvFile = tempFolder + "/joinFeat_points.csv"
-        arcpy.CopyRows_management(joinFeat, csvFile)
+        arcpy.management.CopyRows(joinFeat, csvFile)
         # read the csv file as a pandas data frame
         pointDF = pd.read_csv(csvFile, sep=",", header=0)
         pointDF.set_index("OBJECTID", inplace=True)
@@ -3845,7 +3845,7 @@ def getAngle(inAngle):
         outFile = tempFolder + "/joinFeat_points1_selected.csv"
         newPD.to_csv(outFile, sep=",", header=True)
         # create point featureclass from the csv file
-        arcpy.XYTableToPoint_management(
+        arcpy.management.XYTableToPoint(
             outFile, outPointFeat, "POINT_X", "POINT_Y", "#", MbrLineClass
         )
 
@@ -3856,11 +3856,11 @@ def getAngle(inAngle):
     ##        expression = "!" + MbrLineClass + "." + "direction" + "!"
     ##        HelperFunctions.addTextField(outPointFeat,MbrLineClass,field,inID,joinID,expression)
     ##        # delete temporary data
-    ##        arcpy.Delete_management(inFeatVertices)
-    ##        arcpy.Delete_management(selectedPoints)
-    ##        arcpy.Delete_management(layer1)
-    ##        arcpy.Delete_management(outFile)
-    ##        arcpy.Delete_management(csvFile)
+    ##        arcpy.management.Delete(inFeatVertices)
+    ##        arcpy.management.Delete(selectedPoints)
+    ##        arcpy.management.Delete(layer1)
+    ##        arcpy.management.Delete(outFile)
+    ##        arcpy.management.Delete(csvFile)
 
     # This function generate direction point features from the input features and the bounding rectangle features
     # This works but is very time consuming
@@ -3874,15 +3874,15 @@ def getAngle(inAngle):
 
         inFeatVertices = "inFeatVertices"
         # convert each input feature to points;
-        arcpy.FeatureVerticesToPoints_management(inFeatClass, inFeatVertices, "ALL")
+        arcpy.management.FeatureVerticesToPoints(inFeatClass, inFeatVertices, "ALL")
 
         layer1 = "layer1"
-        arcpy.MakeFeatureLayer_management(inFeatVertices, layer1)
+        arcpy.management.MakeFeatureLayer(inFeatVertices, layer1)
         # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-        arcpy.SelectLayerByLocation_management(layer1, "INTERSECT", MbrLineClass)
+        arcpy.management.SelectLayerByLocation(layer1, "INTERSECT", MbrLineClass)
         selectedPoints = "selectedPoints1"
-        arcpy.CopyFeatures_management(layer1, selectedPoints)
-        arcpy.AddXY_management(selectedPoints)
+        arcpy.management.CopyFeatures(layer1, selectedPoints)
+        arcpy.management.AddXY(selectedPoints)
 
         MbrLineN = "MbrLineN"
         MbrLineS = "MbrLineS"
@@ -3890,13 +3890,13 @@ def getAngle(inAngle):
         MbrLineW = "MbrLineW"
 
         whereClause = "direction = 'N'"
-        arcpy.Select_analysis(MbrLineClass, MbrLineN, whereClause)
+        arcpy.analysis.Select(MbrLineClass, MbrLineN, whereClause)
         whereClause = "direction = 'S'"
-        arcpy.Select_analysis(MbrLineClass, MbrLineS, whereClause)
+        arcpy.analysis.Select(MbrLineClass, MbrLineS, whereClause)
         whereClause = "direction = 'E'"
-        arcpy.Select_analysis(MbrLineClass, MbrLineE, whereClause)
+        arcpy.analysis.Select(MbrLineClass, MbrLineE, whereClause)
         whereClause = "direction = 'W'"
-        arcpy.Select_analysis(MbrLineClass, MbrLineW, whereClause)
+        arcpy.analysis.Select(MbrLineClass, MbrLineW, whereClause)
 
         idList = []
         angleList = []
@@ -3915,17 +3915,17 @@ def getAngle(inAngle):
             dirList.append("N")
             tempFeat = "tempFeat"
             whereClause = "featID = " + str(featID)
-            arcpy.Select_analysis(selectedPoints, tempFeat, whereClause)
+            arcpy.analysis.Select(selectedPoints, tempFeat, whereClause)
 
             tempFeat1 = "tempFeat1"
-            arcpy.Select_analysis(MbrLineN, tempFeat1, whereClause)
+            arcpy.analysis.Select(MbrLineN, tempFeat1, whereClause)
 
             layerTemp = "layerTemp"
-            arcpy.MakeFeatureLayer_management(tempFeat, layerTemp)
+            arcpy.management.MakeFeatureLayer(tempFeat, layerTemp)
             # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-            arcpy.SelectLayerByLocation_management(layerTemp, "INTERSECT", tempFeat1)
+            arcpy.management.SelectLayerByLocation(layerTemp, "INTERSECT", tempFeat1)
             tempPoints = "tempPoints"
-            arcpy.CopyFeatures_management(layerTemp, tempPoints)
+            arcpy.management.CopyFeatures(layerTemp, tempPoints)
 
             cursor1 = arcpy.SearchCursor(tempPoints)
             row1 = cursor1.next()
@@ -3934,10 +3934,10 @@ def getAngle(inAngle):
             xList.append(pointX)
             yList.append(pointY)
 
-            arcpy.Delete_management(tempFeat)
-            arcpy.Delete_management(tempFeat1)
-            arcpy.Delete_management(tempPoints)
-            arcpy.Delete_management(layerTemp)
+            arcpy.management.Delete(tempFeat)
+            arcpy.management.Delete(tempFeat1)
+            arcpy.management.Delete(tempPoints)
+            arcpy.management.Delete(layerTemp)
 
             del row1, cursor1
         del row, cursor
@@ -3953,17 +3953,17 @@ def getAngle(inAngle):
             dirList.append("S")
             tempFeat = "tempFeat"
             whereClause = "featID = " + str(featID)
-            arcpy.Select_analysis(selectedPoints, tempFeat, whereClause)
+            arcpy.analysis.Select(selectedPoints, tempFeat, whereClause)
 
             tempFeat1 = "tempFeat1"
-            arcpy.Select_analysis(MbrLineS, tempFeat1, whereClause)
+            arcpy.analysis.Select(MbrLineS, tempFeat1, whereClause)
 
             layerTemp = "layerTemp"
-            arcpy.MakeFeatureLayer_management(tempFeat, layerTemp)
+            arcpy.management.MakeFeatureLayer(tempFeat, layerTemp)
             # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-            arcpy.SelectLayerByLocation_management(layerTemp, "INTERSECT", tempFeat1)
+            arcpy.management.SelectLayerByLocation(layerTemp, "INTERSECT", tempFeat1)
             tempPoints = "tempPoints"
-            arcpy.CopyFeatures_management(layerTemp, tempPoints)
+            arcpy.management.CopyFeatures(layerTemp, tempPoints)
 
             cursor1 = arcpy.SearchCursor(tempPoints)
             row1 = cursor1.next()
@@ -3972,10 +3972,10 @@ def getAngle(inAngle):
             xList.append(pointX)
             yList.append(pointY)
 
-            arcpy.Delete_management(tempFeat)
-            arcpy.Delete_management(tempFeat1)
-            arcpy.Delete_management(tempPoints)
-            arcpy.Delete_management(layerTemp)
+            arcpy.management.Delete(tempFeat)
+            arcpy.management.Delete(tempFeat1)
+            arcpy.management.Delete(tempPoints)
+            arcpy.management.Delete(layerTemp)
 
             del row1, cursor1
         del row, cursor
@@ -3991,17 +3991,17 @@ def getAngle(inAngle):
             dirList.append("E")
             tempFeat = "tempFeat"
             whereClause = "featID = " + str(featID)
-            arcpy.Select_analysis(selectedPoints, tempFeat, whereClause)
+            arcpy.analysis.Select(selectedPoints, tempFeat, whereClause)
 
             tempFeat1 = "tempFeat1"
-            arcpy.Select_analysis(MbrLineE, tempFeat1, whereClause)
+            arcpy.analysis.Select(MbrLineE, tempFeat1, whereClause)
 
             layerTemp = "layerTemp"
-            arcpy.MakeFeatureLayer_management(tempFeat, layerTemp)
+            arcpy.management.MakeFeatureLayer(tempFeat, layerTemp)
             # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-            arcpy.SelectLayerByLocation_management(layerTemp, "INTERSECT", tempFeat1)
+            arcpy.management.SelectLayerByLocation(layerTemp, "INTERSECT", tempFeat1)
             tempPoints = "tempPoints"
-            arcpy.CopyFeatures_management(layerTemp, tempPoints)
+            arcpy.management.CopyFeatures(layerTemp, tempPoints)
 
             cursor1 = arcpy.SearchCursor(tempPoints)
             row1 = cursor1.next()
@@ -4010,10 +4010,10 @@ def getAngle(inAngle):
             xList.append(pointX)
             yList.append(pointY)
 
-            arcpy.Delete_management(tempFeat)
-            arcpy.Delete_management(tempFeat1)
-            arcpy.Delete_management(tempPoints)
-            arcpy.Delete_management(layerTemp)
+            arcpy.management.Delete(tempFeat)
+            arcpy.management.Delete(tempFeat1)
+            arcpy.management.Delete(tempPoints)
+            arcpy.management.Delete(layerTemp)
 
             del row1, cursor1
         del row, cursor
@@ -4029,17 +4029,17 @@ def getAngle(inAngle):
             dirList.append("W")
             tempFeat = "tempFeat"
             whereClause = "featID = " + str(featID)
-            arcpy.Select_analysis(selectedPoints, tempFeat, whereClause)
+            arcpy.analysis.Select(selectedPoints, tempFeat, whereClause)
 
             tempFeat1 = "tempFeat1"
-            arcpy.Select_analysis(MbrLineW, tempFeat1, whereClause)
+            arcpy.analysis.Select(MbrLineW, tempFeat1, whereClause)
 
             layerTemp = "layerTemp"
-            arcpy.MakeFeatureLayer_management(tempFeat, layerTemp)
+            arcpy.management.MakeFeatureLayer(tempFeat, layerTemp)
             # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-            arcpy.SelectLayerByLocation_management(layerTemp, "INTERSECT", tempFeat1)
+            arcpy.management.SelectLayerByLocation(layerTemp, "INTERSECT", tempFeat1)
             tempPoints = "tempPoints"
-            arcpy.CopyFeatures_management(layerTemp, tempPoints)
+            arcpy.management.CopyFeatures(layerTemp, tempPoints)
 
             cursor1 = arcpy.SearchCursor(tempPoints)
             row1 = cursor1.next()
@@ -4048,10 +4048,10 @@ def getAngle(inAngle):
             xList.append(pointX)
             yList.append(pointY)
 
-            arcpy.Delete_management(tempFeat)
-            arcpy.Delete_management(tempFeat1)
-            arcpy.Delete_management(tempPoints)
-            arcpy.Delete_management(layerTemp)
+            arcpy.management.Delete(tempFeat)
+            arcpy.management.Delete(tempFeat1)
+            arcpy.management.Delete(tempPoints)
+            arcpy.management.Delete(layerTemp)
 
             del row1, cursor1
         del row, cursor
@@ -4067,19 +4067,19 @@ def getAngle(inAngle):
         outFile = tempFolder + "/joinFeat_points1_selected.csv"
         newPD.to_csv(outFile, sep=",", header=True)
         # create point featureclass from the csv file
-        arcpy.XYTableToPoint_management(
+        arcpy.management.XYTableToPoint(
             outFile, outPointFeat, "POINT_X", "POINT_Y", "#", MbrLineClass
         )
 
     ##        # delete temporary data
-    ##        arcpy.Delete_management(inFeatVertices)
-    ##        arcpy.Delete_management(selectedPoints)
-    ##        arcpy.Delete_management(layer1)
-    ##        arcpy.Delete_management(outFile)
-    ##        arcpy.Delete_management(MbrLineN)
-    ##        arcpy.Delete_management(MbrLineS)
-    ##        arcpy.Delete_management(MbrLineE)
-    ##        arcpy.Delete_management(MbrLineW)
+    ##        arcpy.management.Delete(inFeatVertices)
+    ##        arcpy.management.Delete(selectedPoints)
+    ##        arcpy.management.Delete(layer1)
+    ##        arcpy.management.Delete(outFile)
+    ##        arcpy.management.Delete(MbrLineN)
+    ##        arcpy.management.Delete(MbrLineS)
+    ##        arcpy.management.Delete(MbrLineE)
+    ##        arcpy.management.Delete(MbrLineW)
 
     # This function generate direction point features from the input features.
     # Two points are generated for each feature at its north and south sides or its east and west sides.
@@ -4092,13 +4092,13 @@ def getAngle(inAngle):
         inFeatVertices = "inFeatVertices"
         itemList.append(inFeatVertices)
         # convert each input feature to points;
-        arcpy.FeatureVerticesToPoints_management(inFeatClass, inFeatVertices, "ALL")
+        arcpy.management.FeatureVerticesToPoints(inFeatClass, inFeatVertices, "ALL")
         # for each polygon, the first vertice and the last vertice are identical, need to remove the duplicate
         verticeTab = "verticeTab"
         itemList.append(verticeTab)
         statsField = [["OBJECTID", "MIN"]]
         caseField = "featID"
-        arcpy.Statistics_analysis(inFeatVertices, verticeTab, statsField, caseField)
+        arcpy.analysis.Statistics(inFeatVertices, verticeTab, statsField, caseField)
 
         idList = []
         cursor = arcpy.SearchCursor(verticeTab)
@@ -4115,18 +4115,18 @@ def getAngle(inAngle):
             text = text + str(j) + ","
         text = text[0:-1] + ")"
         whereClause = "OBJECTID NOT IN " + text
-        arcpy.Select_analysis(inFeatVertices, inFeatVertices1, whereClause)
+        arcpy.analysis.Select(inFeatVertices, inFeatVertices1, whereClause)
 
         # select polygon points on the bounding rectangle boundaries
         layer1 = "layer1"
         itemList.append(layer1)
-        arcpy.MakeFeatureLayer_management(inFeatVertices1, layer1)
+        arcpy.management.MakeFeatureLayer(inFeatVertices1, layer1)
         # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-        arcpy.SelectLayerByLocation_management(layer1, "INTERSECT", MbrLineClass)
+        arcpy.management.SelectLayerByLocation(layer1, "INTERSECT", MbrLineClass)
         selectedPoints = "selectedPoints1"
         itemList.append(selectedPoints)
-        arcpy.CopyFeatures_management(layer1, selectedPoints)
-        arcpy.AddXY_management(selectedPoints)
+        arcpy.management.CopyFeatures(layer1, selectedPoints)
+        arcpy.management.AddXY(selectedPoints)
 
         # separate into four boundary types
         MbrLineN = "MbrLineN"
@@ -4139,26 +4139,26 @@ def getAngle(inAngle):
         itemList.append(MbrLineW)
 
         whereClause = "direction = 'N'"
-        arcpy.Select_analysis(MbrLineClass, MbrLineN, whereClause)
+        arcpy.analysis.Select(MbrLineClass, MbrLineN, whereClause)
         whereClause = "direction = 'S'"
-        arcpy.Select_analysis(MbrLineClass, MbrLineS, whereClause)
+        arcpy.analysis.Select(MbrLineClass, MbrLineS, whereClause)
         whereClause = "direction = 'E'"
-        arcpy.Select_analysis(MbrLineClass, MbrLineE, whereClause)
+        arcpy.analysis.Select(MbrLineClass, MbrLineE, whereClause)
         whereClause = "direction = 'W'"
-        arcpy.Select_analysis(MbrLineClass, MbrLineW, whereClause)
+        arcpy.analysis.Select(MbrLineClass, MbrLineW, whereClause)
 
         # when the orientation is straight north (=0) or straight east (=90), multiple points can be on the boundaries
         # in this case, need to select only one point (first point) for each boundary
         selectedPoints_1 = "selectedPoints1_1"
         itemList.append(selectedPoints_1)
         whereClause = "rectangle_Orientation = 0"
-        arcpy.Select_analysis(selectedPoints, selectedPoints_1, whereClause)
+        arcpy.analysis.Select(selectedPoints, selectedPoints_1, whereClause)
 
         tab1 = "tab1"
         itemList.append(tab1)
         statsField = [["OBJECTID", "MIN"]]
         caseField = ["featID", "POINT_Y"]
-        arcpy.Statistics_analysis(selectedPoints_1, tab1, statsField, caseField)
+        arcpy.analysis.Statistics(selectedPoints_1, tab1, statsField, caseField)
 
         idList = []
         cursor = arcpy.SearchCursor(tab1)
@@ -4175,12 +4175,12 @@ def getAngle(inAngle):
             text = text + str(j) + ","
         text = text[0:-1] + ")"
         whereClause = "OBJECTID IN " + text
-        arcpy.Select_analysis(selectedPoints_1, selectedPoints_1_1, whereClause)
+        arcpy.analysis.Select(selectedPoints_1, selectedPoints_1_1, whereClause)
 
         selectedPoints_2 = "selectedPoints1_2"
         itemList.append(selectedPoints_2)
         whereClause = "rectangle_Orientation = 90"
-        arcpy.Select_analysis(selectedPoints, selectedPoints_2, whereClause)
+        arcpy.analysis.Select(selectedPoints, selectedPoints_2, whereClause)
 
         tab2 = "tab2"
         itemList.append(tab2)
@@ -4203,17 +4203,17 @@ def getAngle(inAngle):
             text = text + str(j) + ","
         text = text[0:-1] + ")"
         whereClause = "OBJECTID IN " + text
-        arcpy.Select_analysis(selectedPoints_2, selectedPoints_2_1, whereClause)
+        arcpy.analysis.Select(selectedPoints_2, selectedPoints_2_1, whereClause)
         # select those points that are not from features orienting straight north and straight east
         selectedPoints_4 = "selectedPoints1_4"
         itemList.append(selectedPoints_4)
         whereClause = "(rectangle_Orientation <> 0) And (rectangle_Orientation <> 90)"
-        arcpy.Select_analysis(selectedPoints, selectedPoints_4, whereClause)
+        arcpy.analysis.Select(selectedPoints, selectedPoints_4, whereClause)
         # merge these three subsets to form a new set of points
         selectedPoints1 = "selectedPoints2"
         itemList.append(selectedPoints1)
         inputs = [selectedPoints_1_1, selectedPoints_2_1, selectedPoints_4]
-        arcpy.Merge_management(inputs, selectedPoints1)
+        arcpy.management.Merge(inputs, selectedPoints1)
 
         # call the function to generate direction lists
         idList = []
@@ -4247,7 +4247,7 @@ def getAngle(inAngle):
         itemList.append(outFile)
         newPD.to_csv(outFile, sep=",", header=True)
         # create point featureclass from the csv file
-        arcpy.XYTableToPoint_management(
+        arcpy.management.XYTableToPoint(
             outFile, outPointFeat, "POINT_X", "POINT_Y", "#", MbrLineClass
         )
 
@@ -4277,12 +4277,12 @@ def getAngle(inAngle):
         itemList = []
         layerTemp = "layerTemp"
         itemList.append(layerTemp)
-        arcpy.MakeFeatureLayer_management(pointFeat, layerTemp)
+        arcpy.management.MakeFeatureLayer(pointFeat, layerTemp)
         # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-        arcpy.SelectLayerByLocation_management(layerTemp, "INTERSECT", MbrlineFeat)
+        arcpy.management.SelectLayerByLocation(layerTemp, "INTERSECT", MbrlineFeat)
         selectedPointsTemp = "selectedPointsTemp"
         itemList.append(layerTemp)
-        arcpy.CopyFeatures_management(layerTemp, selectedPointsTemp)
+        arcpy.management.CopyFeatures(layerTemp, selectedPointsTemp)
 
         # build two featID lists: one contains features with only one candidate point; the other contains mutliple candidate points
         sumTab = "sumTab"
@@ -4311,10 +4311,10 @@ def getAngle(inAngle):
             whereClause = "featID IN " + text
             selectedPointsTemp1 = "selectedPoints1Temp1"
             itemList.append(selectedPointsTemp1)
-            arcpy.Select_analysis(selectedPointsTemp, selectedPointsTemp1, whereClause)
+            arcpy.analysis.Select(selectedPointsTemp, selectedPointsTemp1, whereClause)
 
         # deal with the first subset
-        inFeatCount = int(arcpy.GetCount_management(selectedPointsTemp1).getOutput(0))
+        inFeatCount = int(arcpy.management.GetCount(selectedPointsTemp1).getOutput(0))
         if inFeatCount > 0:
             cursor = arcpy.SearchCursor(selectedPointsTemp1)
             for row in cursor:
@@ -4336,21 +4336,21 @@ def getAngle(inAngle):
                 arcpy.AddMessage("idV: " + str(idV))
                 tempFeat = "tempFeat"
                 whereClause = "featID = " + str(idV)
-                arcpy.Select_analysis(pointFeat, tempFeat, whereClause)
+                arcpy.analysis.Select(pointFeat, tempFeat, whereClause)
 
                 tempFeat1 = "tempFeat1"
-                arcpy.Select_analysis(MbrlineFeat, tempFeat1, whereClause)
+                arcpy.analysis.Select(MbrlineFeat, tempFeat1, whereClause)
 
                 layerTemp1 = "layerTemp1"
-                arcpy.MakeFeatureLayer_management(tempFeat, layerTemp1)
+                arcpy.management.MakeFeatureLayer(tempFeat, layerTemp1)
                 # select those points that are on the selected bounding rectangle boundaries (N and S or E and W)
-                arcpy.SelectLayerByLocation_management(
+                arcpy.management.SelectLayerByLocation(
                     layerTemp1, "INTERSECT", tempFeat1
                 )
                 tempPoints = "tempPoints"
-                arcpy.CopyFeatures_management(layerTemp1, tempPoints)
+                arcpy.management.CopyFeatures(layerTemp1, tempPoints)
 
-                inFeatCount = int(arcpy.GetCount_management(tempPoints).getOutput(0))
+                inFeatCount = int(arcpy.management.GetCount(tempPoints).getOutput(0))
                 if inFeatCount > 0:
                     idList.append(idV)
                     cursor1 = arcpy.SearchCursor(tempPoints)
@@ -4364,10 +4364,10 @@ def getAngle(inAngle):
                     angleList.append(angle)
                     dirList.append(direction)
                     del cursor1, row1
-                arcpy.Delete_management(tempFeat)
-                arcpy.Delete_management(tempFeat1)
-                arcpy.Delete_management(tempPoints)
-                arcpy.Delete_management(layerTemp)
+                arcpy.management.Delete(tempFeat)
+                arcpy.management.Delete(tempFeat1)
+                arcpy.management.Delete(tempPoints)
+                arcpy.management.Delete(layerTemp)
 
         HelperFunctions.deleteDataItems(itemList)
         return idList, angleList, dirList, xList, yList
@@ -4410,13 +4410,13 @@ def getAngle(inAngle):
         fieldName1 = "idDiff"
         fieldType = "LONG"
         fieldPrecision = 15
-        arcpy.AddField_management(inLinksFeat, fieldName1, fieldType, fieldPrecision)
+        arcpy.management.AddField(inLinksFeat, fieldName1, fieldType, fieldPrecision)
 
         expression = "!featID1! - !featID2!"
-        arcpy.CalculateField_management(inLinksFeat, fieldName1, expression)
+        arcpy.management.CalculateField(inLinksFeat, fieldName1, expression)
         linksFeat1Temp = "links1Temp"
         whereClause = "idDiff <> 0"
-        arcpy.Select_analysis(inLinksFeat, linksFeat1Temp, whereClause)
+        arcpy.analysis.Select(inLinksFeat, linksFeat1Temp, whereClause)
 
         # generate summary statistics
         tab1 = "tab1"
@@ -4432,14 +4432,14 @@ def getAngle(inAngle):
         # select a subset o links based on the following condition
         linksFeat2Temp = "links2Temp"
         whereClause = "distDiff = 0"
-        arcpy.Select_analysis(linksFeat1Temp, linksFeat2Temp, whereClause)
+        arcpy.analysis.Select(linksFeat1Temp, linksFeat2Temp, whereClause)
         # further selection based on the following condition
         whereClause = "(fromLocation = 'F') And (toLocation = 'H')"
-        arcpy.Select_analysis(linksFeat2Temp, outLinksFeat, whereClause)
+        arcpy.analysis.Select(linksFeat2Temp, outLinksFeat, whereClause)
 
-        arcpy.Delete_management(linksFeat1Temp)
-        arcpy.Delete_management(linksFeat2Temp)
-        arcpy.Delete_management(tab1)
+        arcpy.management.Delete(linksFeat1Temp)
+        arcpy.management.Delete(linksFeat2Temp)
+        arcpy.management.Delete(tab1)
 
     # This function identifies the input points as either head (H) points or foot (F) points.
     def toFHpoints(self, inPointFeat, mosaicBathy, tempFolder, outPointFeat):
@@ -4459,7 +4459,7 @@ def getAngle(inAngle):
             os.remove(schemaFile)
         # export the attributes to a csv file
         csvFile = tempFolder + "/pointFeat1.csv"
-        arcpy.CopyRows_management(pointFeatTemp, csvFile)
+        arcpy.management.CopyRows(pointFeatTemp, csvFile)
         # read the csv file as a pandas data frame
         pointDF = pd.read_csv(csvFile, sep=",", header=0)
         pointDF.set_index("OBJECTID", inplace=True)
@@ -4524,11 +4524,11 @@ def getAngle(inAngle):
         outFile = tempFolder + "/pointFeat2.csv"
         newPD.to_csv(outFile, sep=",", header=True)
         # create point featureclass from the csv file
-        arcpy.XYTableToPoint_management(
+        arcpy.management.XYTableToPoint(
             outFile, outPointFeat, "POINT_X", "POINT_Y", "#", inPointFeat
         )
 
         # delete temporary data
-        arcpy.Delete_management(pointFeatTemp)
-        arcpy.Delete_management(csvFile)
-        arcpy.Delete_management(outFile)
+        arcpy.management.Delete(pointFeatTemp)
+        arcpy.management.Delete(csvFile)
+        arcpy.management.Delete(outFile)

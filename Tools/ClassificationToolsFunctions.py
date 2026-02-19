@@ -57,20 +57,20 @@ def verifyDepression(arg):
         arcpy.AddMessage('working on ' + str(oID))
         whereClause = "OBJECTID = " + str(oID)
         selectedFeat = "selectedFeat"
-        arcpy.Select_analysis(depressionFeat, selectedFeat, whereClause)
+        arcpy.analysis.Select(depressionFeat, selectedFeat, whereClause)
         # buffer the feature, with a distance equals the cell size of the bathymetric grid
         # This is mainly used for a very small feature. If using the small feature directly, it often fails to generate
         # closed-contours; while, using the buffered feature would usually allow the generation of close-contours.
         bufferFeat = "bufferFeat"
         distance = cellSize + " Meter"
         arcpy.AddMessage(distance)
-        arcpy.Buffer_analysis(selectedFeat, bufferFeat, distance)
+        arcpy.analysis.Buffer(selectedFeat, bufferFeat, distance)
         # extract the bathymetric grid to the extent of the buffered feature
         featBathy = ExtractByMask(inBathy, bufferFeat, "INSIDE")
         # get the minimum and maximum depth values within the extracted bathymetric grid
-        result1 = arcpy.GetRasterProperties_management(featBathy, "MINIMUM")
+        result1 = arcpy.management.GetRasterProperties(featBathy, "MINIMUM")
         minDepth = round(float(result1.getOutput(0)), 2)
-        result1 = arcpy.GetRasterProperties_management(featBathy, "MAXIMUM")
+        result1 = arcpy.management.GetRasterProperties(featBathy, "MAXIMUM")
         maxDepth = round(float(result1.getOutput(0)), 2)
         # The verification process is an iterative process. The maximum number of the iteration is determined by the
         # maxContour parameter. The process starts with generating contours with 2 or 3 distinct contour values (j = 1).
@@ -96,7 +96,7 @@ def verifyDepression(arg):
             fieldPrecision = 15
             fieldScale = 6
             fieldName = "contour1"
-            arcpy.AddField_management(featContour, fieldName, fieldType, fieldPrecision, fieldScale)
+            arcpy.management.AddField(featContour, fieldName, fieldType, fieldPrecision, fieldScale)
             # rounding float number to two decimal place
             codeblock = """
 def roundNumber(a):
@@ -104,7 +104,7 @@ def roundNumber(a):
     return b
                         """
             expression = "roundNumber(!contour!)"
-            arcpy.CalculateField_management(
+            arcpy.management.CalculateField(
                 featContour, fieldName, expression, "PYTHON3", codeblock
             )
             # get the polygon area of the feature
@@ -120,20 +120,20 @@ def roundNumber(a):
                 selectedContour = round(maxDepth - i * contourInt, 2)
                 whereClause = "contour1 = " + str(selectedContour)
                 contourFeat = "contourFeat"
-                arcpy.Select_analysis(featContour, contourFeat, whereClause)
+                arcpy.analysis.Select(featContour, contourFeat, whereClause)
                 # convert these contours to polygons
                 contourPoly = contourFeat + "_poly"
-                arcpy.FeatureToPolygon_management(contourFeat, contourPoly)
+                arcpy.management.FeatureToPolygon(contourFeat, contourPoly)
                 # clip the contour polygon with the feature polygon, to make sure the contour polygon either intersects
                 # or within the feature polygon
                 clipPoly = "clipPoly"
-                arcpy.Clip_analysis(contourPoly, selectedFeat, clipPoly)
+                arcpy.analysis.Clip(contourPoly, selectedFeat, clipPoly)
 
-                nuFeat = int(arcpy.GetCount_management(clipPoly).getOutput(0))
+                nuFeat = int(arcpy.management.GetCount(clipPoly).getOutput(0))
                 if nuFeat > 0: # at least one contour polygon either intersects or is within the feature polygon
                     # do a dissolve so that we deal with only one polygon
                     dissolveFeat = "dissolveFeat"
-                    arcpy.Dissolve_management(clipPoly, dissolveFeat)
+                    arcpy.management.Dissolve(clipPoly, dissolveFeat)
                     # get the area of the contour polygon
                     cursor1 = arcpy.SearchCursor(dissolveFeat)
                     row1 = cursor1.next()
@@ -167,6 +167,6 @@ def roundNumber(a):
 
     del cursor, row
     # copy the updated depression features to the output features
-    arcpy.Copy_management(depressionFeat, outFeat)
+    arcpy.management.Copy(depressionFeat, outFeat)
 
     return

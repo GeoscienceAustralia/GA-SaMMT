@@ -84,7 +84,7 @@ def doSelection(arg):
         whereClause = "TARGET_FID = " + str(targetID)
         arcpy.analysis.Select(inFeat3, tempFeat, whereClause)
         # get the count of selected joined features
-        featCount = int(arcpy.GetCount_management(tempFeat).getOutput(0))
+        featCount = int(arcpy.management.GetCount(tempFeat).getOutput(0))
         print("featCount", featCount)
 
         if featCount < 3:  # this condition should never be satisfied
@@ -178,7 +178,7 @@ def doFirstDerivativeBH(arg):
         whereClause = "TARGET_FID = " + str(targetID)
         arcpy.analysis.Select(inFeat3, tempFeat, whereClause)
         # get the count of selected joined features
-        featCount = int(arcpy.GetCount_management(tempFeat).getOutput(0))
+        featCount = int(arcpy.management.GetCount(tempFeat).getOutput(0))
         print("featCount", featCount)
 
         if featCount < 3:  # this condition should never be satisfied
@@ -275,7 +275,7 @@ def doFirstDerivativeBL(arg):
         whereClause = "TARGET_FID = " + str(targetID)
         arcpy.analysis.Select(inFeat3, tempFeat, whereClause)
         # get the count of selected joined features
-        featCount = int(arcpy.GetCount_management(tempFeat).getOutput(0))
+        featCount = int(arcpy.management.GetCount(tempFeat).getOutput(0))
         print("featCount", featCount)
 
         if featCount < 3:  # this condition should never be satisfied
@@ -372,7 +372,7 @@ def doSecondDerivativeBH(arg):
         whereClause = "TARGET_FID = " + str(targetID)
         arcpy.analysis.Select(inFeat3, tempFeat, whereClause)
         # get the count of selected joined features
-        featCount = int(arcpy.GetCount_management(tempFeat).getOutput(0))
+        featCount = int(arcpy.management.GetCount(tempFeat).getOutput(0))
         print("featCount", featCount)
 
         if featCount < 3:  # this condition should never be satisfied
@@ -480,7 +480,7 @@ def doSecondDerivativeBL(arg):
         whereClause = "TARGET_FID = " + str(targetID)
         arcpy.analysis.Select(inFeat3, tempFeat, whereClause)
         # get the count of selected joined features
-        featCount = int(arcpy.GetCount_management(tempFeat).getOutput(0))
+        featCount = int(arcpy.management.GetCount(tempFeat).getOutput(0))
         print("featCount", featCount)
 
         if featCount < 3:  # this condition should never be satisfied

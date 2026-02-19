@@ -172,7 +172,7 @@ def splitPolygon(workspace, inFeatClass, MbrFeatClass, splitFeatClass):
     i = 1
     for row1 in cursor1:
         if i % 100 == 1:
-            arcpy.Compact_management(workspace)
+            arcpy.management.Compact(workspace)
             arcpy.AddMessage("Compacted the geodatabase")
         time1 = datetime.now()
         featID = row1.getValue("featID")
@@ -181,15 +181,15 @@ def splitPolygon(workspace, inFeatClass, MbrFeatClass, splitFeatClass):
         whereClause = '"featID" = ' + str(featID)
         arcpy.AddMessage("working on featID: " + str(featID))
         # select one polygon and its bounding polygon
-        arcpy.Select_analysis(inFeatClass, inFeat, whereClause)
-        arcpy.Select_analysis(workspace + "/" + MbrFeatClass, MbrFeat, whereClause)
+        arcpy.analysis.Select(inFeatClass, inFeat, whereClause)
+        arcpy.analysis.Select(workspace + "/" + MbrFeatClass, MbrFeat, whereClause)
         arcpy.AddMessage("selection done")
 
         # convert bounding rectangle to points
-        arcpy.FeatureVerticesToPoints_management(MbrFeat, MbrPoints, "ALL")
+        arcpy.management.FeatureVerticesToPoints(MbrFeat, MbrPoints, "ALL")
         arcpy.AddMessage("bounding to points done")
         # add x and y
-        arcpy.AddXY_management(MbrPoints)
+        arcpy.management.AddXY(MbrPoints)
         arcpy.AddMessage("Add x and y done")
         # get x and y values for the starting and ending points
         cursor = arcpy.SearchCursor(MbrPoints)
@@ -233,7 +233,7 @@ def splitPolygon(workspace, inFeatClass, MbrFeatClass, splitFeatClass):
         templateExtent = "#"
         # Each output cell will be a polygon
         geometryType = "POLYGON"
-        arcpy.CreateFishnet_management(
+        arcpy.management.CreateFishnet(
             fishnetFeat,
             originCoordinate,
             yAxisCoordinate,
@@ -253,7 +253,7 @@ def splitPolygon(workspace, inFeatClass, MbrFeatClass, splitFeatClass):
         itemList.append(intersectOut1)
         mergeList.append(intersectOut1)
         inFeats = [inFeat, fishnetFeat]
-        arcpy.Intersect_analysis(inFeats, intersectOut1)
+        arcpy.analysis.Intersect(inFeats, intersectOut1)
         arcpy.AddMessage("intersect done")
         time2 = datetime.now()
         diff = time2 - time1
@@ -265,7 +265,7 @@ def splitPolygon(workspace, inFeatClass, MbrFeatClass, splitFeatClass):
 
     # merge all features together
 
-    arcpy.Merge_management(mergeList, splitFeatClass)
+    arcpy.management.Merge(mergeList, splitFeatClass)
     arcpy.AddMessage("merge done")
     HelperFunctions.deleteDataItems(itemList)
 
@@ -284,7 +284,7 @@ def calculateCompactness(inFeatClass):
     if fieldName in field_names:
         arcpy.AddMessage(fieldName + " exists and will be recalculated")
     else:
-        arcpy.AddField_management(
+        arcpy.management.AddField(
             inFeatClass, fieldName, fieldType, fieldPrecision, fieldScale
         )
 
@@ -303,7 +303,7 @@ def calculateCompactness(inFeatClass):
         + "SHAPE_LENGTH"
         + "!"
     )
-    arcpy.CalculateField_management(
+    arcpy.management.CalculateField(
         inFeatClass, fieldName, expression, "PYTHON3"
     )
     arcpy.AddMessage(fieldName + " added and calculated")
@@ -326,7 +326,7 @@ def calculateCircularity_Convexity_Solidity(workspace, inFeatClass):
     # generate bounding convex hull
     chFeat = "convex_hull"
     itemList.append(chFeat)
-    arcpy.MinimumBoundingGeometry_management(
+    arcpy.management.MinimumBoundingGeometry(
         inFeatClass, chFeat, "CONVEX_HULL", "NONE", "", "MBG_FIELDS"
     )
     # add area and perimeter fields of chFeat to inFeatClass
@@ -346,7 +346,7 @@ def calculateCircularity_Convexity_Solidity(workspace, inFeatClass):
         if fieldName in field_names:
             arcpy.AddMessage(fieldName + " exists and will be recalculated")
         else:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inFeatClass, fieldName, fieldType, fieldPrecision, fieldScale
             )
 
@@ -383,7 +383,7 @@ def calculateCircularity_Convexity_Solidity(workspace, inFeatClass):
                 "!" + "SHAPE_AREA" + "!" + "/" + "!" + "convexhull_Area" + "!"
             )
 
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             inFeatClass, fieldName, expression, "PYTHON3"
         )
     arcpy.AddMessage(" Circularity, Convexity and Solidity added and calculated")
@@ -411,7 +411,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     # generate bounding rectangle
     MbrFeatClass = "bounding_rectangle"
     itemList.append(MbrFeatClass)
-    arcpy.MinimumBoundingGeometry_management(
+    arcpy.management.MinimumBoundingGeometry(
         inFeatClass, MbrFeatClass, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
     )
     # add MBG_LENGTH, MBG_WIDTH AND MBG_ORIENTATION to inFeatClass
@@ -440,7 +440,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
         if fieldName in field_names:
             arcpy.AddMessage(fieldName + " exists and will be recalculated")
         else:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inFeatClass, fieldName, fieldType, fieldPrecision, fieldScale
             )
     # call the helper function to split each polygon in the inFeatClass into multiple polygons
@@ -451,18 +451,18 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     # convert polygon to line
     lineFeatClass1 = workspace + "/" + "lineFeatClass1"
     itemList.append(lineFeatClass1)
-    arcpy.PolygonToLine_management(splitFeatClass, lineFeatClass1)
+    arcpy.management.PolygonToLine(splitFeatClass, lineFeatClass1)
     arcpy.AddMessage("polygon to line done")
     # selection
     lineFeatClass2 = workspace + "/" + "lineFeatClass2"
     itemList.append(lineFeatClass2)
     whereClause = "LEFT_FID <> -1"
-    arcpy.Select_analysis(lineFeatClass1, lineFeatClass2, whereClause)
+    arcpy.analysis.Select(lineFeatClass1, lineFeatClass2, whereClause)
     arcpy.AddMessage("selection done")
     # spatial join
     lineFeatClass3 = workspace + "/" + "lineFeatClass3"
     itemList.append(lineFeatClass3)
-    arcpy.SpatialJoin_analysis(
+    arcpy.analysis.SpatialJoin(
         lineFeatClass2,
         inFeatClass,
         lineFeatClass3,
@@ -477,13 +477,13 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     itemList.append(outTab1)
     statsField = [["Shape_Length", "SUM"]]
     caseField = ["RIGHT_FID", "featID"]
-    arcpy.Statistics_analysis(lineFeatClass3, outTab1, statsField, caseField)
+    arcpy.analysis.Statistics(lineFeatClass3, outTab1, statsField, caseField)
 
     outTab2 = "outTab2"
     itemList.append(outTab2)
     statsField = [["SUM_Shape_Length", "MEAN"]]
     caseField = "featID"
-    arcpy.Statistics_analysis(outTab1, outTab2, statsField, caseField)
+    arcpy.analysis.Statistics(outTab1, outTab2, statsField, caseField)
     arcpy.AddMessage("summary statistics done")
     # add mean_width field
     field = "mean_width"
@@ -495,11 +495,11 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     # convert feature vertices to points
     inFeatVertices = workspace + "/" + "inFeatVertices"
     itemList.append(inFeatVertices)
-    arcpy.FeatureVerticesToPoints_management(inFeatClass, inFeatVertices, "ALL")
+    arcpy.management.FeatureVerticesToPoints(inFeatClass, inFeatVertices, "ALL")
     arcpy.AddMessage("feature vertices to points done")
 
     # add x and y
-    arcpy.AddXY_management(inFeatVertices)
+    arcpy.management.AddXY(inFeatVertices)
     arcpy.AddMessage("Add x and y done")
 
     # export table as csv file
@@ -514,7 +514,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     HelperFunctions.keepSelectedFields(inFeatVertices, fieldsToKeep)
     arcpy.AddMessage("delete fields done")
 
-    arcpy.CopyRows_management(inFeatVertices, csvFile1)
+    arcpy.management.CopyRows(inFeatVertices, csvFile1)
     arcpy.AddMessage("export to first csv done")
     # read the csv file as a pandas data frame, add dtype parameter (2023-06-20)
     # this is to prevent mix type warning and potentially improve efficiency in reading a large csv file
@@ -559,7 +559,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     whereClause = "OBJECTID IN " + text
     pointFeat1 = workspace + "/" + "pointFeat1"
     itemList.append(pointFeat1)
-    arcpy.Select_analysis(inFeatVertices, pointFeat1, whereClause)
+    arcpy.analysis.Select(inFeatVertices, pointFeat1, whereClause)
     arcpy.AddMessage("selection done")
 
     # extract bathy values to points
@@ -588,8 +588,8 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     # modified the codes as below to fix a weird error when running the tools in ArcGIS Pro Python command window (2025-08-05)
     pointFeat2 = workspace + "/" + "pointFeat2"
     itemList.append(pointFeat2)
-    arcpy.Copy_management(pointFeat1, pointFeat2)
-    arcpy.CopyRows_management(pointFeat2, csvFile2)
+    arcpy.management.Copy(pointFeat1, pointFeat2)
+    arcpy.management.CopyRows(pointFeat2, csvFile2)
     arcpy.AddMessage("export to second csv done")
     
     # read the csv file as a pandas data frame, add dtype parameter (2023-06-20)
@@ -659,7 +659,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     whereClause = "OBJECTID IN " + text
     firstFeatClass = workspace + "/" + "firstPoints"
     itemList.append(firstFeatClass)
-    arcpy.Select_analysis(pointFeat1, firstFeatClass, whereClause)
+    arcpy.analysis.Select(pointFeat1, firstFeatClass, whereClause)
     # generate last points featureclass
     text = "("
     for i in lastList:
@@ -668,14 +668,14 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     whereClause = "OBJECTID IN " + text
     lastFeatClass = workspace + "/" + "lastPoints"
     itemList.append(lastFeatClass)
-    arcpy.Select_analysis(pointFeat1, lastFeatClass, whereClause)
+    arcpy.analysis.Select(pointFeat1, lastFeatClass, whereClause)
     arcpy.AddMessage("generate first and last points features done")
 
     # polygon to point
     pointFeat2 = workspace + "/" + "pointFeat2"
     itemList.append(pointFeat2)
     # Use FeatureToPoint function to find a point inside each part
-    arcpy.FeatureToPoint_management(splitFeatClass, pointFeat2, "CENTROID")
+    arcpy.management.FeatureToPoint(splitFeatClass, pointFeat2, "CENTROID")
     arcpy.AddMessage("feature to point done")
 
     # sort the points
@@ -683,24 +683,24 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     itemList.append(pointFeat2_1)
     pointFeat2_2 = workspace + "/" + "pointFeat2_2"
     itemList.append(pointFeat2_2)
-    arcpy.Sort_management(pointFeat2, pointFeat2_1, [["ORIG_FID", "ASCENDING"]])
-    arcpy.Sort_management(pointFeat2, pointFeat2_2, [["ORIG_FID", "DESCENDING"]])
+    arcpy.management.Sort(pointFeat2, pointFeat2_1, [["ORIG_FID", "ASCENDING"]])
+    arcpy.management.Sort(pointFeat2, pointFeat2_2, [["ORIG_FID", "DESCENDING"]])
 
     # add x and y
-    arcpy.AddXY_management(pointFeat2_1)
-    arcpy.AddXY_management(pointFeat2_2)
+    arcpy.management.AddXY(pointFeat2_1)
+    arcpy.management.AddXY(pointFeat2_2)
     arcpy.AddMessage("Add x and y done")
 
     # merge the first point, the centre points of each sub-polygon, then the last point
     mergedFeats = [firstFeatClass, pointFeat2_1, lastFeatClass]
     mergedFeat1_1 = workspace + "/" + "merged_points1_1"
     itemList.append(mergedFeat1_1)
-    arcpy.Merge_management(mergedFeats, mergedFeat1_1)
+    arcpy.management.Merge(mergedFeats, mergedFeat1_1)
 
     mergedFeats = [firstFeatClass, pointFeat2_2, lastFeatClass]
     mergedFeat1_2 = workspace + "/" + "merged_points1_2"
     itemList.append(mergedFeat1_2)
-    arcpy.Merge_management(mergedFeats, mergedFeat1_2)
+    arcpy.management.Merge(mergedFeats, mergedFeat1_2)
     arcpy.AddMessage("merged done")
 
     # point to line
@@ -709,7 +709,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     lineField = "featID"
     sortField = "OBJECTID"
     # Execute PointsToLine
-    arcpy.PointsToLine_management(mergedFeat1_1, lineFeat1_1, lineField, sortField)
+    arcpy.management.PointsToLine(mergedFeat1_1, lineFeat1_1, lineField, sortField)
     # If the above function fails silently, call my own replicated function
     if arcpy.Exists(lineFeat1_1):
         arcpy.AddMessage(lineFeat1_1 + " exists")
@@ -721,7 +721,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     lineField = "featID"
     sortField = "OBJECTID"
     # Execute PointsToLine
-    arcpy.PointsToLine_management(mergedFeat1_2, lineFeat1_2, lineField, sortField)
+    arcpy.management.PointsToLine(mergedFeat1_2, lineFeat1_2, lineField, sortField)
     # If the above function fails silently, call my own replicated function
     if arcpy.Exists(lineFeat1_2):
         arcpy.AddMessage(lineFeat1_2 + " exists")
@@ -736,7 +736,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     mergedFeats = [lineFeat1_1, lineFeat1_2]
     mergedCurveFeat = workspace + "/" + "merged_curves"
     itemList.append(mergedCurveFeat)
-    arcpy.Merge_management(mergedFeats, mergedCurveFeat)
+    arcpy.management.Merge(mergedFeats, mergedCurveFeat)
     arcpy.AddMessage("merged curves done")
 
     # summary statistics
@@ -745,14 +745,14 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     itemList.append(outTab3)
     statsField = [["Shape_Length", "MIN"]]
     caseField = ["featID"]
-    arcpy.Statistics_analysis(mergedCurveFeat, outTab3, statsField, caseField)
+    arcpy.analysis.Statistics(mergedCurveFeat, outTab3, statsField, caseField)
 
     # merge to create a straight line connecting the first
     # and last point in order to calculate the straight length (head to foot length)
     mergedFeats = [firstFeatClass, lastFeatClass]
     mergedFeat2 = workspace + "/" + "merged_points2"
     itemList.append(mergedFeat2)
-    arcpy.Merge_management(mergedFeats, mergedFeat2)
+    arcpy.management.Merge(mergedFeats, mergedFeat2)
     arcpy.AddMessage("merged done")
 
     # point to line
@@ -761,7 +761,7 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     lineField = "featID"
     sortField = "OBJECTID"
     # Execute PointsToLine
-    arcpy.PointsToLine_management(mergedFeat2, lineFeat2, lineField, sortField)
+    arcpy.management.PointsToLine(mergedFeat2, lineFeat2, lineField, sortField)
     # If the above function fails silently, call my own replicated function
     if arcpy.Exists(lineFeat2):
         arcpy.AddMessage(lineFeat2 + " exists")
@@ -786,11 +786,11 @@ def calculateSinuosity_LwR(workspace, tempFolder, inFeatClass, inBathy):
     arcpy.AddMessage("add heat_foot_length field done")
     field = "Sinuosity"
     expression = "!sinuous_length! / !head_foot_length!"
-    arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON3")
+    arcpy.management.CalculateField(inFeatClass, field, expression, "PYTHON3")
     arcpy.AddMessage("calculate Sinuosity field done")
     field = "LengthWidthRatio"
     expression = "!sinuous_length! / !mean_width!"
-    arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON3")
+    arcpy.management.CalculateField(inFeatClass, field, expression, "PYTHON3")
     arcpy.AddMessage("calculate LengthWidthRatio field done")
     HelperFunctions.deleteDataItems(itemList)
     arcpy.AddMessage("data deletion done")
@@ -825,10 +825,10 @@ def calculate_segmentSlope(
     outFeat2 = "inFeat_selected"
     itemList.append(outFeat2)
     whereClause = '"RASTERVALU" = "min_depth"'
-    arcpy.Select_analysis(inFeat, outFeat2, whereClause)
-    arcpy.Copy_management(outFeat2, outFeat)
+    arcpy.analysis.Select(inFeat, outFeat2, whereClause)
+    arcpy.management.Copy(outFeat2, outFeat)
     # count the number of profiles
-    noLines = int(arcpy.GetCount_management(dissolveLineFeat).getOutput(0))
+    noLines = int(arcpy.management.GetCount(dissolveLineFeat).getOutput(0))
 
     if noLines < 2:  # only one profile
         # get head depth
@@ -858,7 +858,7 @@ def calculate_segmentSlope(
         outFeat3 = "outFeat2_sorted"
         itemList.append(outFeat3)
         sortField = [["RIGHT_FID", "Descending"]]
-        arcpy.Sort_management(outFeat2, outFeat3, sortField)
+        arcpy.management.Sort(outFeat2, outFeat3, sortField)
         # get a list of ids and fids
         cursor = arcpy.SearchCursor(outFeat3)
         idList = []
@@ -890,14 +890,14 @@ def calculate_segmentSlope(
                 text = text + str(i) + ","
             text = text[0:-1] + ")"
             whereClause = "OBJECTID NOT IN " + text
-            arcpy.Select_analysis(outFeat3, outFeat4, whereClause)
-            arcpy.Copy_management(outFeat4, outFeat)
+            arcpy.analysis.Select(outFeat3, outFeat4, whereClause)
+            arcpy.management.Copy(outFeat4, outFeat)
         else:
-            arcpy.Copy_management(outFeat3, outFeat)
+            arcpy.management.Copy(outFeat3, outFeat)
         # startX and startY represent the XY of the start point of the line segment
         # endX and endY represent the XY of the end point the line segment
         # note that the end point of the first segment is the start point of the second segment, and so on
-        arcpy.AddXY_management(outFeat)
+        arcpy.management.AddXY(outFeat)
         cursor = arcpy.SearchCursor(outFeat)
         startXList = []
         startYList = []
@@ -983,12 +983,12 @@ def calculate_Ratio_Slopes(
 
     # dissolve line features
     dissolvedField = "RIGHT_FID"
-    arcpy.Dissolve_management(inLineFeat, dissolveLineFeat, dissolvedField)
+    arcpy.management.Dissolve(inLineFeat, dissolveLineFeat, dissolvedField)
 
     # convert line to vertices, effectively identify the start and end points of the profiles
     outVerticeFeat1 = "dissolveLineFeat_vertices1"
     itemList.append(outVerticeFeat1)
-    arcpy.FeatureVerticesToPoints_management(
+    arcpy.management.FeatureVerticesToPoints(
         dissolveLineFeat, outVerticeFeat1, "All"
     )
 
@@ -1004,16 +1004,16 @@ def calculate_Ratio_Slopes(
     itemList.append(outTab1)
     statField = [["RASTERVALU", "MIN"]]
     caseField = "RIGHT_FID"
-    arcpy.Statistics_analysis(depthFeat1, outTab1, statField, caseField)
+    arcpy.analysis.Statistics(depthFeat1, outTab1, statField, caseField)
 
     # densify line features so that we have more points along the profile
     distance = "10 Meters"
-    arcpy.Densify_edit(dissolveLineFeat, "DISTANCE", distance)
+    arcpy.edit.Densify(dissolveLineFeat, "DISTANCE", distance)
 
     # convert line to vertices
     outVerticeFeat2 = "dissolveLineFeat_vertices2"
     itemList.append(outVerticeFeat2)
-    arcpy.FeatureVerticesToPoints_management(
+    arcpy.management.FeatureVerticesToPoints(
         dissolveLineFeat, outVerticeFeat2, "All"
     )
 
@@ -1028,7 +1028,7 @@ def calculate_Ratio_Slopes(
     itemList.append(outTab2)
     statField = [["RASTERVALU", "MIN"]]
     caseField = "RIGHT_FID"
-    arcpy.Statistics_analysis(depthFeat2, outTab2, statField, caseField)
+    arcpy.analysis.Statistics(depthFeat2, outTab2, statField, caseField)
 
     # call the helper function to calculate mean_segment_Slope
     outFeat1 = "outFeat_selected_final"
@@ -1038,7 +1038,7 @@ def calculate_Ratio_Slopes(
     )
 
     # calculate distance of the minimum depth point of each profile to the feature head
-    arcpy.Near_analysis(outFeat1, headFeat)
+    arcpy.analysis.Near(outFeat1, headFeat)
 
     # add and calculate fields
     fieldType = "DOUBLE"
@@ -1059,7 +1059,7 @@ def calculate_Ratio_Slopes(
         if fieldName in field_names:
             arcpy.AddMessage(fieldName + " exists and will be recalculated")
         else:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 dissolveLineFeat, fieldName, fieldType, fieldPrecision, fieldScale
             )
 
@@ -1084,7 +1084,7 @@ def calculate_Ratio_Slopes(
     # feature thickness equals surface depth minus bottom depth
     field = "thickness"
     expression = "!surface_depth! - !min_depth!"
-    arcpy.CalculateField_management(
+    arcpy.management.CalculateField(
         dissolveLineFeat, field, expression, "PYTHON3"
     )
 
@@ -1099,7 +1099,7 @@ def divisionZero(a, b):
         return a / b
             """
     expression = "divisionZero(!Shape_Length!, !thickness!)"
-    arcpy.CalculateField_management(
+    arcpy.management.CalculateField(
         dissolveLineFeat, field, expression, "PYTHON3", codeblock
     )
 
@@ -1124,7 +1124,7 @@ def divisionZero(a, b):
     del row, cursor
     arcpy.AddMessage("ratioList:" + str(ratioList))
     # obtain the number of profiles
-    nuLines = int(arcpy.GetCount_management(dissolveLineFeat).getOutput(0))
+    nuLines = int(arcpy.management.GetCount(dissolveLineFeat).getOutput(0))
     # obtain the number of non-nan value(s) in the ratioList. nan in ratioList is caused by thickness = 0
     nu_notNan = np.asarray(ratioList).size - np.isnan(np.asarray(ratioList)).sum()
 
@@ -1220,12 +1220,12 @@ def calculate_meansegment_Slopes(
 
     # dissolve line features
     dissolvedField = "RIGHT_FID"
-    arcpy.Dissolve_management(inLineFeat, dissolveLineFeat, dissolvedField)
+    arcpy.management.Dissolve(inLineFeat, dissolveLineFeat, dissolvedField)
 
     # convert line to vertices, effectively identify the start and end points of the profiles
     outVerticeFeat1 = "dissolveLineFeat_vertices1"
     itemList.append(outVerticeFeat1)
-    arcpy.FeatureVerticesToPoints_management(
+    arcpy.management.FeatureVerticesToPoints(
         dissolveLineFeat, outVerticeFeat1, "All"
     )
 
@@ -1241,16 +1241,16 @@ def calculate_meansegment_Slopes(
     itemList.append(outTab1)
     statField = [["RASTERVALU", "MIN"]]
     caseField = "RIGHT_FID"
-    arcpy.Statistics_analysis(depthFeat1, outTab1, statField, caseField)
+    arcpy.analysis.Statistics(depthFeat1, outTab1, statField, caseField)
 
     # densify line features so that we have more points along the profile
     distance = "10 Meters"
-    arcpy.Densify_edit(dissolveLineFeat, "DISTANCE", distance)
+    arcpy.edit.Densify(dissolveLineFeat, "DISTANCE", distance)
 
     # convert line to vertices
     outVerticeFeat2 = "dissolveLineFeat_vertices2"
     itemList.append(outVerticeFeat2)
-    arcpy.FeatureVerticesToPoints_management(
+    arcpy.management.FeatureVerticesToPoints(
         dissolveLineFeat, outVerticeFeat2, "All"
     )
 
@@ -1265,7 +1265,7 @@ def calculate_meansegment_Slopes(
     itemList.append(outTab2)
     statField = [["RASTERVALU", "MIN"]]
     caseField = "RIGHT_FID"
-    arcpy.Statistics_analysis(depthFeat2, outTab2, statField, caseField)
+    arcpy.analysis.Statistics(depthFeat2, outTab2, statField, caseField)
 
     # call the helper function to calculate mean_segment_Slope
     outFeat1 = "outFeat_selected_final"
@@ -1308,7 +1308,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     # generate bounding rectangle
     MbrFeatClass = "bounding_rectangle"
     itemList.append(MbrFeatClass)
-    arcpy.MinimumBoundingGeometry_management(
+    arcpy.management.MinimumBoundingGeometry(
         inFeatClass, MbrFeatClass, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
     )
     # add MBG_LENGTH, MBG_WIDTH AND MBG_ORIENTATION to inFeatClass
@@ -1358,7 +1358,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
         if fieldName in field_names:
             arcpy.AddMessage(fieldName + " exists and will be recalculated")
         else:
-            arcpy.AddField_management(
+            arcpy.management.AddField(
                 inFeatClass, fieldName, fieldType, fieldPrecision, fieldScale
             )
     # call the helper function to split each polygon in the inFeatClass into multiple sub-polygons
@@ -1369,18 +1369,18 @@ def calculateSinuosity_LwR_WdR_Slopes(
     # convert polygon to line
     lineFeatClass1 = workspace + "/" + "lineFeatClass1"
     itemList.append(lineFeatClass1)
-    arcpy.PolygonToLine_management(splitFeatClass, lineFeatClass1)
+    arcpy.management.PolygonToLine(splitFeatClass, lineFeatClass1)
     arcpy.AddMessage("polygon to line done")
     # selection
     lineFeatClass2 = workspace + "/" + "lineFeatClass2"
     itemList.append(lineFeatClass2)
     whereClause = "LEFT_FID <> -1"
-    arcpy.Select_analysis(lineFeatClass1, lineFeatClass2, whereClause)
+    arcpy.analysis.Select(lineFeatClass1, lineFeatClass2, whereClause)
     arcpy.AddMessage("selection done")
     # spatial join
     lineFeatClass3 = workspace + "/" + "lineFeatClass3"
     itemList.append(lineFeatClass3)
-    arcpy.SpatialJoin_analysis(
+    arcpy.analysis.SpatialJoin(
         lineFeatClass2,
         inFeatClass,
         lineFeatClass3,
@@ -1395,13 +1395,13 @@ def calculateSinuosity_LwR_WdR_Slopes(
     itemList.append(outTab1)
     statsField = [["Shape_Length", "SUM"]]
     caseField = ["RIGHT_FID", "featID"]
-    arcpy.Statistics_analysis(lineFeatClass3, outTab1, statsField, caseField)
+    arcpy.analysis.Statistics(lineFeatClass3, outTab1, statsField, caseField)
 
     outTab2 = "outTab2"
     itemList.append(outTab2)
     statsField = [["SUM_Shape_Length", "MEAN"]]
     caseField = "featID"
-    arcpy.Statistics_analysis(outTab1, outTab2, statsField, caseField)
+    arcpy.analysis.Statistics(outTab1, outTab2, statsField, caseField)
     arcpy.AddMessage("summary statistics done")
     # add mean_width field
     field = "mean_width"
@@ -1413,11 +1413,11 @@ def calculateSinuosity_LwR_WdR_Slopes(
     # convert feature vertices to points
     inFeatVertices = workspace + "/" + "inFeatVertices"
     itemList.append(inFeatVertices)
-    arcpy.FeatureVerticesToPoints_management(inFeatClass, inFeatVertices, "ALL")
+    arcpy.management.FeatureVerticesToPoints(inFeatClass, inFeatVertices, "ALL")
     arcpy.AddMessage("feature vertices to points done")
 
     # add x and y
-    arcpy.AddXY_management(inFeatVertices)
+    arcpy.management.AddXY(inFeatVertices)
     arcpy.AddMessage("Add x and y done")
 
     # export table as csv file
@@ -1433,7 +1433,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     HelperFunctions.keepSelectedFields(inFeatVertices, fieldsToKeep)
     arcpy.AddMessage("delete fields done")
 
-    arcpy.CopyRows_management(inFeatVertices, csvFile1)
+    arcpy.management.CopyRows(inFeatVertices, csvFile1)
     arcpy.AddMessage("export to first csv done")
     # read the csv file as a pandas data frame, add dtype parameter (2023-06-20)
     dtypeD = {
@@ -1477,7 +1477,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     whereClause = "OBJECTID IN " + text
     pointFeat1 = workspace + "/" + "pointFeat1"
     itemList.append(pointFeat1)
-    arcpy.Select_analysis(inFeatVertices, pointFeat1, whereClause)
+    arcpy.analysis.Select(inFeatVertices, pointFeat1, whereClause)
     arcpy.AddMessage("selection done")
 
     # extract bathy values to points
@@ -1493,7 +1493,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     mosaicBathy = "mosaicBathy"
     itemList.append(mosaicBathy)
     inputRasters = [inBathy, inFocal]
-    arcpy.MosaicToNewRaster_management(
+    arcpy.management.MosaicToNewRaster(
         inputRasters,
         workspace,
         mosaicBathy,
@@ -1521,8 +1521,8 @@ def calculateSinuosity_LwR_WdR_Slopes(
     # modified the codes as below to fix a weird error when running the tools in ArcGIS Pro Python command window (2025-08-05)
     pointFeat2 = workspace + "/" + "pointFeat2"
     itemList.append(pointFeat2)
-    arcpy.Copy_management(pointFeat1, pointFeat2)
-    arcpy.CopyRows_management(pointFeat2, csvFile2)
+    arcpy.management.Copy(pointFeat1, pointFeat2)
+    arcpy.management.CopyRows(pointFeat2, csvFile2)
     arcpy.AddMessage("export to second csv done")
         
     # read the csv file as a pandas data frame, add dtype parameter (2023-06-20)
@@ -1594,14 +1594,14 @@ def calculateSinuosity_LwR_WdR_Slopes(
         text = text + str(i) + ","
     text = text[0:-1] + ")"
     whereClause = "OBJECTID IN " + text
-    arcpy.Select_analysis(pointFeat1, headFeatClass, whereClause)
+    arcpy.analysis.Select(pointFeat1, headFeatClass, whereClause)
     # generate foot featureclass
     text = "("
     for i in footList:
         text = text + str(i) + ","
     text = text[0:-1] + ")"
     whereClause = "OBJECTID IN " + text
-    arcpy.Select_analysis(pointFeat1, footFeatClass, whereClause)
+    arcpy.analysis.Select(pointFeat1, footFeatClass, whereClause)
     arcpy.AddMessage("generate head and foot features done")
 
     # generate first points featureclass
@@ -1612,7 +1612,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     whereClause = "OBJECTID IN " + text
     firstFeatClass = workspace + "/" + "firstPoints"
     itemList.append(firstFeatClass)
-    arcpy.Select_analysis(pointFeat1, firstFeatClass, whereClause)
+    arcpy.analysis.Select(pointFeat1, firstFeatClass, whereClause)
     # generate last points featureclass
     text = "("
     for i in lastList:
@@ -1621,14 +1621,14 @@ def calculateSinuosity_LwR_WdR_Slopes(
     whereClause = "OBJECTID IN " + text
     lastFeatClass = workspace + "/" + "lastPoints"
     itemList.append(lastFeatClass)
-    arcpy.Select_analysis(pointFeat1, lastFeatClass, whereClause)
+    arcpy.analysis.Select(pointFeat1, lastFeatClass, whereClause)
     arcpy.AddMessage("generate first and last points features done")
 
     # polygon to point
     pointFeat2 = workspace + "/" + "pointFeat2"
     itemList.append(pointFeat2)
     # Use FeatureToPoint function to find a point inside each part
-    arcpy.FeatureToPoint_management(splitFeatClass, pointFeat2, "CENTROID")
+    arcpy.management.FeatureToPoint(splitFeatClass, pointFeat2, "CENTROID")
     arcpy.AddMessage("feature to point done")
 
     # sort the points
@@ -1636,24 +1636,24 @@ def calculateSinuosity_LwR_WdR_Slopes(
     itemList.append(pointFeat2_1)
     pointFeat2_2 = workspace + "/" + "pointFeat2_2"
     itemList.append(pointFeat2_2)
-    arcpy.Sort_management(pointFeat2, pointFeat2_1, [["ORIG_FID", "ASCENDING"]])
-    arcpy.Sort_management(pointFeat2, pointFeat2_2, [["ORIG_FID", "DESCENDING"]])
+    arcpy.management.Sort(pointFeat2, pointFeat2_1, [["ORIG_FID", "ASCENDING"]])
+    arcpy.management.Sort(pointFeat2, pointFeat2_2, [["ORIG_FID", "DESCENDING"]])
 
     # add x and y
-    arcpy.AddXY_management(pointFeat2_1)
-    arcpy.AddXY_management(pointFeat2_2)
+    arcpy.management.AddXY(pointFeat2_1)
+    arcpy.management.AddXY(pointFeat2_2)
     print("Add x and y done")
 
     # merge the first point, the centre points of each sub-polygon, then the last point
     mergedFeats = [firstFeatClass, pointFeat2_1, lastFeatClass]
     mergedFeat1_1 = workspace + "/" + "merged_points1_1"
     itemList.append(mergedFeat1_1)
-    arcpy.Merge_management(mergedFeats, mergedFeat1_1)
+    arcpy.management.Merge(mergedFeats, mergedFeat1_1)
 
     mergedFeats = [firstFeatClass, pointFeat2_2, lastFeatClass]
     mergedFeat1_2 = workspace + "/" + "merged_points1_2"
     itemList.append(mergedFeat1_2)
-    arcpy.Merge_management(mergedFeats, mergedFeat1_2)
+    arcpy.management.Merge(mergedFeats, mergedFeat1_2)
     arcpy.AddMessage("merged done")
 
     # point to line
@@ -1662,7 +1662,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     lineField = "featID"
     sortField = "OBJECTID"
     # Execute PointsToLine
-    arcpy.PointsToLine_management(mergedFeat1_1, lineFeat1_1, lineField, sortField)
+    arcpy.management.PointsToLine(mergedFeat1_1, lineFeat1_1, lineField, sortField)
     # If the above function fails silently, call my own replicated function
     if arcpy.Exists(lineFeat1_1):
         arcpy.AddMessage(lineFeat1_1 + " exists")
@@ -1674,7 +1674,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     lineField = "featID"
     sortField = "OBJECTID"
     # Execute PointsToLine
-    arcpy.PointsToLine_management(mergedFeat1_2, lineFeat1_2, lineField, sortField)
+    arcpy.management.PointsToLine(mergedFeat1_2, lineFeat1_2, lineField, sortField)
     # If the above function fails silently, call my own replicated function
     if arcpy.Exists(lineFeat1_2):
         arcpy.AddMessage(lineFeat1_2 + " exists")
@@ -1689,7 +1689,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     mergedFeats = [lineFeat1_1, lineFeat1_2]
     mergedCurveFeat = workspace + "/" + "merged_curves"
     itemList.append(mergedCurveFeat)
-    arcpy.Merge_management(mergedFeats, mergedCurveFeat)
+    arcpy.management.Merge(mergedFeats, mergedCurveFeat)
     arcpy.AddMessage("merged curves done")
 
     # summary statistics
@@ -1698,14 +1698,14 @@ def calculateSinuosity_LwR_WdR_Slopes(
     itemList.append(outTab3)
     statsField = [["Shape_Length", "MIN"]]
     caseField = ["featID"]
-    arcpy.Statistics_analysis(mergedCurveFeat, outTab3, statsField, caseField)
+    arcpy.analysis.Statistics(mergedCurveFeat, outTab3, statsField, caseField)
 
     # merge to create a straight line connecting the first
     # and last point in order to calculate the straight length (head to foot length)
     mergedFeats = [firstFeatClass, lastFeatClass]
     mergedFeat2 = workspace + "/" + "merged_points2"
     itemList.append(mergedFeat2)
-    arcpy.Merge_management(mergedFeats, mergedFeat2)
+    arcpy.management.Merge(mergedFeats, mergedFeat2)
     arcpy.AddMessage("merged done")
 
     # point to line
@@ -1714,7 +1714,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     lineField = "featID"
     sortField = "OBJECTID"
     # Execute PointsToLine
-    arcpy.PointsToLine_management(mergedFeat2, lineFeat2, lineField, sortField)
+    arcpy.management.PointsToLine(mergedFeat2, lineFeat2, lineField, sortField)
     # If the above function fails silently, call my own replicated function
     if arcpy.Exists(lineFeat2):
         arcpy.AddMessage(lineFeat2 + " exists")
@@ -1739,11 +1739,11 @@ def calculateSinuosity_LwR_WdR_Slopes(
     arcpy.AddMessage("add heat_foot_length field done")
     field = "Sinuosity"
     expression = "!sinuous_length! / !head_foot_length!"
-    arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON3")
+    arcpy.management.CalculateField(inFeatClass, field, expression, "PYTHON3")
     arcpy.AddMessage("calculate Sinuosity field done")
     field = "LengthWidthRatio"
     expression = "!sinuous_length! / !mean_width!"
-    arcpy.CalculateField_management(inFeatClass, field, expression, "PYTHON3")
+    arcpy.management.CalculateField(inFeatClass, field, expression, "PYTHON3")
     arcpy.AddMessage("calculate LengthWidthRatio field done")
 
     # calculate mean widthThicknessRatio,mean segment slope and other slope parameters
@@ -1757,7 +1757,7 @@ def calculateSinuosity_LwR_WdR_Slopes(
     for row in cursor:
         # only do this every 100 iterations
         if i % 100 == 1:
-            arcpy.Compact_management(
+            arcpy.management.Compact(
                 workspace
             )  # compact the geodatabase to reduce its size and potentially improve the performance
             arcpy.AddMessage("Compacted the geodatabase")
@@ -1788,13 +1788,13 @@ def calculateSinuosity_LwR_WdR_Slopes(
                 time1 = datetime.now()
                 lineFeatClass4 = workspace + "/" + "lineFeatClass4"
                 whereClause = "featID = " + str(featID)
-                arcpy.Select_analysis(lineFeatClass3, lineFeatClass4, whereClause)
+                arcpy.analysis.Select(lineFeatClass3, lineFeatClass4, whereClause)
                 dissolveLineFeat = workspace + "/" + "lineFeatClass4_dissolved"
 
                 headFeat1 = workspace + "/" + "headFeat1"
                 footFeat1 = workspace + "/" + "footFeat1"
-                arcpy.Select_analysis(headFeatClass, headFeat1, whereClause)
-                arcpy.Select_analysis(footFeatClass, footFeat1, whereClause)
+                arcpy.analysis.Select(headFeatClass, headFeat1, whereClause)
+                arcpy.analysis.Select(footFeatClass, footFeat1, whereClause)
                 # call the helper function to calculate the 8 attributes
                 # the input lineFeatClass4 effectively contains cross-feature profiles
                 (
@@ -1839,13 +1839,13 @@ def calculateSinuosity_LwR_WdR_Slopes(
                 time1 = datetime.now()
                 lineFeatClass4 = workspace + "/" + "lineFeatClass4"
                 whereClause = "featID = " + str(featID)
-                arcpy.Select_analysis(lineFeatClass3, lineFeatClass4, whereClause)
+                arcpy.analysis.Select(lineFeatClass3, lineFeatClass4, whereClause)
                 dissolveLineFeat = workspace + "/" + "lineFeatClass4_dissolved"
 
                 headFeat1 = workspace + "/" + "headFeat1"
                 footFeat1 = workspace + "/" + "footFeat1"
-                arcpy.Select_analysis(headFeatClass, headFeat1, whereClause)
-                arcpy.Select_analysis(footFeatClass, footFeat1, whereClause)
+                arcpy.analysis.Select(headFeatClass, headFeat1, whereClause)
+                arcpy.analysis.Select(footFeatClass, footFeat1, whereClause)
                 # call the helper function to calculate the attribute
                 # the input lineFeatClass4 effectively contains cross-feature profiles
                 meanSlope = calculate_meansegment_Slopes(
@@ -1888,21 +1888,21 @@ def create_profiles1(inFeat, rectangleFeat, outPointFeat, tempFolder):
     # generate centre point
     centreFeat = "centreFeat"
     itemList.append(centreFeat)
-    arcpy.FeatureToPoint_management(inFeat, centreFeat, "CENTROID")
+    arcpy.management.FeatureToPoint(inFeat, centreFeat, "CENTROID")
     tempLayer = "tempLayer"
     itemList.append(tempLayer)
-    arcpy.MakeFeatureLayer_management(centreFeat, tempLayer)
+    arcpy.management.MakeFeatureLayer(centreFeat, tempLayer)
     # if the centre point is not inside the polygon
     # (e.g., in case of a multipart feature after using the connection tools)
     # we need to force it
-    arcpy.SelectLayerByLocation_management(tempLayer, "WITHIN", inFeat)
+    arcpy.management.SelectLayerByLocation(tempLayer, "WITHIN", inFeat)
 
     matchcount = int(arcpy.management.GetCount(tempLayer)[0])
     if matchcount == 0:
-        arcpy.FeatureToPoint_management(inFeat, centreFeat, "INSIDE")
+        arcpy.management.FeatureToPoint(inFeat, centreFeat, "INSIDE")
     arcpy.AddMessage("centre point generated")
     # add x and y
-    arcpy.AddXY_management(centreFeat)
+    arcpy.management.AddXY(centreFeat)
     arcpy.AddMessage("Add x and y to centre point")
 
     cursor = arcpy.SearchCursor(rectangleFeat)
@@ -1959,7 +1959,7 @@ def create_profiles1(inFeat, rectangleFeat, outPointFeat, tempFolder):
     fil.close()
     del cursor, row
 
-    arcpy.XYToLine_management(
+    arcpy.management.XYToLine(
         csvFile,
         lineFC,
         "from_x",
@@ -1979,20 +1979,20 @@ def create_profiles1(inFeat, rectangleFeat, outPointFeat, tempFolder):
         oID = row.getValue("OID")
         whereClause = '"OID" = ' + str(oID)
         sFeat = "selection_" + str(oID)
-        arcpy.Select_analysis(lineFC, sFeat, whereClause)
+        arcpy.analysis.Select(lineFC, sFeat, whereClause)
         # intersect each profile with the feature polygon
         fcList = [sFeat, inFeat]
         lineFC1 = "lineFC1"
-        arcpy.Intersect_analysis(fcList, lineFC1, "ALL", "", "LINE")
+        arcpy.analysis.Intersect(fcList, lineFC1, "ALL", "", "LINE")
 
         # convert profile line to profile points along the line
         # normally, the lineFC1 should only have one feature, but occasionally
         # it has 2 or more features due to the default cluster tolerance setting in the above intersect analysis
         # the following codes obtain the length of the main line
-        nuLines = int(arcpy.GetCount_management(lineFC1).getOutput(0))
+        nuLines = int(arcpy.management.GetCount(lineFC1).getOutput(0))
         if nuLines < 1:  # if lineFC1 has no feature, skip this profile
-            arcpy.Delete_management(sFeat)
-            arcpy.Delete_management(lineFC1)
+            arcpy.management.Delete(sFeat)
+            arcpy.management.Delete(lineFC1)
         else:
             lineLengthList = []
             cursor2 = arcpy.SearchCursor(lineFC1)
@@ -2025,31 +2025,31 @@ def create_profiles1(inFeat, rectangleFeat, outPointFeat, tempFolder):
                 if dist > 10:
                     dist = 10
             # densify the vertices of the profile lines, effectively adding a vertice at each dist
-            arcpy.Densify_edit(lineFC1, "DISTANCE", str(dist) + " Meters")
+            arcpy.edit.Densify(lineFC1, "DISTANCE", str(dist) + " Meters")
             # add an ID field
             fieldType = "LONG"
             fieldPrecision = 10
             fieldName = "profileID"
-            arcpy.AddField_management(lineFC1, fieldName, fieldType, fieldPrecision)
+            arcpy.management.AddField(lineFC1, fieldName, fieldType, fieldPrecision)
             expression = oID
-            arcpy.CalculateField_management(
+            arcpy.management.CalculateField(
                 lineFC1, fieldName, expression, "PYTHON3"
             )
 
-            arcpy.FeatureVerticesToPoints_management(lineFC1, pointFC, "ALL")
+            arcpy.management.FeatureVerticesToPoints(lineFC1, pointFC, "ALL")
             # spatial sort
             sort_fields = [["Shape", "ASCENDING"]]
             # Use UR algorithm
             sort_method = "UR"
-            arcpy.Sort_management(pointFC, pointFC1, sort_fields, sort_method)
+            arcpy.management.Sort(pointFC, pointFC1, sort_fields, sort_method)
 
-            arcpy.Delete_management(sFeat)
-            arcpy.Delete_management(lineFC1)
-            arcpy.Delete_management(pointFC)
+            arcpy.management.Delete(sFeat)
+            arcpy.management.Delete(lineFC1)
+            arcpy.management.Delete(pointFC)
 
     del cursor, row
 
-    arcpy.Merge_management(mergeFCList, outPointFeat)
+    arcpy.management.Merge(mergeFCList, outPointFeat)
     arcpy.AddMessage("merge done")
     HelperFunctions.deleteDataItems(itemList)
 
@@ -2071,10 +2071,10 @@ def create_profiles2(inFeat, rectangleFeat, outPointFeat, tempFolder):
     # bounding rectangle to points
     MbrPoints = "bounding_rectangle_points"
     itemList.append(MbrPoints)
-    arcpy.FeatureVerticesToPoints_management(rectangleFeat, MbrPoints, "ALL")
+    arcpy.management.FeatureVerticesToPoints(rectangleFeat, MbrPoints, "ALL")
     arcpy.AddMessage("bounding to points done")
     # add x and y
-    arcpy.AddXY_management(MbrPoints)
+    arcpy.management.AddXY(MbrPoints)
     arcpy.AddMessage("Add x and y done")
     # get x and y values for the starting and ending points
     cursor = arcpy.SearchCursor(MbrPoints)
@@ -2116,7 +2116,7 @@ def create_profiles2(inFeat, rectangleFeat, outPointFeat, tempFolder):
     # Each output cell will be polyline
     geometryType = "POLYLINE"
 
-    arcpy.CreateFishnet_management(
+    arcpy.management.CreateFishnet(
         fishnetFeat,
         originCoordinate,
         yAxisCoordinate,
@@ -2141,23 +2141,23 @@ def create_profiles2(inFeat, rectangleFeat, outPointFeat, tempFolder):
         if (oID > 1) & (oID < 7):
             whereClause = '"OID" = ' + str(oID)
             sFeat = "selection_" + str(oID)
-            arcpy.Select_analysis(fishnetFeat, sFeat, whereClause)
+            arcpy.analysis.Select(fishnetFeat, sFeat, whereClause)
             fcList = [sFeat, inFeat]
             lineFC1 = "lineFC1"
 
-            arcpy.Intersect_analysis(fcList, lineFC1, "ALL", "", "LINE")
+            arcpy.analysis.Intersect(fcList, lineFC1, "ALL", "", "LINE")
 
             # normally, the lineFC1 should only have one feature, but occasionally
             # it has 0 feature due to intersecting with a point or not intersecting the feature at all
             # (e.g., in case of the feature is linearly connected multipart feature)
             # or >=2 features due to the default cluster tolerance setting in the above intersect analysis
             # the following codes obtain the length of the main line
-            nuLines = int(arcpy.GetCount_management(lineFC1).getOutput(0))
+            nuLines = int(arcpy.management.GetCount(lineFC1).getOutput(0))
             noFeat1 += nuLines
 
             if nuLines < 1:  # if lineFC1 has no feature, skip this profile
-                arcpy.Delete_management(sFeat)
-                arcpy.Delete_management(lineFC1)
+                arcpy.management.Delete(sFeat)
+                arcpy.management.Delete(lineFC1)
             else:  # if lineFC1 has 1 or more features
                 lineLengthList = []
                 cursor2 = arcpy.SearchCursor(lineFC1)
@@ -2189,30 +2189,30 @@ def create_profiles2(inFeat, rectangleFeat, outPointFeat, tempFolder):
                     if dist > 10:
                         dist = 10
                 # densify the vertices of the profile lines, effectively adding a vertice at each dist
-                arcpy.Densify_edit(lineFC1, "DISTANCE", str(dist) + " Meters")
+                arcpy.edit.Densify(lineFC1, "DISTANCE", str(dist) + " Meters")
 
                 # add an ID field
                 fieldType = "LONG"
                 fieldPrecision = 10
                 fieldName = "profileID"
-                arcpy.AddField_management(
+                arcpy.management.AddField(
                     lineFC1, fieldName, fieldType, fieldPrecision
                 )
                 expression = oID
-                arcpy.CalculateField_management(
+                arcpy.management.CalculateField(
                     lineFC1, fieldName, expression, "PYTHON3"
                 )
 
-                arcpy.FeatureVerticesToPoints_management(lineFC1, pointFC, "ALL")
+                arcpy.management.FeatureVerticesToPoints(lineFC1, pointFC, "ALL")
                 # spatial sort
                 sort_fields = [["Shape", "ASCENDING"]]
                 # Use UR algorithm
                 sort_method = "UR"
-                arcpy.Sort_management(pointFC, pointFC1, sort_fields, sort_method)
+                arcpy.management.Sort(pointFC, pointFC1, sort_fields, sort_method)
 
-                arcpy.Delete_management(sFeat)
-                arcpy.Delete_management(lineFC1)
-                arcpy.Delete_management(pointFC)
+                arcpy.management.Delete(sFeat)
+                arcpy.management.Delete(lineFC1)
+                arcpy.management.Delete(pointFC)
 
     del cursor, row
 
@@ -2220,7 +2220,7 @@ def create_profiles2(inFeat, rectangleFeat, outPointFeat, tempFolder):
         arcpy.AddMessage(
             str(noFeat1) + " cross-section profiles have actually been created."
         )
-        arcpy.Merge_management(mergeFCList, outPointFeat)
+        arcpy.management.Merge(mergeFCList, outPointFeat)
         arcpy.AddMessage("merge done")
     # when none of the five cross-section profiles cross the input feature,
     # we force it to generate one profile passing through the centre point
@@ -2245,22 +2245,22 @@ def create_profiles3(inFeat, rectangleFeat, outPointFeat, tempFolder):
     # generate centre point
     centreFeat = "centreFeat"
     itemList.append(centreFeat)
-    arcpy.FeatureToPoint_management(inFeat, centreFeat, "CENTROID")
+    arcpy.management.FeatureToPoint(inFeat, centreFeat, "CENTROID")
 
     tempLayer = "tempLayer"
     itemList.append(tempLayer)
-    arcpy.MakeFeatureLayer_management(centreFeat, tempLayer)
+    arcpy.management.MakeFeatureLayer(centreFeat, tempLayer)
     # if the centre point is not inside the polygon
     # (e.g., in case of a multipart feature after using the connection tools)
     # we need to force it
-    arcpy.SelectLayerByLocation_management(tempLayer, "WITHIN", inFeat)
+    arcpy.management.SelectLayerByLocation(tempLayer, "WITHIN", inFeat)
 
     matchcount = int(arcpy.management.GetCount(tempLayer)[0])
     if matchcount == 0:
-        arcpy.FeatureToPoint_management(inFeat, centreFeat, "INSIDE")
+        arcpy.management.FeatureToPoint(inFeat, centreFeat, "INSIDE")
     arcpy.AddMessage("centre point generated")
     # add x and y
-    arcpy.AddXY_management(centreFeat)
+    arcpy.management.AddXY(centreFeat)
     arcpy.AddMessage("Add x and y to centre point")
 
     cursor = arcpy.SearchCursor(rectangleFeat)
@@ -2310,7 +2310,7 @@ def create_profiles3(inFeat, rectangleFeat, outPointFeat, tempFolder):
     fil.close()
     del cursor, row
 
-    arcpy.XYToLine_management(
+    arcpy.management.XYToLine(
         csvFile,
         lineFC,
         "from_x",
@@ -2330,12 +2330,12 @@ def create_profiles3(inFeat, rectangleFeat, outPointFeat, tempFolder):
         oID = row.getValue("OID")
         whereClause = '"OID" = ' + str(oID)
         sFeat = "selection_" + str(oID)
-        arcpy.Select_analysis(lineFC, sFeat, whereClause)
+        arcpy.analysis.Select(lineFC, sFeat, whereClause)
         # intersect each profile with the feature polygon
         fcList = [sFeat, inFeat]
         lineFC1 = "lineFC1"
 
-        arcpy.Intersect_analysis(fcList, lineFC1, "ALL", "", "LINE")
+        arcpy.analysis.Intersect(fcList, lineFC1, "ALL", "", "LINE")
 
         # convert profile line to profile points along the line
         # normally, the lineFC1 should only have one feature, but occasionally
@@ -2372,31 +2372,31 @@ def create_profiles3(inFeat, rectangleFeat, outPointFeat, tempFolder):
             if dist > 10:
                 dist = 10
         # densify the vertices of the profile lines, effectively adding a vertice at each dist
-        arcpy.Densify_edit(lineFC1, "DISTANCE", str(dist) + " Meters")
+        arcpy.edit.Densify(lineFC1, "DISTANCE", str(dist) + " Meters")
         # add an ID field
         fieldType = "LONG"
         fieldPrecision = 10
         fieldName = "profileID"
-        arcpy.AddField_management(lineFC1, fieldName, fieldType, fieldPrecision)
+        arcpy.management.AddField(lineFC1, fieldName, fieldType, fieldPrecision)
         expression = oID
-        arcpy.CalculateField_management(
+        arcpy.management.CalculateField(
             lineFC1, fieldName, expression, "PYTHON3"
         )
 
-        arcpy.FeatureVerticesToPoints_management(lineFC1, pointFC, "ALL")
+        arcpy.management.FeatureVerticesToPoints(lineFC1, pointFC, "ALL")
         # spatial sort
         sort_fields = [["Shape", "ASCENDING"]]
         # Use UR algorithm
         sort_method = "UR"
-        arcpy.Sort_management(pointFC, pointFC1, sort_fields, sort_method)
+        arcpy.management.Sort(pointFC, pointFC1, sort_fields, sort_method)
 
-        arcpy.Delete_management(sFeat)
-        arcpy.Delete_management(lineFC1)
-        arcpy.Delete_management(pointFC)
+        arcpy.management.Delete(sFeat)
+        arcpy.management.Delete(lineFC1)
+        arcpy.management.Delete(pointFC)
 
     del cursor, row
 
-    arcpy.Merge_management(mergeFCList, outPointFeat)
+    arcpy.management.Merge(mergeFCList, outPointFeat)
     arcpy.AddMessage("merge done")
     HelperFunctions.deleteDataItems(itemList)
 
@@ -3082,7 +3082,7 @@ def myPointsToLine(inPoints, outLines, lineField, tempFolder):
     # sort the inPoints first
     sortFeat = "inPoints_sorted"
     sortField = [[lineField, "ASCENDING"]]
-    arcpy.Sort_management(inPoints, sortFeat, sortField)
+    arcpy.management.Sort(inPoints, sortFeat, sortField)
     # loop through the sortFeat and populate these three lists for the information we need
     idList = []
     xList = []
@@ -3122,7 +3122,7 @@ def myPointsToLine(inPoints, outLines, lineField, tempFolder):
     fil.close()
     # convert XY table (the csv file) to lines, then dissolve
     lineFeat = "xyLines"
-    arcpy.XYToLine_management(
+    arcpy.management.XYToLine(
         csvFile,
         lineFeat,
         "from_x",
@@ -3134,10 +3134,10 @@ def myPointsToLine(inPoints, outLines, lineField, tempFolder):
         inPoints,
     )
 
-    arcpy.Dissolve_management(lineFeat, outLines, lineField)
-    arcpy.Delete_management(sortFeat)
-    arcpy.Delete_management(csvFile)
-    arcpy.Delete_management(lineFeat)
+    arcpy.management.Dissolve(lineFeat, outLines, lineField)
+    arcpy.management.Delete(sortFeat)
+    arcpy.management.Delete(csvFile)
+    arcpy.management.Delete(lineFeat)
 
     return
 
@@ -3149,7 +3149,7 @@ def splitFeat(workspace, inFeat, inBathy, noSplit):
     # inBathy: input bathymetry grid
     # noSplit: number of subsets to split
 
-    noFeat = int(arcpy.GetCount_management(inFeat).getOutput(0))
+    noFeat = int(arcpy.management.GetCount(inFeat).getOutput(0))
     featCount = int(noFeat / noSplit)
     featList = []
     bathyList = []
@@ -3166,13 +3166,13 @@ def splitFeat(workspace, inFeat, inBathy, noSplit):
     while i <= noSplit:
         # create a File Geodatabase
         gdbName = baseName + str(i) + '.gdb'
-        arcpy.CreateFileGDB_management(path, gdbName)
+        arcpy.management.CreateFileGDB(path, gdbName)
         arcpy.AddMessage(gdbName + ' created')
 
         # copy inBathy
         data1 = path + '/' + gdbName + '/' + inBathy
         bathyList.append(data1)
-        arcpy.Copy_management(inBathy, data1)
+        arcpy.management.Copy(inBathy, data1)
         arcpy.AddMessage(inBathy + ' copied')
 
         # select a subset of inFeat depending on the number of splits
@@ -3189,7 +3189,7 @@ def splitFeat(workspace, inFeat, inBathy, noSplit):
 
         # create temp folder
         folderName = 'temp' + str(i)
-        arcpy.CreateFolder_management(path, folderName)
+        arcpy.management.CreateFolder(path, folderName)
         arcpy.AddMessage(folderName + ' created')
         tempFolder = path + '/' + folderName
         tempfolderList.append(tempFolder)
@@ -3222,7 +3222,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
     for field in fieldList:
         if field in field_names:
             arcpy.AddMessage(field + " already exists and will be deleted")
-            arcpy.DeleteField_management(inFeatClass, field)
+            arcpy.management.DeleteField(inFeatClass, field)
 
     # expand inBathy
     # This is to ensure that the profile point(s) at the edge of bathymetry grid have depth values
@@ -3234,7 +3234,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
     # mosaic to new raster
     mosaicBathy = "mosaicBathy"
     inputRasters = [inBathy, inFocal]
-    arcpy.MosaicToNewRaster_management(
+    arcpy.management.MosaicToNewRaster(
         inputRasters,
         workspaceName,
         mosaicBathy,
@@ -3260,18 +3260,18 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
 
     # generate bounding rectangle
     MbrFeatClass = "bounding_rectangle"
-    arcpy.MinimumBoundingGeometry_management(
+    arcpy.management.MinimumBoundingGeometry(
         inFeatClass, MbrFeatClass, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
     )
     arcpy.AddMessage("bounding rectangle generated")
-    noFeat = int(arcpy.GetCount_management(inFeatClass).getOutput(0))
-    noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+    noFeat = int(arcpy.management.GetCount(inFeatClass).getOutput(0))
+    noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
     arcpy.AddMessage("noFeat: " + str(noFeat))
     arcpy.AddMessage("noRectangle: " + str(noRectangle))
     # Number of features in the bounding rectangle is expected to be the same as in the input featureclass
     # if not, regenerate the bounding rectangle up to three times
     if noRectangle < noFeat:
-        arcpy.MinimumBoundingGeometry_management(
+        arcpy.management.MinimumBoundingGeometry(
             inFeatClass,
             MbrFeatClass,
             "RECTANGLE_BY_WIDTH",
@@ -3279,9 +3279,9 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             "",
             "MBG_FIELDS",
         )
-        noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+        noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
         if noRectangle < noFeat:
-            arcpy.MinimumBoundingGeometry_management(
+            arcpy.management.MinimumBoundingGeometry(
                 inFeatClass,
                 MbrFeatClass,
                 "RECTANGLE_BY_WIDTH",
@@ -3289,9 +3289,9 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
                 "",
                 "MBG_FIELDS",
             )
-            noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+            noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
             if noRectangle < noFeat:
-                arcpy.MinimumBoundingGeometry_management(
+                arcpy.management.MinimumBoundingGeometry(
                     inFeatClass,
                     MbrFeatClass,
                     "RECTANGLE_BY_WIDTH",
@@ -3300,7 +3300,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
                     "MBG_FIELDS",
                 )
                 noRectangle = int(
-                    arcpy.GetCount_management(MbrFeatClass).getOutput(0)
+                    arcpy.management.GetCount(MbrFeatClass).getOutput(0)
                 )
                 if noRectangle < noFeat:
                     arcpy.AddMessage(
@@ -3316,7 +3316,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
     for row in cursor:
         # only do this every 100 iterations
         if k % 100 == 1:
-            arcpy.Compact_management(
+            arcpy.management.Compact(
                 workspaceName
             )  # compact the geodatabase to reduce its size and potentially improve the performance
             arcpy.AddMessage("Compacted the geodatabase")
@@ -3333,13 +3333,13 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             mergeList.append(inFeat)
 
             # select the feature
-            arcpy.Select_analysis(inFeatClass, inFeat, whereClause)
+            arcpy.analysis.Select(inFeatClass, inFeat, whereClause)
 
             boundFeat = workspaceName + "/" + "boundFeat_" + str(featID)
             itemList.append(boundFeat)
 
             # select the feature
-            arcpy.Select_analysis(MbrFeatClass, boundFeat, whereClause)
+            arcpy.analysis.Select(MbrFeatClass, boundFeat, whereClause)
 
             profilePointFC = workspaceName + "/" + "profilePointFC"
             itemList.append(profilePointFC)
@@ -3380,7 +3380,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             ExtractValuesToPoints(profilePointFC, mosaicBathy, profilePointFC1)
             arcpy.AddMessage("extract depth values done")
             # Add x and y
-            arcpy.AddXY_management(profilePointFC1)
+            arcpy.management.AddXY(profilePointFC1)
             arcpy.AddMessage("Add x and y done")
             # export the table to a csv file
             outCSV = tempFolder + "/" + "profilePointFC1.csv"
@@ -3390,7 +3390,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             if os.path.isfile(schemaFile):
                 os.remove(schemaFile)
 
-            arcpy.CopyRows_management(profilePointFC1, outCSV)
+            arcpy.management.CopyRows(profilePointFC1, outCSV)
             arcpy.AddMessage(outCSV + " is generated")
             # read in the csv file as pandas dataframe
             points = pd.read_csv(outCSV, sep=",", header=0)
@@ -3467,7 +3467,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
                 if field in field_names:
                     arcpy.AddMessage(field + " exists")
                 else:
-                    arcpy.AddField_management(
+                    arcpy.management.AddField(
                         inFeat, field, fieldType, field_length=fieldLength
                     )
 
@@ -3478,7 +3478,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             for field in fieldList:
                 # calculate string to a text field, the string must be enclosed by double quote
                 expression = '"' + valueList[i] + '"'
-                arcpy.CalculateField_management(
+                arcpy.management.CalculateField(
                     inFeat, field, expression, "PYTHON3"
                 )
                 i += 1
@@ -3497,7 +3497,7 @@ def calculateProfileBH(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
 
     # merge all individual features together
     mergedFeat = "mergedFeat"
-    arcpy.Merge_management(mergeList, mergedFeat)
+    arcpy.management.Merge(mergeList, mergedFeat)
     arcpy.AddMessage("merged all done")
 
     # transfer the field values to inFeatClass
@@ -3538,7 +3538,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
     for field in fieldList:
         if field in field_names:
             arcpy.AddMessage(field + " already exists and will be deleted")
-            arcpy.DeleteField_management(inFeatClass, field)
+            arcpy.management.DeleteField(inFeatClass, field)
 
     # expand inBathy
     # This is to ensure that the profile point(s) at the edge of bathymetry grid have depth values
@@ -3550,7 +3550,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
     # mosaic to new raster
     mosaicBathy = "mosaicBathy"
     inputRasters = [inBathy, inFocal]
-    arcpy.MosaicToNewRaster_management(
+    arcpy.management.MosaicToNewRaster(
         inputRasters,
         workspaceName,
         mosaicBathy,
@@ -3576,17 +3576,17 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
 
     # generate bounding rectangle
     MbrFeatClass = "bounding_rectangle"
-    arcpy.MinimumBoundingGeometry_management(
+    arcpy.management.MinimumBoundingGeometry(
         inFeatClass, MbrFeatClass, "RECTANGLE_BY_WIDTH", "NONE", "", "MBG_FIELDS"
     )
-    noFeat = int(arcpy.GetCount_management(inFeatClass).getOutput(0))
-    noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+    noFeat = int(arcpy.management.GetCount(inFeatClass).getOutput(0))
+    noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
     arcpy.AddMessage("noFeat: " + str(noFeat))
     arcpy.AddMessage("noRectangle: " + str(noRectangle))
     # Number of features in the bounding rectangle is expected to be the same as in the input featureclass
     # if not, regenerate the bounding rectangle up to three times
     if noRectangle < noFeat:
-        arcpy.MinimumBoundingGeometry_management(
+        arcpy.management.MinimumBoundingGeometry(
             inFeatClass,
             MbrFeatClass,
             "RECTANGLE_BY_WIDTH",
@@ -3594,9 +3594,9 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             "",
             "MBG_FIELDS",
         )
-        noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+        noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
         if noRectangle < noFeat:
-            arcpy.MinimumBoundingGeometry_management(
+            arcpy.management.MinimumBoundingGeometry(
                 inFeatClass,
                 MbrFeatClass,
                 "RECTANGLE_BY_WIDTH",
@@ -3604,9 +3604,9 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
                 "",
                 "MBG_FIELDS",
             )
-            noRectangle = int(arcpy.GetCount_management(MbrFeatClass).getOutput(0))
+            noRectangle = int(arcpy.management.GetCount(MbrFeatClass).getOutput(0))
             if noRectangle < noFeat:
-                arcpy.MinimumBoundingGeometry_management(
+                arcpy.management.MinimumBoundingGeometry(
                     inFeatClass,
                     MbrFeatClass,
                     "RECTANGLE_BY_WIDTH",
@@ -3615,7 +3615,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
                     "MBG_FIELDS",
                 )
                 noRectangle = int(
-                    arcpy.GetCount_management(MbrFeatClass).getOutput(0)
+                    arcpy.management.GetCount(MbrFeatClass).getOutput(0)
                 )
                 if noRectangle < noFeat:
                     arcpy.AddMessage(
@@ -3630,7 +3630,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
     for row in cursor:
         # only do this every 100 iterations
         if k % 100 == 1:
-            arcpy.Compact_management(
+            arcpy.management.Compact(
                 workspaceName
             )  # compact the geodatabase to reduce its size and potentially improve the performance
             arcpy.AddMessage("Compacted the geodatabase")
@@ -3646,13 +3646,13 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             mergeList.append(inFeat)
 
             # select the feature
-            arcpy.Select_analysis(inFeatClass, inFeat, whereClause)
+            arcpy.analysis.Select(inFeatClass, inFeat, whereClause)
 
             boundFeat = workspaceName + "/" + "boundFeat_" + str(featID)
             itemList.append(boundFeat)
 
             # select the feature
-            arcpy.Select_analysis(MbrFeatClass, boundFeat, whereClause)
+            arcpy.analysis.Select(MbrFeatClass, boundFeat, whereClause)
 
             profilePointFC = workspaceName + "/" + "profilePointFC"
             itemList.append(profilePointFC)
@@ -3693,7 +3693,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             ExtractValuesToPoints(profilePointFC, mosaicBathy, profilePointFC1)
             arcpy.AddMessage("extract depth values done")
             # Add x and y
-            arcpy.AddXY_management(profilePointFC1)
+            arcpy.management.AddXY(profilePointFC1)
             arcpy.AddMessage("Add x and y done")
             # export the table to a csv file
             outCSV = tempFolder + "/" + "profilePointFC1.csv"
@@ -3703,7 +3703,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             if os.path.isfile(schemaFile):
                 os.remove(schemaFile)
 
-            arcpy.CopyRows_management(profilePointFC1, outCSV)
+            arcpy.management.CopyRows(profilePointFC1, outCSV)
             arcpy.AddMessage(outCSV + " is generated")
             # read in the csv file as pandas dataframe
             points = pd.read_csv(outCSV, sep=",", header=0)
@@ -3777,7 +3777,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
                 if field in field_names:
                     arcpy.AddMessage(field + " exists")
                 else:
-                    arcpy.AddField_management(
+                    arcpy.management.AddField(
                         inFeat, field, fieldType, field_length=fieldLength
                     )
 
@@ -3788,7 +3788,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
             for field in fieldList:
                 # calculate string to a text field, the string must be enclosed by double quote
                 expression = '"' + valueList[i] + '"'
-                arcpy.CalculateField_management(
+                arcpy.management.CalculateField(
                     inFeat, field, expression, "PYTHON3"
                 )
                 i += 1
@@ -3807,7 +3807,7 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
     del cursor, row
     # merge all individual features together
     mergedFeat = "mergedFeat"
-    arcpy.Merge_management(mergeList, mergedFeat)
+    arcpy.management.Merge(mergeList, mergedFeat)
     arcpy.AddMessage("merged all done")
 
     # transfer the field values to inFeatClass
