@@ -13,6 +13,7 @@ import multiprocessing
 from multiprocessing import Pool
 import os
 import sys
+import HelperFunctions
 
 arcpy.CheckOutExtension("Spatial")
 
@@ -69,9 +70,15 @@ def verifyDepression(arg):
         featBathy = ExtractByMask(inBathy, bufferFeat, "INSIDE")
         # get the minimum and maximum depth values within the extracted bathymetric grid
         result1 = arcpy.management.GetRasterProperties(featBathy, "MINIMUM")
-        minDepth = round(float(result1.getOutput(0)), 2)
+        minDepth = result1.getOutput(0)
+        if minDepth.find(",") > 0:
+            minDepth = HelperFunctions.convertDecimalSeparator(minDepth)
+        minDepth = round(float(minDepth), 2)
         result1 = arcpy.management.GetRasterProperties(featBathy, "MAXIMUM")
-        maxDepth = round(float(result1.getOutput(0)), 2)
+        maxDepth = result1.getOutput(0)
+        if maxDepth.find(",") > 0:
+            maxDepth = HelperFunctions.convertDecimalSeparator(maxDepth)
+        maxDepth = round(float(maxDepth), 2)
         # The verification process is an iterative process. The maximum number of the iteration is determined by the
         # maxContour parameter. The process starts with generating contours with 2 or 3 distinct contour values (j = 1).
         # The process then evaluates whether the area ratio between the largest contour polygon generated

@@ -856,6 +856,8 @@ class Verify_Depression_Tool:
         # get the cell size of the input bathymetric grid, assuming the cell is square shape
         result1 = arcpy.management.GetRasterProperties(inBathy, "CELLSIZEX")
         cellSize = result1.getOutput(0)
+        if cellSize.find(",") > 0:
+            cellSize = HelperFunctions.convertDecimalSeparator(cellSize)
         # get the total number of Depression feature to be verified through the multiprocessing process
         nuFeats = int(arcpy.management.GetCount(depressionFeat)[0])
         arcpy.AddMessage("They are " + str(nuFeats) + " features for multiprocessing.")

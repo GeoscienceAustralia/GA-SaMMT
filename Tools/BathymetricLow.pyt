@@ -1395,6 +1395,8 @@ class PseudoContourBL_Tool(object):
 
                 minResult = arcpy.management.GetRasterProperties(bathyRas, "MINIMUM")
                 minValue = minResult.getOutput(0)
+                if minValue.find(",") > 0:
+                    minValue = HelperFunctions.convertDecimalSeparator(minValue)
                 outCon = Con(Raster(bathyRas) >= float(minValue), 1)
                 tempTab = "tempTable"
                 zonStat = ZonalStatisticsAsTable(outCon, "VALUE", outCon,
