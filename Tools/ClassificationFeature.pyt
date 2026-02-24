@@ -749,6 +749,21 @@ class Verify_Depression_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
+        # set the output featureclass to be at the
+        # same FileGeodatabase as the input featureclass
+        if parameters[0].value:
+            inFeatClass = parameters[0].valueAsText
+            if inFeatClass.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isFeatureLayer:
+                        if inFeatClass == lyr.name:
+                            inFeatClass = lyr.dataSource
+
+            parameters[2].value = inFeatClass + "_outFeats"
+                
+
         return
 
     def updateMessages(self, parameters):

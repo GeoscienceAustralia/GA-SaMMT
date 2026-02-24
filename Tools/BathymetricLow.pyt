@@ -125,6 +125,20 @@ class TPIToolLow:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
+        # set the output TPI raster and output featureclass to be at the
+        # same FileGeodatabase as the input bathymetry grid
+        if parameters[0].value:
+            bathyRas = parameters[0].valueAsText
+            if bathyRas.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isRasterLayer:
+                        if bathyRas == lyr.name:
+                            bathyRas = lyr.dataSource
+            parameters[1].value = bathyRas + "_tpi"
+            parameters[2].value = bathyRas + "_outFeats"    
+
         return
 
     def updateMessages(self, parameters):
@@ -336,6 +350,20 @@ class Openness_Low_Tool:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output Openness raster and output featureclass to be at the
+        # same FileGeodatabase as the input bathymetry grid
+        if parameters[0].value:
+            bathyRas = parameters[0].valueAsText
+            if bathyRas.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isRasterLayer:
+                        if bathyRas == lyr.name:
+                            bathyRas = lyr.dataSource
+            parameters[1].value = bathyRas + "_po"
+            parameters[2].value = bathyRas + "_outFeats" 
 
         return
 
@@ -574,6 +602,21 @@ class TPI_CI_Low_Tool:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output TPI raster, the output CI raster and output featureclass to be at the
+        # same FileGeodatabase as the input bathymetry grid
+        if parameters[0].value:
+            bathyRas = parameters[0].valueAsText
+            if bathyRas.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isRasterLayer:
+                        if bathyRas == lyr.name:
+                            bathyRas = lyr.dataSource
+            parameters[1].value = bathyRas + "_tpi"
+            parameters[2].value = bathyRas + "_ci"
+            parameters[3].value = bathyRas + "_outFeats" 
 
         return
 
@@ -815,6 +858,20 @@ class ContourBL_Tool(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output contour featureclass and output featureclass to be at the
+        # same FileGeodatabase as the input bathymetry grid
+        if parameters[0].value:
+            bathyRas = parameters[0].valueAsText
+            if bathyRas.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isRasterLayer:
+                        if bathyRas == lyr.name:
+                            bathyRas = lyr.dataSource
+            parameters[1].value = bathyRas + "_contour"
+            parameters[2].value = bathyRas + "_outFeats"   
 
         return
 
@@ -1375,6 +1432,20 @@ class PseudoContourBL_Tool(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output featureclass to be at the
+        # same FileGeodatabase as the input bathymetry grid
+        if parameters[0].value:
+            bathyRas = parameters[0].valueAsText
+            if bathyRas.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isRasterLayer:
+                        if bathyRas == lyr.name:
+                            bathyRas = lyr.dataSource
+            parameters[1].value = bathyRas + "_outFeats"
+            
         # to provide a default value for the maximum area threshold parameter
         if parameters[8].value:  # if the maximum area threshold parameter has an existing value, do nothing
             return

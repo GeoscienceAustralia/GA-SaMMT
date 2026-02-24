@@ -57,7 +57,7 @@ class Update_Features_Tool:
             direction="Input",
             multiValue=True,
         )
-        # fourth parameter
+        # second parameter
         param1 = arcpy.Parameter(
             displayName="Output Features After Updating the Feature Boundaries",
             name="dissolvedFeat",
@@ -77,6 +77,25 @@ class Update_Features_Tool:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output featureclass to be at the
+        # same FileGeodatabase as the first input featureclass
+        if parameters[0].value:
+            in_feature_set = parameters[0].valueAsText
+            inFeats = in_feature_set.split(";")
+            inFeat = inFeats[0]
+            # if the input feature class is selected from a drop-down list, the inFeat does not contain the full path
+            # In this case, the full path needs to be obtained from the map layer
+            if inFeat.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isFeatureLayer:
+                        if inFeat == lyr.name:
+                            inFeat = lyr.dataSource
+                            
+
+            parameters[1].value = inFeat + "_updated"
 
         return
 
@@ -200,6 +219,20 @@ class Merge_Connected_Features_Tool:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output featureclass to be at the
+        # same FileGeodatabase as the input featureclass
+        if parameters[0].value:
+            inFeatClass = parameters[0].valueAsText
+            if inFeatClass.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isFeatureLayer:
+                        if inFeatClass == lyr.name:
+                            inFeatClass = lyr.dataSource
+
+            parameters[1].value = inFeatClass + "_merged"
 
         return
 
@@ -512,6 +545,20 @@ class Connect_Nearby_Linear_Features_Tool:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output featureclass to be at the
+        # same FileGeodatabase as the input featureclass
+        if parameters[0].value:
+            inFeatClass = parameters[0].valueAsText
+            if inFeatClass.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isFeatureLayer:
+                        if inFeatClass == lyr.name:
+                            inFeatClass = lyr.dataSource
+
+            parameters[8].value = inFeatClass + "_connected"
 
         return
 
@@ -1516,6 +1563,20 @@ class Connect_Nearby_Linear_HF_Features_Tool:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output featureclass to be at the
+        # same FileGeodatabase as the input featureclass
+        if parameters[0].value:
+            inFeatClass = parameters[0].valueAsText
+            if inFeatClass.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isFeatureLayer:
+                        if inFeatClass == lyr.name:
+                            inFeatClass = lyr.dataSource
+
+            parameters[9].value = inFeatClass + "_connected"
 
         return
 

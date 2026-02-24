@@ -104,6 +104,20 @@ class SurfaceToolBathy:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
+        # set the output slope raster and output featureclass to be at the
+        # same FileGeodatabase as the input bathymetry grid
+        if parameters[0].value:
+            bathyRas = parameters[0].valueAsText
+            if bathyRas.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isRasterLayer:
+                        if bathyRas == lyr.name:
+                            bathyRas = lyr.dataSource
+            parameters[1].value = bathyRas + "_slope"
+            parameters[2].value = bathyRas + "_surface"  
+
         return
 
     def updateMessages(self, parameters):
@@ -257,6 +271,19 @@ class SurfaceToolSlope:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+
+        # set the output slope raster and output featureclass to be at the
+        # same FileGeodatabase as the input bathymetry grid
+        if parameters[0].value:
+            slopeRas = parameters[0].valueAsText
+            if slopeRas.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isRasterLayer:
+                        if slopeRas == lyr.name:
+                            slopeRas = lyr.dataSource
+            parameters[1].value = slopeRas + "_surface"  
 
         return
 

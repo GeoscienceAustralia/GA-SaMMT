@@ -293,6 +293,21 @@ class Add_Shape_Attributes_Low_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
+        # set the output head and foot featureclasses to be at the
+        # same FileGeodatabase as the input featureclass 
+        if parameters[0].value:
+            inFeatClass = parameters[0].valueAsText
+            if inFeatClass.rfind("/") < 0:
+                aprx = arcpy.mp.ArcGISProject("CURRENT")
+                m = aprx.activeMap
+                for lyr in m.listLayers():
+                    if lyr.isFeatureLayer:
+                        if inFeatClass == lyr.name:
+                            inFeatClass = lyr.dataSource
+                        
+            parameters[4].value = inFeatClass + "_head"
+            parameters[5].value = inFeatClass + "_foot"    
+
         return
 
     def updateMessages(self, parameters):
