@@ -3822,6 +3822,349 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
 
     arcpy.AddMessage("Profile attributes added and calculated")
 
+# This function generate surface area grid
+# The surface area grid is calculated from the bathymetry grid using Jenness (2004) algorithm
+# Jenness, J.S., 2004. Calculating landscape surface area from digital elevation model. Wildlife Society Bulletin, 32, 829-839.
+def calculateSurfaceArea(bathyRas, outRas, wSize, tempFolder):
+    # bathyRas: input bathymetry grid
+    # outRas: output surface area grid
+    # wSize: kernel size for the weight files
+    # tempFolder: temporary folder that stores the weight files
+    
+    # check the window size is an odd number
+    if wSize % 2 == 0:
+        messages.addErrorMessage(
+            "Window size must be an odd number!"
+        )
+        raise arcpy.ExecuteError
+    # check the window size must be greater or equal to 3
+    if wSize < 3:
+        messages.addErrorMessage(
+            "Window size must be greater or equal to 3!"
+        )
+        raise arcpy.ExecuteError
+
+    # call the helper function to generate morphological surface classes
+    HelperFunctions.generateWeightFiles(tempFolder, wSize)
+
+    rasResult = arcpy.management.GetRasterProperties(bathyRas, "CELLSIZEX")
+    size = int(rasResult.getOutput(0))
+    # window is the window size
+
+    a = wSize - 1
+    b = a / 2
+
+    nu1 = int((wSize - 1) / 2)
+    nu2 = -nu1
+    # tempList = [[nu1, 0], [nu2, 0], [0, nu1], [0, nu2], [nu1, nu2], [nu2, nu1], [nu1, nu1], [nu2, nu2]]
+
+    inWeight1 = tempFolder + "/weight_" + str(nu2) + str(nu2) + ".txt"
+    inWeight2 = tempFolder + "/weight_0" + str(nu2) + ".txt" 
+    inWeight3 = tempFolder + "/weight_" + str(nu1) + str(nu2) + ".txt"
+    inWeight4 = tempFolder + "/weight_" + str(nu2) + "0.txt" 
+    inWeight5 = tempFolder + "/weight_" + str(nu1) + "0.txt" 
+    inWeight6 = tempFolder + "/weight_" + str(nu2) + str(nu1) + ".txt"
+    inWeight7 = tempFolder + "/weight_0" + str(nu1) + ".txt" 
+    inWeight8 = tempFolder + "/weight_" + str(nu1) + str(nu1) + ".txt"
+    fileList = []
+    fileList.append(inWeight1)
+    fileList.append(inWeight2)
+    fileList.append(inWeight3)
+    fileList.append(inWeight4)
+    fileList.append(inWeight5)
+    fileList.append(inWeight6)
+    fileList.append(inWeight7)
+    fileList.append(inWeight8)
+
+    NbrWeight1 = NbrWeight(inWeight1)
+    NbrWeight2 = NbrWeight(inWeight2)
+    NbrWeight3 = NbrWeight(inWeight3)
+    NbrWeight4 = NbrWeight(inWeight4)
+    NbrWeight5 = NbrWeight(inWeight5)
+    NbrWeight6 = NbrWeight(inWeight6)
+    NbrWeight7 = NbrWeight(inWeight7)
+    NbrWeight8 = NbrWeight(inWeight8)
+
+    focal1 = FocalStatistics(bathyRas, NbrWeight1, "SUM", "DATA")
+    focal2 = FocalStatistics(bathyRas, NbrWeight2, "SUM", "DATA")
+    focal3 = FocalStatistics(bathyRas, NbrWeight3, "SUM", "DATA")
+    focal4 = FocalStatistics(bathyRas, NbrWeight4, "SUM", "DATA")
+    focal5 = FocalStatistics(bathyRas, NbrWeight5, "SUM", "DATA")
+    focal6 = FocalStatistics(bathyRas, NbrWeight6, "SUM", "DATA")
+    focal7 = FocalStatistics(bathyRas, NbrWeight7, "SUM", "DATA")
+    focal8 = FocalStatistics(bathyRas, NbrWeight8, "SUM", "DATA")
+    
+    deletedList = []
+    deletedList.append("focal1")
+    deletedList.append("focal2")
+    deletedList.append("focal3")
+    deletedList.append("focal4")
+    deletedList.append("focal5")
+    deletedList.append("focal6")
+    deletedList.append("focal7")
+    deletedList.append("focal8")
+
+    # AB length
+    outRas1 = Divide(SquareRoot(Plus(Power(Minus(focal1, focal2), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("AB done")
+    # BC length
+    outRas2 = Divide(SquareRoot(Plus(Power(Minus(focal2, focal3), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("BC done")
+    # DE length
+    outRas3 = Divide(SquareRoot(Plus(Power(Minus(focal4, bathyRas), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("DE done")
+    # EF length
+    outRas4 = Divide(SquareRoot(Plus(Power(Minus(bathyRas, focal5), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("EF done")
+    # GH length
+    outRas5 = Divide(SquareRoot(Plus(Power(Minus(focal6, focal7), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("GH done")
+    # HI length
+    outRas6 = Divide(SquareRoot(Plus(Power(Minus(focal7, focal8), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("HI done")
+    # AD length
+    outRas7 = Divide(SquareRoot(Plus(Power(Minus(focal1, focal4), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("AD done")
+    # BE length
+    outRas8 = Divide(SquareRoot(Plus(Power(Minus(focal2, bathyRas), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("BE done")
+    # CF length
+    outRas9 = Divide(SquareRoot(Plus(Power(Minus(focal3, focal5), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("CF done")
+    # DG length
+    outRas10 = Divide(SquareRoot(Plus(Power(Minus(focal4, focal6), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("DG done")
+    # EH length
+    outRas11 = Divide(SquareRoot(Plus(Power(Minus(bathyRas, focal7), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("EH done")
+    # FI length
+    outRas12 = Divide(SquareRoot(Plus(Power(Minus(focal5, focal8), 2), Power(Times(size, b), 2))), a)
+    arcpy.AddMessage("EI done")
+    # EA length
+    outRas13 = Divide(
+        SquareRoot(Plus(Power(Minus(bathyRas, focal1), 2), Power(Times(Times(size, b), SquareRoot(2)), 2))), a)
+    arcpy.AddMessage("EA done")
+    # EC length
+    outRas14 = Divide(
+        SquareRoot(Plus(Power(Minus(bathyRas, focal3), 2), Power(Times(Times(size, b), SquareRoot(2)), 2))), a)
+    arcpy.AddMessage("EC done")
+    # EG length
+    outRas15 = Divide(
+        SquareRoot(Plus(Power(Minus(bathyRas, focal6), 2), Power(Times(Times(size, b), SquareRoot(2)), 2))), a)
+    arcpy.AddMessage("EG done")
+    # EI length
+    outRas16 = Divide(
+        SquareRoot(Plus(Power(Minus(bathyRas, focal8), 2), Power(Times(Times(size, b), SquareRoot(2)), 2))), a)
+    arcpy.AddMessage("EI done")
+
+    # area of i triangle: EA, AB, BE
+    outRas17 = SquareRoot(Divide(Times(
+        Times(Times(Plus(Plus(outRas13, outRas1), outRas8), Minus(Plus(outRas13, outRas1), outRas8)),
+              Minus(Plus(outRas13, outRas8), outRas1)), Minus(Plus(outRas8, outRas1), outRas13)), 16))
+    arcpy.AddMessage("i done")
+    # area of ii triangle: BE, BC, EC
+    outRas18 = SquareRoot(Divide(Times(
+        Times(Times(Plus(Plus(outRas2, outRas14), outRas8), Minus(Plus(outRas2, outRas14), outRas8)),
+              Minus(Plus(outRas14, outRas8), outRas2)), Minus(Plus(outRas8, outRas2), outRas14)), 16))
+    arcpy.AddMessage("ii done")
+    # area of iii triangle: EA, AD, DE
+    outRas19 = SquareRoot(Divide(Times(
+        Times(Times(Plus(Plus(outRas13, outRas7), outRas3), Minus(Plus(outRas13, outRas7), outRas3)),
+              Minus(Plus(outRas13, outRas3), outRas7)), Minus(Plus(outRas7, outRas3), outRas13)), 16))
+    arcpy.AddMessage("iii done")
+    # area of iv triangle: EC, CF, EF
+    outRas20 = SquareRoot(Divide(Times(
+        Times(Times(Plus(Plus(outRas14, outRas9), outRas4), Minus(Plus(outRas14, outRas9), outRas4)),
+              Minus(Plus(outRas14, outRas4), outRas9)), Minus(Plus(outRas4, outRas9), outRas14)), 16))
+    arcpy.AddMessage("iv done")
+    # area of v triangle: DE, DG, EG
+    outRas21 = SquareRoot(Divide(Times(
+        Times(Times(Plus(Plus(outRas3, outRas10), outRas15), Minus(Plus(outRas3, outRas10), outRas15)),
+              Minus(Plus(outRas3, outRas15), outRas10)), Minus(Plus(outRas10, outRas15), outRas3)), 16))
+    arcpy.AddMessage("v done")
+    # area of vi triangle: EF, FI, EI
+    outRas22 = SquareRoot(Divide(Times(
+        Times(Times(Plus(Plus(outRas4, outRas12), outRas16), Minus(Plus(outRas4, outRas12), outRas16)),
+              Minus(Plus(outRas4, outRas16), outRas12)), Minus(Plus(outRas16, outRas12), outRas4)), 16))
+    arcpy.AddMessage("vi done")
+    # area of vii triangle: EG, EH, GH
+    outRas23 = SquareRoot(Divide(Times(
+        Times(Times(Plus(Plus(outRas15, outRas11), outRas5), Minus(Plus(outRas15, outRas11), outRas5)),
+              Minus(Plus(outRas15, outRas5), outRas11)), Minus(Plus(outRas11, outRas5), outRas15)), 16))
+    arcpy.AddMessage("vii done")
+    # area of viii triangle: EH, EI, HI
+    outRas24 = SquareRoot(Divide(Times(
+        Times(Times(Plus(Plus(outRas11, outRas16), outRas6), Minus(Plus(outRas11, outRas16), outRas6)),
+              Minus(Plus(outRas11, outRas6), outRas16)), Minus(Plus(outRas16, outRas6), outRas11)), 16))
+    arcpy.AddMessage("viii done")
+    # surface area
+    outRas25 = Plus(
+        Plus(Plus(Plus(Plus(Plus(Plus(outRas17, outRas18), outRas19), outRas20), outRas21), outRas22), outRas23),
+        outRas24)
+    outRas25.save(outRas)
+    arcpy.AddMessage("Surface Area grid generated")
+
+    HelperFunctions.deleteFiles(fileList)
+
+    deletedList.append("outRas1")
+    deletedList.append("outRas2")
+    deletedList.append("outRas3")
+    deletedList.append("outRas4")
+    deletedList.append("outRas5")
+    deletedList.append("outRas6")
+    deletedList.append("outRas7")
+    deletedList.append("outRas8")
+    deletedList.append("outRas9")
+    deletedList.append("outRas10")
+    deletedList.append("outRas11")
+    deletedList.append("outRas12")
+    deletedList.append("outRas13")
+    deletedList.append("outRas14")
+    deletedList.append("outRas15")
+    deletedList.append("outRas16")
+    deletedList.append("outRas17")
+    deletedList.append("outRas18")
+    deletedList.append("outRas19")
+    deletedList.append("outRas20")
+    deletedList.append("outRas21")
+    deletedList.append("outRas22")
+    deletedList.append("outRas23")
+    deletedList.append("outRas24")
+    deletedList.append("outRas25")
+    HelperFunctions.deleteDataItems(deletedList)
+    arcpy.AddMessage("intermediate datasets deleted")
+
+# This function calculate volume and surface area using 3D analyst
+# This function could not calculate volume and surface area for small (narrow) features
+def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
+    # inBathy: input bathymetry grid
+    # inFeats: input bathymetric high/low features
+    # direction: direction for calculating volume (a value of 1 (-1) indicates volume for bathymerric high (low) features))
+    # csvFile: the text file stores the volume and sArea values
+    # workspaceName: workspace name
+    
+    time1 = datetime.now()
+    # expand inBathy for 2 cells
+    # so that the feaures along the edge of the bathymetry grid will have depth values 
+    inBathy1 = "inBathy_1"
+    HelperFunctions.expandBathy(inBathy, inBathy1, 2, workspaceName)
+    # get cell size of the input bathymetry grid. make sure the grid has a quare cell
+    rasResult = arcpy.management.GetRasterProperties(inBathy, "CELLSIZEX")
+    cSize = int(rasResult.getOutput(0))
+
+    # buffer the inFeat one cell outward
+    bufferFeats = inFeats + "_" + str(cSize) + "m"
+    arcpy.analysis.GraphicBuffer(inFeats, bufferFeats, str(cSize) + " Meters", "SQUARE", "MITER")
+
+    # convert polygon to points
+    inFeaturePoints = inFeats + "_points"
+    arcpy.management.FeatureVerticesToPoints(bufferFeats,inFeaturePoints,"ALL")
+
+    # extract depth values
+    inRasterList = [[inBathy1, "depth"]]
+    ExtractMultiValuesToPoints(inFeaturePoints, inRasterList)
+    
+    path1 = workspaceName.split(".gdb")[0]
+    tempFolder = path1[0: path1.rfind("/")]
+    
+    fil = open(csvFile, "w")
+    text = "featID,Volume,SArea"
+    fil.write(text + "\n")
+    # loop through each feature
+    cursor = arcpy.SearchCursor(inFeats)
+    for row in cursor:
+        featID = row.getValue("featID")
+        arcpy.AddMessage("working on " + str(featID))
+        try:
+            where_clause = "featID" + " = " + str(featID)
+            inFeat = workspaceName + "/" + "inFeat" + str(featID)
+            arcpy.analysis.Select(bufferFeats, inFeat, where_clause)
+           
+            inPoints = workspaceName + "/" + "inPoints" + str(featID)     
+            arcpy.analysis.Select(inFeaturePoints, inPoints, where_clause)
+            # generate the reference surface first
+            # by interpolating points along the polygon boundaries
+            input1 = TopoPointElevation([[inPoints, 'depth']])
+            input2 = TopoBoundary([inFeat])
+            # the TopoToRster function would throw errors when dealing with small (narrow) features
+            # this needs to be caught and skipped to next feature
+            inputs = ([input1, input2])
+            outTopo = TopoToRaster(inputs, cell_size=cSize, data_type="SPOT")
+            arcpy.AddMessage("reference surface generated")
+            # convert raster to tin surface
+            outTin1 = tempFolder + "/" + "outTin1"
+            arcpy.ddd.RasterTin(outTopo, outTin1)
+            arcpy.AddMessage("reference tin generated")
+            # generate the real surface
+            outExtract = ExtractByMask(inBathy1, inFeat)
+            arcpy.AddMessage("real surface generated")
+            outTin2 = tempFolder + "/" + "outTin2"
+            arcpy.ddd.RasterTin(outExtract, outTin2)
+            arcpy.AddMessage("real tin generated")
+            # Volume = real surface - reference surface
+            outFeat = workspaceName + "/" + "outFeat" + str(featID)
+            arcpy.ddd.SurfaceDifference(outTin2, outTin1, outFeat)
+            arcpy.AddMessage("surface difference done")
+            # get the total volume (surface area)
+            # direction = 1 indicates above; direction = -1 indicates below
+            cursor1 = arcpy.SearchCursor(outFeat)
+            volume1 = 0
+            sArea1 = 0
+            for row1 in cursor1:
+                code = int(row1.getValue("Code"))
+                volume = float(row1.getValue("Volume"))
+                sArea = float(row1.getValue("SArea"))
+                if code == direction:
+                    volume1 += volume
+                    sArea1 += sArea
+            del cursor1, row1
+            text = str(featID) + "," + str(volume1) + "," + str(sArea1)
+            arcpy.AddMessage(text)
+            fil.write(text + "\n")
+            
+            arcpy.management.Delete(outTin1)
+            arcpy.management.Delete(outTin2)
+            arcpy.management.Delete(outFeat)
+            arcpy.management.Delete(inFeat)
+            arcpy.management.Delete(inPoints)
+            arcpy.management.Delete(outTopo)
+            arcpy.management.Delete(outExtract)
+        # the TopoToRster function would throw errors when dealing with small (narrow) features
+        # this needs to be caught and skipped to next feature
+        except:
+            print("skipping", str(featID))
+            if arcpy.Exists(outTin1):
+                arcpy.management.Delete(outTin1)
+            if arcpy.Exists(outTin2):
+                arcpy.management.Delete(outTin2)
+            if arcpy.Exists(outFeat):
+                arcpy.management.Delete(outFeat)
+            if arcpy.Exists(inFeat):
+                arcpy.management.Delete(inFeat)
+            if arcpy.Exists(inPoints):
+                arcpy.management.Delete(inPoints)
+            if arcpy.Exists(outTopo):
+                arcpy.management.Delete(outTopo)
+            if arcpy.Exists(outExtract):
+                arcpy.management.Delete(outExtract)
+            continue
+        
+    fil.close()
+    del cursor, row
+    time2 = datetime.now()
+    diff = time2 - time1
+    arcpy.AddMessage("took " + str(diff) + " to calculate volume attributes.")
+
+    arcpy.management.Delete(inBathy1)
+    arcpy.management.Delete(bufferFeats)
+    arcpy.management.Delete(inFeaturePoints)
+    arcpy.AddMessage("Volume and sArea attributes calculated")
+    
+                
+        
+    
+    
+
 
 if __name__ == '__main__':
     arcpy.AddMessage("dummy message")

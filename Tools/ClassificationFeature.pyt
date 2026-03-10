@@ -538,6 +538,7 @@ class Classify_Bathymetric_High_Features_Tool:
             "minDepth",
             "mean_width",
             "Circularity",
+            "relativeHeight",
         ]
         for attribute in attributeList:
             if attribute not in field_names:
@@ -577,6 +578,7 @@ class Classify_Bathymetric_High_Features_Tool:
             meanWidth = float(row.getValue("mean_width"))
             area = float(row.getValue("Shape_Area"))
             circularity = float(row.getValue("Circularity"))
+            relativeHeight = float(row.getValue("relativeHeight"))
             # get profile shape class count
             RegularCount = profileShapeL.count("Regular")
             IrregularCount = profileShapeL.count("Irregular")
@@ -627,9 +629,11 @@ class Classify_Bathymetric_High_Features_Tool:
 
             if lwRatio >= ridge_lwRatioT:
                 feature = "Ridge"
-            elif depthRange >= 1000:
+            # use the relativeHeight instead of the depthRange attribute here (Dolan and Bjarnadottir, 2025)
+            # Dolan MFJ and Bjarnadóttir LR (2025) Seamounts and related topographic highs – automated mapping in support of sustainable ocean management, Norway. Front. Earth Sci. 13:1690996. doi: 10.3389/feart.2025.1690996
+            elif relativeHeight >= 1000:
                 feature = "Seamount"
-            elif depthRange >= meanWidth:
+            elif relativeHeight >= meanWidth:
                 feature = "Pinnacle"
             elif (
                 (TriangleCount >= RegularCount)
@@ -657,7 +661,7 @@ class Classify_Bathymetric_High_Features_Tool:
                 and (area > plateau_areaT * 1000000)
             ):
                 feature = "Plateau"
-            elif depthRange >= 500:
+            elif relativeHeight >= 500:
                 if (
                     (RegularCount >= IrregularCount)
                     and (RegularCount >= TriangleCount)

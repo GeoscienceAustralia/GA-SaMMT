@@ -475,14 +475,16 @@ class Add_Topographic_Attributes_High_Tool:
             direction="Input",
         )
 
-        # fourth parameter
+        # 4th parameter
         param3 = arcpy.Parameter(
-            displayName="Input Slope Raster",
-            name="slopeRas",
-            datatype="GPRasterLayer",
+            displayName="Calculate volume attribute",
+            name="additionalOption",
+            datatype="GPBoolean",
             parameterType="Required",
             direction="Input",
         )
+        param3.value = False
+        
 
         parameters = [param0, param1, param2, param3]
         return parameters
@@ -509,13 +511,12 @@ class Add_Topographic_Attributes_High_Tool:
         inFeatClass = parameters[0].valueAsText
         outFeatClass = parameters[1].valueAsText
         inBathy = parameters[2].valueAsText
-        inSlope = parameters[3].valueAsText
+        additionalOption = parameters[3].valueAsText
 
         # calling the helper functions
        
         inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
         inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
-        inSlope = HelperFunctions.convert_backslash_forwardslash(inSlope)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -537,16 +538,7 @@ class Add_Topographic_Attributes_High_Tool:
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
                         inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
-        # if the input slope raster is selected from a drop-down list, the inSlope does not contain the full path
-        # In this case, the full path needs to be obtained from the map layer
-        if inSlope.rfind("/") < 0:
-            aprx = arcpy.mp.ArcGISProject("CURRENT")
-            m = aprx.activeMap
-            for lyr in m.listLayers():
-                if lyr.isRasterLayer:
-                    if inSlope == lyr.name:
-                        inSlope = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
-
+        
         # check that the input feature class is in a correct format
         vecDesc = arcpy.Describe(inFeatClass)
         vecType = vecDesc.dataType
@@ -564,15 +556,7 @@ class Add_Topographic_Attributes_High_Tool:
                 "The input bathymetry raster must be a raster dataset in a File GeoDatabase!"
             )
             raise arcpy.ExecuteError
-
-        # check that the input slope grid is in a correct format
-        rasDesc1 = arcpy.Describe(inSlope)
-        rasFormat1 = rasDesc1.format
-        if rasFormat1 != "FGDBR":
-            messages.addErrorMessage(
-                "The input slope raster must be a raster dataset in a File GeoDatabase!"
-            )
-            raise arcpy.ExecuteError
+        
 
         # check that the input featureclass is in a projected coordinate system
         spatialReference = vecDesc.spatialReference
@@ -590,30 +574,48 @@ class Add_Topographic_Attributes_High_Tool:
             )
             raise arcpy.ExecuteError
 
-        # check that the input slope grid is in a projected coordinate system
-        spatialReference = rasDesc1.spatialReference
-        if spatialReference.type == "Geographic":
-            messages.addErrorMessage(
-                "Coordinate system of input slope grid is Geographic. A projected coordinate system is required!"
-            )
-            raise arcpy.ExecuteError
-
+        
         workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
         itemList = []
-        fieldList = [
-            "minDepth",
-            "maxDepth",
-            "depthRange",
-            "meanDepth",
-            "stdDepth",
-            "minGradient",
-            "maxGradient",
-            "gradientRange",
-            "meanGradient",
-            "stdGradient",
-        ]
+        
+        if additionalOption == "true": # choose to calculate volume and sArea as additional attributes
+            fieldList = [
+                "minDepth",
+                "maxDepth",
+                "depthRange",
+                "meanDepth",
+                "stdDepth",
+                "medianDepth",
+                "relativeHeight",
+                "minGradient",
+                "maxGradient",
+                "gradientRange",
+                "meanGradient",
+                "stdGradient",
+                "medianGradient",
+                "surfaceArea",
+                "volume",
+                "sArea",
+            ]
+        else:            
+            fieldList = [
+                "minDepth",
+                "maxDepth",
+                "depthRange",
+                "meanDepth",
+                "stdDepth",
+                "medianDepth",
+                "relativeHeight",
+                "minGradient",
+                "maxGradient",
+                "gradientRange",
+                "meanGradient",
+                "stdGradient",
+                "medianGradient",
+                "surfaceArea",
+            ]
 
         fields = arcpy.ListFields(inFeatClass)
         field_names = [f.name for f in fields]
@@ -636,17 +638,50 @@ class Add_Topographic_Attributes_High_Tool:
                     inFeatClass, field, fieldType, fieldPrecision, fieldScale
                 )
 
+        # expand inBathy one cell outward
+        # This is to ensure that the features at the edge of bathymetry grid have accurate slope and surface area values
+        mosaicBathy = "mosaicBathy"
+        itemList.append(mosaicBathy)
+        HelperFunctions.expandBathy(inBathy, mosaicBathy, 1, workspaceName)        
+        arcpy.AddMessage("mosaic done")
+
+        # generate the slope grid
+        slpGrid = "slpGrid"
+        itemList.append(slpGrid)
+        outSlope = Slope(mosaicBathy)
+        outSlope.save(slpGrid)
+        arcpy.AddMessage("Slope grid generated")
+
+        # generate the surface area grid
+        saGrid = "saGrid"
+        itemList.append(saGrid)
+        path1 = inBathy.split(".gdb")[0]
+        tempFolder = path1[0: path1.rfind("/")]
+        AddAttributesFunctions.calculateSurfaceArea(mosaicBathy, saGrid, 3, tempFolder)
+        arcpy.AddMessage("Surface Area grid generated")
+
         # zonal statistics
         zoneField = "featID"
         outTab1 = "outTab1"
         outTab2 = "outTab2"
+        outTab3 = "outTab3"
         itemList.append(outTab1)
-        itemList.append(outTab2)
+        itemList.append(outTab2)        
+        itemList.append(outTab3)
+        # The two percentile values are needed to calculate the relativeHeight attribute.
+        # The relativeHeight attribute is the depth difference between the 97.5th and the 2.5th percentiles.
+        # The relativeHeight attribute is more appropriate than the depthRange attribute in classifying Seamount, Pinnacle, Knoll and Hills (Dolan and Bjarnadottir, 2025).
+        # This is because the depthRange attribute is more likely affected by bathymetry data uncertainty.
+        # Dolan MFJ and Bjarnadóttir LR (2025) Seamounts and related topographic highs – automated mapping in support of sustainable ocean management, Norway. Front. Earth Sci. 13:1690996. doi: 10.3389/feart.2025.1690996
+        percentile_values=[2.5,97.5]
         outZ1 = ZonalStatisticsAsTable(
-            inFeatClass, zoneField, inBathy, outTab1, "DATA", "ALL"
+            inFeatClass, zoneField, inBathy, outTab1, "DATA", "ALL", percentile_values=percentile_values
         )
         outZ2 = ZonalStatisticsAsTable(
-            inFeatClass, zoneField, inSlope, outTab2, "DATA", "ALL"
+            inFeatClass, zoneField, slpGrid, outTab2, "DATA", "ALL"
+        )
+        outZ3 = ZonalStatisticsAsTable(
+            inFeatClass, zoneField, saGrid, outTab3, "DATA", "ALL"
         )
 
         # calculate these topographic fields
@@ -680,6 +715,19 @@ class Add_Topographic_Attributes_High_Tool:
         expression = "!" + outTab1 + "." + "STD" + "!"
         HelperFunctions.addField(inFeatClass, outTab1, field, inID, joinID, expression)
 
+        field = "medianDepth"
+        inID = "featID"
+        joinID = "featID"
+        expression = "!" + outTab1 + "." + "MEDIAN" + "!"
+        HelperFunctions.addField(inFeatClass, outTab1, field, inID, joinID, expression)
+
+        field = "relativeHeight"
+        inID = "featID"
+        joinID = "featID"
+        expression = "!" + outTab1 + "." + "PCT97_5" + "!" + " - " + "!" + outTab1 + "." + "PCT2_5" + "!"
+        HelperFunctions.addField(inFeatClass, outTab1, field, inID, joinID, expression)
+                
+
         field = "minGradient"
         inID = "featID"
         joinID = "featID"
@@ -709,6 +757,43 @@ class Add_Topographic_Attributes_High_Tool:
         joinID = "featID"
         expression = "!" + outTab2 + "." + "STD" + "!"
         HelperFunctions.addField(inFeatClass, outTab2, field, inID, joinID, expression)
+
+        field = "medianGradient"
+        inID = "featID"
+        joinID = "featID"
+        expression = "!" + outTab2 + "." + "MEDIAN" + "!"
+        HelperFunctions.addField(inFeatClass, outTab2, field, inID, joinID, expression)
+
+        field = "surfaceArea"
+        inID = "featID"
+        joinID = "featID"
+        expression = "!" + outTab3 + "." + "SUM" + "!"
+        HelperFunctions.addField(inFeatClass, outTab3, field, inID, joinID, expression)
+        # calculate volume and surface area using 3D extension
+        # The function is unable to calculate volume and surface area for very small (narrow) features
+        # The estimated volume and surface area values are more accurate for large features
+        if additionalOption == "true":
+            path1 = workspaceName.split(".gdb")[0]
+            tempFolder = path1[0: path1.rfind("/")]
+            csvFile = tempFolder + "/" + "volume.csv"
+            itemList.append(csvFile)
+            AddAttributesFunctions.calculateVolume(inBathy, inFeatClass, 1, csvFile, workspaceName)
+
+            outTab4 = "outTab4"
+            itemList.append(outTab4)
+            arcpy.conversion.ExportTable(csvFile, outTab4)
+
+            field = "volume"
+            inID = "featID"
+            joinID = "featID"
+            expression = "!" + outTab4 + "." + "Volume" + "!"
+            HelperFunctions.addField(inFeatClass, outTab4, field, inID, joinID, expression)
+
+            field = "sArea"
+            inID = "featID"
+            joinID = "featID"
+            expression = "!" + outTab4 + "." + "SArea" + "!"
+            HelperFunctions.addField(inFeatClass, outTab4, field, inID, joinID, expression)
 
         arcpy.AddMessage("All attributes added")
         # delete intermediate files
@@ -757,18 +842,10 @@ class Add_Topographic_Attributes_Low_Tool:
             parameterType="Required",
             direction="Input",
         )
+       
 
         # fourth parameter
         param3 = arcpy.Parameter(
-            displayName="Input Slope Raster",
-            name="slopeRas",
-            datatype="GPRasterLayer",
-            parameterType="Required",
-            direction="Input",
-        )
-
-        # fifth parameter
-        param4 = arcpy.Parameter(
             displayName="Input Head Features",
             name="headFeatClass",
             datatype="GPFeatureLayer",
@@ -776,14 +853,24 @@ class Add_Topographic_Attributes_Low_Tool:
             direction="Input",
         )
 
-        # sixth parameter
-        param5 = arcpy.Parameter(
+        # fifth parameter
+        param4 = arcpy.Parameter(
             displayName="Input Foot Features",
             name="footFeatClass",
             datatype="GPFeatureLayer",
             parameterType="Required",
             direction="Input",
         )
+
+        # 6th parameter
+        param5 = arcpy.Parameter(
+            displayName="Calculate volume attribute",
+            name="additionalOption",
+            datatype="GPBoolean",
+            parameterType="Required",
+            direction="Input",
+        )
+        param5.value = False
 
         parameters = [param0, param1, param2, param3, param4, param5]
         return parameters
@@ -810,14 +897,13 @@ class Add_Topographic_Attributes_Low_Tool:
         inFeatClass = parameters[0].valueAsText
         outFeatClass = parameters[1].valueAsText
         inBathy = parameters[2].valueAsText
-        inSlope = parameters[3].valueAsText
-        headFeatClass = parameters[4].valueAsText
-        footFeatClass = parameters[5].valueAsText
+        headFeatClass = parameters[3].valueAsText
+        footFeatClass = parameters[4].valueAsText
+        additionalOption = parameters[5].valueAsText
 
         
         inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
         inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
-        inSlope = HelperFunctions.convert_backslash_forwardslash(inSlope)
         headFeatClass = HelperFunctions.convert_backslash_forwardslash(headFeatClass)
         footFeatClass = HelperFunctions.convert_backslash_forwardslash(footFeatClass)
 
@@ -841,15 +927,7 @@ class Add_Topographic_Attributes_Low_Tool:
                 if lyr.isRasterLayer:
                     if inBathy == lyr.name:
                         inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
-        # if the input slope raster is selected from a drop-down list, the inSlope does not contain the full path
-        # In this case, the full path needs to be obtained from the map layer
-        if inSlope.rfind("/") < 0:
-            aprx = arcpy.mp.ArcGISProject("CURRENT")
-            m = aprx.activeMap
-            for lyr in m.listLayers():
-                if lyr.isRasterLayer:
-                    if inSlope == lyr.name:
-                        inSlope = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
+       
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if headFeatClass.rfind("/") < 0:
@@ -891,15 +969,7 @@ class Add_Topographic_Attributes_Low_Tool:
             )
             raise arcpy.ExecuteError
 
-        # check that the input slope grid is in a correct format
-        rasDesc1 = arcpy.Describe(inSlope)
-        rasFormat1 = rasDesc1.format
-        if rasFormat1 != "FGDBR":
-            messages.addErrorMessage(
-                "The input slope raster must be a raster dataset in a File GeoDatabase!"
-            )
-            raise arcpy.ExecuteError
-
+        
         # check that the input head feature class is in a correct format
         vecDesc1 = arcpy.Describe(headFeatClass)
         vecType1 = vecDesc1.dataType
@@ -934,14 +1004,6 @@ class Add_Topographic_Attributes_Low_Tool:
             )
             raise arcpy.ExecuteError
 
-        # check that the input slope grid is in a projected coordinate system
-        spatialReference = rasDesc1.spatialReference
-        if spatialReference.type == "Geographic":
-            messages.addErrorMessage(
-                "Coordinate system of input slope grid is Geographic. A projected coordinate system is required!"
-            )
-            raise arcpy.ExecuteError
-
         # check that the input head featureclass is in a projected coordinate system
         spatialReference = vecDesc1.spatialReference
         if spatialReference.type == "Geographic":
@@ -962,22 +1024,51 @@ class Add_Topographic_Attributes_Low_Tool:
         env.workspace = workspaceName
         env.overwriteOutput = True
         itemList = []
-        fieldList = [
-            "headDepth",
-            "footDepth",
-            "head_foot_depthRange",
-            "head_foot_gradient",
-            "minDepth",
-            "maxDepth",
-            "depthRange",
-            "meanDepth",
-            "stdDepth",
-            "minGradient",
-            "maxGradient",
-            "gradientRange",
-            "meanGradient",
-            "stdGradient",
-        ]
+        if additionalOption == "true": # choose to calculate volume and sArea as additional attributes         
+            fieldList = [
+                "headDepth",
+                "footDepth",
+                "head_foot_depthRange",
+                "head_foot_gradient",
+                "minDepth",
+                "maxDepth",
+                "depthRange",
+                "meanDepth",
+                "stdDepth",
+                "medianDepth",
+                "relativeDepth",
+                "minGradient",
+                "maxGradient",
+                "gradientRange",
+                "meanGradient",
+                "stdGradient",
+                "medianGradient",
+                "surfaceArea",
+                "volume",
+                "sArea",
+            ]
+        else:
+            fieldList = [
+                "headDepth",
+                "footDepth",
+                "head_foot_depthRange",
+                "head_foot_gradient",
+                "minDepth",
+                "maxDepth",
+                "depthRange",
+                "meanDepth",
+                "stdDepth",
+                "medianDepth",
+                "relativeDepth",
+                "minGradient",
+                "maxGradient",
+                "gradientRange",
+                "meanGradient",
+                "stdGradient",
+                "medianGradient",
+                "surfaceArea",
+            ]
+            
 
         fields = arcpy.ListFields(inFeatClass)
         field_names = [f.name for f in fields]
@@ -1031,17 +1122,48 @@ class Add_Topographic_Attributes_Low_Tool:
                     inFeatClass, field, fieldType, fieldPrecision, fieldScale
                 )
 
+        # expand inBathy one cell outward
+        # This is to ensure that the features at the edge of bathymetry grid have accurate slope and surface area values  
+        mosaicBathy = "mosaicBathy"
+        itemList.append(mosaicBathy)
+        HelperFunctions.expandBathy(inBathy, mosaicBathy, 1, workspaceName)
+        arcpy.AddMessage("mosaic done")
+
+        # generate the slope grid
+        slpGrid = "slpGrid"
+        itemList.append(slpGrid)
+        outSlope = Slope(mosaicBathy)
+        outSlope.save(slpGrid)
+        arcpy.AddMessage("Slope grid generated")
+
+        # generate the surface area grid
+        saGrid = "saGrid"
+        itemList.append(saGrid)
+        path1 = inBathy.split(".gdb")[0]
+        tempFolder = path1[0: path1.rfind("/")]
+        AddAttributesFunctions.calculateSurfaceArea(mosaicBathy, saGrid, 3, tempFolder)
+        arcpy.AddMessage("Surface Area grid generated")
+        
         # zonal statistics
         zoneField = "featID"
         outTab1 = "outTab1"
         outTab2 = "outTab2"
+        outTab3 = "outTab3"
         itemList.append(outTab1)
         itemList.append(outTab2)
+        itemList.append(outTab3)
+        # The two percentile values are needed to calculate the relativeDepth attribute.
+        # The relativeDepth attribute is the depth difference between the 97.5th and the 2.5th percentiles.
+        # The relativeDepth attribute may be more appropriate than the depthRange attribute because the depthRange attribute is more likely affected by bathymetry data uncertainty.
+        percentile_values=[2.5,97.5]
         outZ1 = ZonalStatisticsAsTable(
-            inFeatClass, zoneField, inBathy, outTab1, "DATA", "ALL"
+            inFeatClass, zoneField, inBathy, outTab1, "DATA", "ALL", percentile_values=percentile_values
         )
         outZ2 = ZonalStatisticsAsTable(
-            inFeatClass, zoneField, inSlope, outTab2, "DATA", "ALL"
+            inFeatClass, zoneField, slpGrid, outTab2, "DATA", "ALL"
+        )
+        outZ3 = ZonalStatisticsAsTable(
+            inFeatClass, zoneField, saGrid, outTab3, "DATA", "ALL"
         )
         # calculate these fields
         field = "minDepth"
@@ -1074,6 +1196,18 @@ class Add_Topographic_Attributes_Low_Tool:
         expression = "!" + outTab1 + "." + "STD" + "!"
         HelperFunctions.addField(inFeatClass, outTab1, field, inID, joinID, expression)
 
+        field = "medianDepth"
+        inID = "featID"
+        joinID = "featID"
+        expression = "!" + outTab1 + "." + "MEDIAN" + "!"
+        HelperFunctions.addField(inFeatClass, outTab1, field, inID, joinID, expression)
+
+        field = "relativeDepth"
+        inID = "featID"
+        joinID = "featID"
+        expression = "!" + outTab1 + "." + "PCT97_5" + "!" + " - " + "!" + outTab1 + "." + "PCT2_5" + "!"
+        HelperFunctions.addField(inFeatClass, outTab1, field, inID, joinID, expression)
+
         field = "minGradient"
         inID = "featID"
         joinID = "featID"
@@ -1103,6 +1237,18 @@ class Add_Topographic_Attributes_Low_Tool:
         joinID = "featID"
         expression = "!" + outTab2 + "." + "STD" + "!"
         HelperFunctions.addField(inFeatClass, outTab2, field, inID, joinID, expression)
+
+        field = "medianGradient"
+        inID = "featID"
+        joinID = "featID"
+        expression = "!" + outTab2 + "." + "MEDIAN" + "!"
+        HelperFunctions.addField(inFeatClass, outTab2, field, inID, joinID, expression)
+
+        field = "surfaceArea"
+        inID = "featID"
+        joinID = "featID"
+        expression = "!" + outTab3 + "." + "SUM" + "!"
+        HelperFunctions.addField(inFeatClass, outTab3, field, inID, joinID, expression)
 
         # spatial join
         joinFeat1 = "joinFeat1"
@@ -1168,6 +1314,29 @@ class Add_Topographic_Attributes_Low_Tool:
             "math.degrees(math.atan(!head_foot_depthRange! / !head_foot_length!))"
         )
         arcpy.management.CalculateField(inFeatClass, field, expression, "PYTHON3")
+        # calculate volume and sArea attributes using 3D extension
+        if additionalOption == "true":
+            path1 = workspaceName.split(".gdb")[0]
+            tempFolder = path1[0: path1.rfind("/")]
+            csvFile = tempFolder + "/" + "volume.csv"
+            itemList.append(csvFile)
+            AddAttributesFunctions.calculateVolume(inBathy, inFeatClass, -1, csvFile, workspaceName)
+
+            outTab4 = "outTab4"
+            itemList.append(outTab4)
+            arcpy.conversion.ExportTable(csvFile, outTab4)
+
+            field = "volume"
+            inID = "featID"
+            joinID = "featID"
+            expression = "!" + outTab4 + "." + "Volume" + "!"
+            HelperFunctions.addField(inFeatClass, outTab4, field, inID, joinID, expression)
+
+            field = "sArea"
+            inID = "featID"
+            joinID = "featID"
+            expression = "!" + outTab4 + "." + "SArea" + "!"
+            HelperFunctions.addField(inFeatClass, outTab4, field, inID, joinID, expression)
 
         arcpy.AddMessage("All attributes added")
 
@@ -1370,30 +1539,13 @@ class Add_Profile_Attributes_High_Tool:
                 arcpy.management.DeleteField(inFeatClass, field)
 
         itemList1 = []
-        # expand inBathy
+        # expand inBathy one cell outward
         # This is to ensure that the profile point(s) at the edge of bathymetry grid have depth values
-        inFocal = inBathy + "_focal"
-        itemList1.append(inFocal)
-        outFocalStat = FocalStatistics(
-            inBathy, NbrRectangle(3, 3, "CELL"), "MEAN", "DATA"
-        )
-        outFocalStat.save(inFocal)
-        # mosaic to new raster
         mosaicBathy = "mosaicBathy"
         itemList1.append(mosaicBathy)
-        inputRasters = [inBathy, inFocal]
-        arcpy.management.MosaicToNewRaster(
-            inputRasters,
-            workspaceName,
-            mosaicBathy,
-            inBathy,
-            "32_BIT_FLOAT",
-            "#",
-            "1",
-            "FIRST",
-            "FIRST",
-        )
+        HelperFunctions.expandBathy(inBathy, mosaicBathy, 1, workspaceName)        
         arcpy.AddMessage("mosaic done")
+        
         mosaicBathy = workspaceName + "/" + "mosaicBathy"
 
         mergeList = []
@@ -1870,30 +2022,13 @@ class Add_Profile_Attributes_Low_Tool:
                 arcpy.management.DeleteField(inFeatClass, field)
 
         itemList1 = []
-        # expand inBathy
+        # expand inBathy one cell outward
         # This is to ensure that the profile point(s) at the edge of bathymetry grid have depth values
-        inFocal = inBathy + "_focal"
-        itemList1.append(inFocal)
-        outFocalStat = FocalStatistics(
-            inBathy, NbrRectangle(3, 3, "CELL"), "MEAN", "DATA"
-        )
-        outFocalStat.save(inFocal)
-        # mosaic to new raster
         mosaicBathy = "mosaicBathy"
         itemList1.append(mosaicBathy)
-        inputRasters = [inBathy, inFocal]
-        arcpy.management.MosaicToNewRaster(
-            inputRasters,
-            workspaceName,
-            mosaicBathy,
-            inBathy,
-            "32_BIT_FLOAT",
-            "#",
-            "1",
-            "FIRST",
-            "FIRST",
-        )
+        HelperFunctions.expandBathy(inBathy, mosaicBathy, 1, workspaceName)        
         arcpy.AddMessage("mosaic done")
+        
         mosaicBathy = workspaceName + "/" + "mosaicBathy"
 
         mergeList = []

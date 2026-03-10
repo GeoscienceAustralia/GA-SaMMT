@@ -8,6 +8,7 @@
 import math
 import warnings
 from datetime import datetime
+import os
 
 import arcpy
 import numpy as np
@@ -567,5 +568,198 @@ def deleteSelectedField(inFeat, fieldName):
 
     return
 
+# This function deletes files
+def deleteFiles(inFileList):
+    # inFileList: list of files to be deleted
+    
+    if len(inFileList) == 0:
+        arcpy.AddMessage("no file in the list")
+    else:
+        for item in inFileList:
+            if os.path.exists(item):
+                os.remove(item)
+                arcpy.AddMessage(item + " is deleted")
+            else:
+                arcpy.AddMessage(item + " does not exist")
+    return
 
+# This function generate weight files (as kernel files)
+def generateWeightFiles(tempFolder, wSize):
+    # tempFolder: temporary folder to save the weight files
+    # wSize: kernel size
+    
+    nu1 = int((wSize - 1) / 2)
+    nu2 = -nu1
+    tempList = [[nu1, 0], [nu2, 0], [0, nu1], [0, nu2], [nu1, nu2], [nu2, nu1], [nu1, nu1], [nu2, nu2]]
 
+    line = str(wSize) + " " + str(wSize) + "\n"
+    pathName = tempFolder
+    isExist = os.path.exists(pathName)
+    if not isExist:
+        os.makedirs(pathName)
+        arcpy.AddMessage(pathName, "created")
+    for l in tempList:
+        arcpy.AddMessage(l)
+        filName = pathName + "/weight_" + str(l[0]) + str(l[1]) + ".txt"
+
+        fil = open(filName, "w")
+        fil.write(line)
+        # [3, 0]
+        if l == tempList[0]:
+            a1 = np.zeros(wSize, dtype=int)
+            a2 = str(a1)
+            a3 = a2[1:len(a2) - 1]
+            b1 = a1.copy()
+            b1[wSize - 1] = 1
+            b2 = str(b1)
+            b3 = b2[1:len(b2) - 1]
+            i = 1
+            while i <= wSize:
+                if i == (wSize + 1) / 2:
+                    fil.write(b3 + "\n")
+                else:
+                    fil.write(a3 + "\n")
+                i += 1
+        # [-3, 0]       
+        if l == tempList[1]:
+            a1 = np.zeros(wSize, dtype=int)
+            a2 = str(a1)
+            a3 = a2[1:len(a2) - 1]
+            b1 = a1.copy()
+            b1[0] = 1
+            b2 = str(b1)
+            b3 = b2[1:len(b2) - 1]
+            i = 1
+            while i <= wSize:
+                if i == (wSize + 1) / 2:
+                    fil.write(b3 + "\n")
+                else:
+                    fil.write(a3 + "\n")
+                i += 1
+        # [0, 3]        
+        if l == tempList[2]:
+            a1 = np.zeros(wSize, dtype=int)
+            a2 = str(a1)
+            a3 = a2[1:len(a2) - 1]
+            b1 = a1.copy()
+            b1[int((wSize - 1) / 2)] = 1
+            b2 = str(b1)
+            b3 = b2[1:len(b2) - 1]
+            i = 1
+            while i <= wSize:
+                if i == wSize:
+                    fil.write(b3 + "\n")
+                else:
+                    fil.write(a3 + "\n")
+                i += 1
+        # [0, -3]
+        if l == tempList[3]:
+            a1 = np.zeros(wSize, dtype=int)
+            a2 = str(a1)
+            a3 = a2[1:len(a2) - 1]
+            b1 = a1.copy()
+            b1[int((wSize - 1) / 2)] = 1
+            b2 = str(b1)
+            b3 = b2[1:len(b2) - 1]
+            i = 1
+            while i <= wSize:
+                if i == 1:
+                    fil.write(b3 + "\n")
+                else:
+                    fil.write(a3 + "\n")
+                i += 1
+        # [3, -3]        
+        if l == tempList[4]:
+            a1 = np.zeros(wSize, dtype=int)
+            a2 = str(a1)
+            a3 = a2[1:len(a2) - 1]
+            b1 = a1.copy()
+            b1[wSize - 1] = 1
+            b2 = str(b1)
+            b3 = b2[1:len(b2) - 1]
+            i = 1
+            while i <= wSize:
+                if i == 1:
+                    fil.write(b3 + "\n")
+                else:
+                    fil.write(a3 + "\n")
+                i += 1
+        # [-3, 3]
+        if l == tempList[5]:
+            a1 = np.zeros(wSize, dtype=int)
+            a2 = str(a1)
+            a3 = a2[1:len(a2) - 1]
+            b1 = a1.copy()
+            b1[0] = 1
+            b2 = str(b1)
+            b3 = b2[1:len(b2) - 1]
+            i = 1
+            while i <= wSize:
+                if i == wSize:
+                    fil.write(b3 + "\n")
+                else:
+                    fil.write(a3 + "\n")
+                i += 1
+        # [3, 3]        
+        if l == tempList[6]:
+            a1 = np.zeros(wSize, dtype=int)
+            a2 = str(a1)
+            a3 = a2[1:len(a2) - 1]
+            b1 = a1.copy()
+            b1[wSize - 1] = 1
+            b2 = str(b1)
+            b3 = b2[1:len(b2) - 1]
+            i = 1
+            while i <= wSize:
+                if i == wSize:
+                    fil.write(b3 + "\n")
+                else:
+                    fil.write(a3 + "\n")
+                i += 1
+        # [-3, -3]        
+        if l == tempList[7]:
+            a1 = np.zeros(wSize, dtype=int)
+            a2 = str(a1)
+            a3 = a2[1:len(a2) - 1]
+            b1 = a1.copy()
+            b1[0] = 1
+            b2 = str(b1)
+            b3 = b2[1:len(b2) - 1]
+            i = 1
+            while i <= wSize:
+                if i == 1:
+                    fil.write(b3 + "\n")
+                else:
+                    fil.write(a3 + "\n")
+                i += 1
+
+        fil.close()
+
+# This function expands the input bathymetry outward with a nominated number of cells
+def expandBathy(inBathy, outBathy, size, workspace):
+    #inBathy: input bathymetry grid
+    #outBathy: output bathymetry grid after expansion
+    #size: size of expansion (unit: cell)
+    #workspace: workspace to store the outBathy
+    
+    inFocal = inBathy + "_focal"
+    wSize = size * 2 + 1
+    outFocalStat = FocalStatistics(
+        inBathy, NbrRectangle(wSize, wSize, "CELL"), "MEAN", "DATA"
+    )
+    outFocalStat.save(inFocal)
+    # mosaic to new raster    
+    inputRasters = [inBathy, inFocal]
+    arcpy.management.MosaicToNewRaster(
+        inputRasters,
+        workspace,
+        outBathy,
+        inBathy,
+        "32_BIT_FLOAT",
+        "#",
+        "1",
+        "FIRST",
+        "FIRST",
+    )
+    arcpy.AddMessage("The input bathymetry has been expanded " + str(size) + " cell(s) outward!")
+    arcpy.management.Delete(inFocal)
