@@ -928,7 +928,7 @@ class Add_Topographic_Attributes_Low_Tool:
                     if inBathy == lyr.name:
                         inBathy = HelperFunctions.convert_backslash_forwardslash(lyr.dataSource)
        
-        # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
+        # if the head feature class is selected from a drop-down list, the headFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if headFeatClass.rfind("/") < 0:
             aprx = arcpy.mp.ArcGISProject("CURRENT")
@@ -939,7 +939,7 @@ class Add_Topographic_Attributes_Low_Tool:
                         headFeatClass = HelperFunctions.convert_backslash_forwardslash(
                             lyr.dataSource
                         )
-        # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
+        # if the foot feature class is selected from a drop-down list, the footFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
         if footFeatClass.rfind("/") < 0:
             aprx = arcpy.mp.ArcGISProject("CURRENT")
@@ -1098,7 +1098,7 @@ class Add_Topographic_Attributes_Low_Tool:
                 + " with the required depth attributes."
             )
             raise arcpy.ExecuteError
-
+        # check the depth attributes field exist in the footFeatClass
         fields2 = arcpy.ListFields(footFeatClass)
         field_names2 = [f.name for f in fields2]
         if ("depth" not in field_names2) | ("depth1" not in field_names2):

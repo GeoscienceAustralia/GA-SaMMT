@@ -92,6 +92,71 @@ def execute_profile_BL(argList, n_cpu):
 
     arcpy.AddMessage("multiprocessing done all")
 
+
+# This function executes the multiprocessing to calculate the topographic attributes for the bathymetric high features
+def execute_topographic_BH(argList, n_cpu):
+    # argList: a list of a list of arguments to be passed for multiprocessing
+    # n_cpu: number of cpu logical processors used for multiprocessing (each processor runs one independent process)
+
+    arcpy.AddMessage(
+        "Will open multiple python windows for processing. Please do not close them! They will close when finish."
+    )
+    # use python window instead of ArcGIS Pro application for the multiprocessing
+    multiprocessing.set_executable(os.path.join(sys.exec_prefix, 'python.exe'))
+    arcpy.AddMessage("nCPU:" + str(n_cpu))
+    # doing multiprocessing here
+    with Pool(n_cpu) as pool:
+        results = pool.map(add_topographic_attributes_high_function, argList)
+
+    arcpy.AddMessage("multiprocessing done all")
+
+# This function executes the multiprocessing to calculate the topographic attributes for the bathymetric low features
+def execute_topographic_BL(argList, n_cpu):
+    # argList: a list of a list of arguments to be passed for multiprocessing
+    # n_cpu: number of cpu logical processors used for multiprocessing (each processor runs one independent process)
+
+    arcpy.AddMessage(
+        "Will open multiple python windows for processing. Please do not close them! They will close when finish."
+    )
+    # use python window instead of ArcGIS Pro application for the multiprocessing
+    multiprocessing.set_executable(os.path.join(sys.exec_prefix, 'python.exe'))
+    arcpy.AddMessage("nCPU:" + str(n_cpu))
+    # doing multiprocessing here
+    with Pool(n_cpu) as pool:
+        results = pool.map(add_topographic_attributes_low_function, argList)
+
+    arcpy.AddMessage("multiprocessing done all")
+    
+# This function calculates the topographic attributes for the bathymetric high features
+def add_topographic_attributes_high_function(arg):
+    """ pass a list of arguments"""
+    workspaceName = arg[0]
+    tempFolder = arg[1]
+    inFeat = arg[2]
+    inBathy = arg[3]
+    slpGrid = arg[4]
+    saGrid = arg[5]
+    # calling individual functions to calculate the topographic features
+    calculateTopographicBH(workspaceName, tempFolder, inFeat, inBathy, slpGrid, saGrid)
+
+    return
+
+# This function calculates the topographic attributes for the bathymetric low features
+def add_topographic_attributes_low_function(arg):
+    """ pass a list of arguments"""
+    workspaceName = arg[0]
+    tempFolder = arg[1]
+    inFeat = arg[2]
+    headFeat = arg[3]
+    footFeat = arg[4]
+    inBathy = arg[5]
+    slpGrid = arg[6]
+    saGrid = arg[7]
+    # calling individual functions to calculate the topographic features
+    calculateTopographicBL(workspaceName, tempFolder, inFeat, headFeat, footFeat, inBathy, slpGrid, saGrid)
+
+    return
+
 # This function calculates the shape attributes for the bathymetric high features
 def add_shape_attributes_high_function(arg):
     """ pass a list of arguments"""
@@ -3822,6 +3887,436 @@ def calculateProfileBL(workspaceName, tempFolder, inFeatClass, inBathy, areaT):
 
     arcpy.AddMessage("Profile attributes added and calculated")
 
+# This function calculates topographic attributes for bathymetric high features
+def calculateTopographicBH(workspaceName, tempFolder, inFeat, inBathy, slpGrid, saGrid):
+    
+    env.workspace = workspaceName
+    env.overwriteOutput = True
+    itemList = []
+    
+    
+    fieldList = [
+        "minDepth",
+        "maxDepth",
+        "depthRange",
+        "meanDepth",
+        "stdDepth",
+        "medianDepth",
+        "relativeHeight",
+        "minGradient",
+        "maxGradient",
+        "gradientRange",
+        "meanGradient",
+        "stdGradient",
+        "medianGradient",
+        "surfaceArea",
+        "volume",
+        "sArea",
+    ]
+
+    fields = arcpy.ListFields(inFeat)
+    field_names = [f.name for f in fields]
+
+    # add new topographic fields
+    for field in fieldList:
+        fieldType = "DOUBLE"
+        fieldPrecision = 15
+        fieldScale = 6
+        if field in field_names:
+            arcpy.AddMessage(field + " exists")
+        else:
+            arcpy.management.AddField(
+                inFeat, field, fieldType, fieldPrecision, fieldScale
+            )
+
+    # zonal statistics
+    zoneField = "featID"
+    outTab1 = "outTab1"
+    outTab2 = "outTab2"
+    outTab3 = "outTab3"
+    itemList.append(outTab1)
+    itemList.append(outTab2)        
+    itemList.append(outTab3)
+    # The two percentile values are needed to calculate the relativeHeight attribute.
+    # The relativeHeight attribute is the depth difference between the 97.5th and the 2.5th percentiles.
+    # The relativeHeight attribute is more appropriate than the depthRange attribute in classifying Seamount, Pinnacle, Knoll and Hills (Dolan and Bjarnadottir, 2025).
+    # This is because the depthRange attribute is more likely affected by bathymetry data uncertainty.
+    # Dolan MFJ and Bjarnadóttir LR (2025) Seamounts and related topographic highs – automated mapping in support of sustainable ocean management, Norway. Front. Earth Sci. 13:1690996. doi: 10.3389/feart.2025.1690996
+    percentile_values=[2.5,97.5]
+    outZ1 = ZonalStatisticsAsTable(
+        inFeat, zoneField, inBathy, outTab1, "DATA", "ALL", percentile_values=percentile_values
+    )
+    outZ2 = ZonalStatisticsAsTable(
+        inFeat, zoneField, slpGrid, outTab2, "DATA", "ALL"
+    )
+    outZ3 = ZonalStatisticsAsTable(
+        inFeat, zoneField, saGrid, outTab3, "DATA", "ALL"
+    )
+
+    # calculate these topographic fields
+    field = "minDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "MIN" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "maxDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "MAX" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "depthRange"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "RANGE" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "meanDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "MEAN" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "stdDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "STD" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "medianDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "MEDIAN" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "relativeHeight"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "PCT97_5" + "!" + " - " + "!" + outTab1 + "." + "PCT2_5" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+            
+
+    field = "minGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "MIN" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "maxGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "MAX" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "gradientRange"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "RANGE" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "meanGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "MEAN" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "stdGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "STD" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "medianGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "MEDIAN" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "surfaceArea"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab3 + "." + "SUM" + "!"
+    HelperFunctions.addField(inFeat, outTab3, field, inID, joinID, expression)
+    # calculate volume and surface area using 3D extension
+    # The function is unable to calculate volume and surface area for very small (narrow) features
+    # The estimated volume and surface area values are more accurate for large features
+    
+    csvFile = tempFolder + "/" + "volume.csv"
+    itemList.append(csvFile)
+    calculateVolume(inBathy, inFeat, 1, csvFile, workspaceName)
+
+    outTab4 = "outTab4"
+    itemList.append(outTab4)
+    arcpy.conversion.ExportTable(csvFile, outTab4)
+
+    field = "volume"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab4 + "." + "Volume" + "!"
+    HelperFunctions.addField(inFeat, outTab4, field, inID, joinID, expression)
+
+    field = "sArea"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab4 + "." + "SArea" + "!"
+    HelperFunctions.addField(inFeat, outTab4, field, inID, joinID, expression)
+
+    arcpy.AddMessage("All attributes added")
+    # delete intermediate files
+    HelperFunctions.deleteDataItems(itemList)
+
+   
+    
+# This function calculates topographic attributes for bathymetric low features
+def calculateTopographicBL(workspaceName, tempFolder, inFeat, headFeat, footFeat, inBathy, slpGrid, saGrid):
+    
+    env.workspace = workspaceName
+    env.overwriteOutput = True
+    itemList = []
+    
+    
+    fieldList = [
+        "headDepth",
+        "footDepth",
+        "head_foot_depthRange",
+        "head_foot_gradient",
+        "minDepth",
+        "maxDepth",
+        "depthRange",
+        "meanDepth",
+        "stdDepth",
+        "medianDepth",
+        "relativeDepth",
+        "minGradient",
+        "maxGradient",
+        "gradientRange",
+        "meanGradient",
+        "stdGradient",
+        "medianGradient",
+        "surfaceArea",
+        "volume",
+        "sArea",
+    ]
+    
+    fields = arcpy.ListFields(inFeat)
+    field_names = [f.name for f in fields]
+
+    # add new topographic fields
+    for field in fieldList:
+        fieldType = "DOUBLE"
+        fieldPrecision = 15
+        fieldScale = 6
+        if field in field_names:
+            arcpy.AddMessage(field + " exists")
+        else:
+            arcpy.management.AddField(
+                inFeat, field, fieldType, fieldPrecision, fieldScale
+            )
+
+    # zonal statistics
+    zoneField = "featID"
+    outTab1 = "outTab1"
+    outTab2 = "outTab2"
+    outTab3 = "outTab3"
+    itemList.append(outTab1)
+    itemList.append(outTab2)        
+    itemList.append(outTab3)
+    # The two percentile values are needed to calculate the relativeDepth attribute.
+    # The relativeDepth attribute is the depth difference between the 97.5th and the 2.5th percentiles.
+    # The relativeDepth attribute may be more appropriate than the depthRange attribute because the depthRange attribute is more likely affected by bathymetry data uncertainty.
+    percentile_values=[2.5,97.5]
+    outZ1 = ZonalStatisticsAsTable(
+        inFeat, zoneField, inBathy, outTab1, "DATA", "ALL", percentile_values=percentile_values
+    )
+    outZ2 = ZonalStatisticsAsTable(
+        inFeat, zoneField, slpGrid, outTab2, "DATA", "ALL"
+    )
+    outZ3 = ZonalStatisticsAsTable(
+        inFeat, zoneField, saGrid, outTab3, "DATA", "ALL"
+    )
+
+    # calculate these fields
+    field = "minDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "MIN" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "maxDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "MAX" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "depthRange"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "RANGE" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "meanDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "MEAN" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "stdDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "STD" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "medianDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "MEDIAN" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "relativeDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab1 + "." + "PCT97_5" + "!" + " - " + "!" + outTab1 + "." + "PCT2_5" + "!"
+    HelperFunctions.addField(inFeat, outTab1, field, inID, joinID, expression)
+
+    field = "minGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "MIN" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "maxGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "MAX" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "gradientRange"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "RANGE" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "meanGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "MEAN" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "stdGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "STD" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "medianGradient"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab2 + "." + "MEDIAN" + "!"
+    HelperFunctions.addField(inFeat, outTab2, field, inID, joinID, expression)
+
+    field = "surfaceArea"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab3 + "." + "SUM" + "!"
+    HelperFunctions.addField(inFeat, outTab3, field, inID, joinID, expression)
+
+    # spatial join
+    joinFeat1 = "joinFeat1"
+    itemList.append(joinFeat1)
+    arcpy.analysis.SpatialJoin(inFeat, headFeat, joinFeat1)
+
+    joinFeat2 = "joinFeat2"
+    itemList.append(joinFeat2)
+    arcpy.analysis.SpatialJoin(inFeat, footFeat, joinFeat2)
+
+    # selection analysis
+    selectFeat1 = "selectFeat1"
+    itemList.append(selectFeat1)
+    whereClause = '"depth" IS NULL'
+    arcpy.analysis.Select(joinFeat1, selectFeat1, whereClause)
+
+    selectFeat2 = "selectFeat2"
+    itemList.append(selectFeat2)
+    whereClause = '"depth" IS NOT NULL'
+    arcpy.analysis.Select(joinFeat1, selectFeat2, whereClause)
+    # if the depth is null, replace it with the depth1 field
+    arcpy.management.CalculateField(selectFeat1, "depth", "!depth1!", "PYTHON3")
+    mergedFeat1 = "mergedFeat1"
+    itemList.append(mergedFeat1)
+    mergedFeats = [selectFeat1, selectFeat2]
+    arcpy.management.Merge(mergedFeats, mergedFeat1)
+
+    # selection analysis
+    selectFeat3 = "selectFeat3"
+    itemList.append(selectFeat3)
+    whereClause = '"depth" IS NULL'
+    arcpy.analysis.Select(joinFeat2, selectFeat3, whereClause)
+
+    selectFeat4 = "selectFeat4"
+    itemList.append(selectFeat4)
+    whereClause = '"depth" IS NOT NULL'
+    arcpy.analysis.Select(joinFeat2, selectFeat4, whereClause)
+
+    arcpy.management.CalculateField(selectFeat3, "depth", "!depth1!", "PYTHON3")
+    mergedFeat2 = "mergedFeat2"
+    itemList.append(mergedFeat2)
+    mergedFeats = [selectFeat3, selectFeat4]
+    arcpy.management.Merge(mergedFeats, mergedFeat2)
+
+    field = "headDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + mergedFeat1 + "." + "depth" + "!"
+    HelperFunctions.addField(inFeat, mergedFeat1, field, inID, joinID, expression)
+
+    field = "footDepth"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + mergedFeat2 + "." + "depth" + "!"
+    HelperFunctions.addField(inFeat, mergedFeat2, field, inID, joinID, expression)
+
+    field = "head_foot_depthRange"
+    expression = "!headDepth! - !footDepth!"
+    arcpy.management.CalculateField(inFeat, field, expression, "PYTHON3")
+
+    field = "head_foot_gradient"
+    expression = (
+        "math.degrees(math.atan(!head_foot_depthRange! / !head_foot_length!))"
+    )
+    arcpy.management.CalculateField(inFeat, field, expression, "PYTHON3")
+    
+    # calculate volume and surface area using 3D extension
+    # The function is unable to calculate volume and surface area for very small (narrow) features
+    # The estimated volume and surface area values are more accurate for large features
+    
+    csvFile = tempFolder + "/" + "volume.csv"
+    itemList.append(csvFile)
+    calculateVolume(inBathy, inFeat, -1, csvFile, workspaceName)
+
+    outTab4 = "outTab4"
+    itemList.append(outTab4)
+    arcpy.conversion.ExportTable(csvFile, outTab4)
+
+    field = "volume"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab4 + "." + "Volume" + "!"
+    HelperFunctions.addField(inFeat, outTab4, field, inID, joinID, expression)
+
+    field = "sArea"
+    inID = "featID"
+    joinID = "featID"
+    expression = "!" + outTab4 + "." + "SArea" + "!"
+    HelperFunctions.addField(inFeat, outTab4, field, inID, joinID, expression)
+
+    arcpy.AddMessage("All attributes added")
+    # delete intermediate files
+    HelperFunctions.deleteDataItems(itemList)
+
+   
+    
+
 # This function generate surface area grid
 # The surface area grid is calculated from the bathymetry grid using Jenness (2004) algorithm
 # Jenness, J.S., 2004. Calculating landscape surface area from digital elevation model. Wildlife Society Bulletin, 32, 829-839.
@@ -4044,26 +4539,19 @@ def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
     # workspaceName: workspace name
     
     time1 = datetime.now()
+    # get cell size of the input bathymetry grid. make sure the grid has a quare cell
+    rasResult = arcpy.management.GetRasterProperties(inBathy, "CELLSIZEX")
+    cSize = int(rasResult.getOutput(0))
     # expand inBathy for 2 cells
     # so that the feaures along the edge of the bathymetry grid will have depth values 
     inBathy1 = "inBathy_1"
     HelperFunctions.expandBathy(inBathy, inBathy1, 2, workspaceName)
-    # get cell size of the input bathymetry grid. make sure the grid has a quare cell
-    rasResult = arcpy.management.GetRasterProperties(inBathy, "CELLSIZEX")
-    cSize = int(rasResult.getOutput(0))
 
-    # buffer the inFeat one cell outward
+    # buffer the inFeats one cell outward
     bufferFeats = inFeats + "_" + str(cSize) + "m"
     arcpy.analysis.GraphicBuffer(inFeats, bufferFeats, str(cSize) + " Meters", "SQUARE", "MITER")
 
-    # convert polygon to points
-    inFeaturePoints = inFeats + "_points"
-    arcpy.management.FeatureVerticesToPoints(bufferFeats,inFeaturePoints,"ALL")
 
-    # extract depth values
-    inRasterList = [[inBathy1, "depth"]]
-    ExtractMultiValuesToPoints(inFeaturePoints, inRasterList)
-    
     path1 = workspaceName.split(".gdb")[0]
     tempFolder = path1[0: path1.rfind("/")]
     
@@ -4080,8 +4568,14 @@ def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
             inFeat = workspaceName + "/" + "inFeat" + str(featID)
             arcpy.analysis.Select(bufferFeats, inFeat, where_clause)
            
-            inPoints = workspaceName + "/" + "inPoints" + str(featID)     
-            arcpy.analysis.Select(inFeaturePoints, inPoints, where_clause)
+            # convert polygon to points
+            inPoints = workspaceName + "/" + "inPoints" + str(featID)
+            arcpy.management.FeatureVerticesToPoints(inFeat,inPoints,"ALL")
+            
+            # extract depth values
+            inRasterList = [[inBathy1, "depth"]]
+            ExtractMultiValuesToPoints(inPoints, inRasterList)
+            
             # generate the reference surface first
             # by interpolating points along the polygon boundaries
             input1 = TopoPointElevation([[inPoints, 'depth']])
@@ -4092,13 +4586,13 @@ def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
             outTopo = TopoToRaster(inputs, cell_size=cSize, data_type="SPOT")
             arcpy.AddMessage("reference surface generated")
             # convert raster to tin surface
-            outTin1 = tempFolder + "/" + "outTin1"
+            outTin1 = tempFolder + "/" + "outTin1_" + str(featID)
             arcpy.ddd.RasterTin(outTopo, outTin1)
             arcpy.AddMessage("reference tin generated")
             # generate the real surface
-            outExtract = ExtractByMask(inBathy1, inFeat)
+            outExtract = ExtractByMask(inBathy1, inFeat, "INSIDE", inFeat)
             arcpy.AddMessage("real surface generated")
-            outTin2 = tempFolder + "/" + "outTin2"
+            outTin2 = tempFolder + "/" + "outTin2_" + str(featID)
             arcpy.ddd.RasterTin(outExtract, outTin2)
             arcpy.AddMessage("real tin generated")
             # Volume = real surface - reference surface
@@ -4157,7 +4651,6 @@ def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
 
     arcpy.management.Delete(inBathy1)
     arcpy.management.Delete(bufferFeats)
-    arcpy.management.Delete(inFeaturePoints)
     arcpy.AddMessage("Volume and sArea attributes calculated")
     
                 

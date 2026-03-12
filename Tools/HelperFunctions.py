@@ -744,11 +744,22 @@ def expandBathy(inBathy, outBathy, size, workspace):
     
     inFocal = inBathy + "_focal"
     wSize = size * 2 + 1
+    # need to set the extent right for the focal statistic    
+    desc = arcpy.Describe(inBathy)    
+    cSize = desc.meanCellHeight
+    XMin = desc.extent.XMin - size * cSize
+    YMin = desc.extent.YMin - size * cSize
+    XMax = desc.extent.XMax + size * cSize
+    YMax = desc.extent.YMax + size * cSize
+    arcpy.env.extent = arcpy.Extent(XMin, YMin, XMax, YMax)
+   
     outFocalStat = FocalStatistics(
         inBathy, NbrRectangle(wSize, wSize, "CELL"), "MEAN", "DATA"
     )
     outFocalStat.save(inFocal)
-    # mosaic to new raster    
+    # mosaic to new raster
+    # again set the processig extent to maximum of both inputs
+    arcpy.env.extent = "MAXOF"
     inputRasters = [inBathy, inFocal]
     arcpy.management.MosaicToNewRaster(
         inputRasters,
