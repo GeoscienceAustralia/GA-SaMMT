@@ -78,24 +78,6 @@ class Update_Features_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output featureclass to be at the
-        # same FileGeodatabase as the first input featureclass
-        if parameters[0].value:
-            in_feature_set = parameters[0].valueAsText
-            inFeats = in_feature_set.split(";")
-            inFeat = inFeats[0]
-            # if the input feature class is selected from a drop-down list, the inFeat does not contain the full path
-            # In this case, the full path needs to be obtained from the map layer
-            if inFeat.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isFeatureLayer:
-                        if inFeat == lyr.name:
-                            inFeat = lyr.dataSource
-                            
-
-            parameters[1].value = inFeat + "_updated"
 
         return
 
@@ -220,19 +202,6 @@ class Merge_Connected_Features_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output featureclass to be at the
-        # same FileGeodatabase as the input featureclass
-        if parameters[0].value:
-            inFeatClass = parameters[0].valueAsText
-            if inFeatClass.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isFeatureLayer:
-                        if inFeatClass == lyr.name:
-                            inFeatClass = lyr.dataSource
-
-            parameters[1].value = inFeatClass + "_merged"
 
         return
 
@@ -546,19 +515,6 @@ class Connect_Nearby_Linear_Features_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output featureclass to be at the
-        # same FileGeodatabase as the input featureclass
-        if parameters[0].value:
-            inFeatClass = parameters[0].valueAsText
-            if inFeatClass.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isFeatureLayer:
-                        if inFeatClass == lyr.name:
-                            inFeatClass = lyr.dataSource
-
-            parameters[8].value = inFeatClass + "_connected"
 
         return
 
@@ -616,7 +572,7 @@ class Connect_Nearby_Linear_Features_Tool:
         distanceT = distThreshold.split(" ")[0]  # distance value
         linearUnit = distThreshold.split(" ")[1]  # distance unit
         if linearUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown distance unit.")
+            messages.addErrorMessage("You cann't provide an unknown distance unit for Distance Threshold.")
             raise arcpy.ExecuteError
 
         # check that the valid weights have been entered
@@ -631,7 +587,7 @@ class Connect_Nearby_Linear_Features_Tool:
         areaThresholdValue = areaThreshold.split(" ")[0]
         areaUnit = areaThreshold.split(" ")[1]
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         workspaceName = inFeat[0 : inFeat.rfind("/")]
@@ -1564,19 +1520,6 @@ class Connect_Nearby_Linear_HF_Features_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output featureclass to be at the
-        # same FileGeodatabase as the input featureclass
-        if parameters[0].value:
-            inFeatClass = parameters[0].valueAsText
-            if inFeatClass.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isFeatureLayer:
-                        if inFeatClass == lyr.name:
-                            inFeatClass = lyr.dataSource
-
-            parameters[9].value = inFeatClass + "_connected"
 
         return
 
@@ -1670,7 +1613,7 @@ class Connect_Nearby_Linear_HF_Features_Tool:
         distanceT = distThreshold.split(" ")[0]  # distance value
         linearUnit = distThreshold.split(" ")[1]  # distance unit
         if linearUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown distance unit.")
+            messages.addErrorMessage("You cann't provide an unknown distance unit for Distance Threshold.")
             raise arcpy.ExecuteError
 
         # check that the valid weights have been entered
@@ -1685,7 +1628,7 @@ class Connect_Nearby_Linear_HF_Features_Tool:
         areaThresholdValue = areaThreshold.split(" ")[0]
         areaUnit = areaThreshold.split(" ")[1]
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         workspaceName = inFeat[0 : inFeat.rfind("/")]
@@ -4247,7 +4190,7 @@ def getAngle(inAngle):
         itemList.append(tab2)
         statsField = [["OBJECTID", "MIN"]]
         caseField = ["featID", "POINT_X"]
-        arcpy.Statistics_analysis(selectedPoints_2, tab2, statsField, caseField)
+        arcpy.analysis.Statistics(selectedPoints_2, tab2, statsField, caseField)
 
         idList = []
         cursor = arcpy.SearchCursor(tab2)
@@ -4350,7 +4293,7 @@ def getAngle(inAngle):
         itemList.append(sumTab)
         statsField = [["featID", "COUNT"]]
         caseField = "featID"
-        arcpy.Statistics_analysis(selectedPointsTemp, sumTab, statsField, caseField)
+        arcpy.analysis.Statistics(selectedPointsTemp, sumTab, statsField, caseField)
         featIDList1 = []
         featIDList2 = []
         cursor = arcpy.SearchCursor(sumTab)
@@ -4483,7 +4426,7 @@ def getAngle(inAngle):
         tab1 = "tab1"
         statsField = [["LINK_DIST", "MIN"]]
         caseField = "featID1"
-        arcpy.Statistics_analysis(linksFeat1Temp, tab1, statsField, caseField)
+        arcpy.analysis.Statistics(linksFeat1Temp, tab1, statsField, caseField)
 
         fieldName2 = "distDiff"
         inID = "featID1"

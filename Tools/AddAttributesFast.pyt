@@ -96,7 +96,7 @@ class Add_Shape_Attributes_High_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the total number of logical processors available in the computer
+        # the default value is the half of logical processors available in the computer
         param3.value = int(multiprocessing.cpu_count() / 2)
 
         parameters = [param0, param1, param2, param3]
@@ -204,13 +204,40 @@ class Add_Shape_Attributes_High_Tool:
         env.workspace = workspaceName
         env.overwriteOutput = True
 
+        results = arcpy.management.GetCount(inFeatClass)
+        noFeats = int(results.getOutput(0))
+        if noFeats <= nCPU:
+            messages.addErrorMessage(
+                "The number of input features must be larger than the number of CPU processors used for multiprocessing!"
+            )
+            raise arcpy.ExecuteError
+
         fields = arcpy.ListFields(inFeatClass)
         field_names = [f.name for f in fields]
         # check the 'featID' field exists
         # if not, add and calculate it
+        # if yes, check duplication of featID values
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
             HelperFunctions.addIDField(inFeatClass, "featID")
+        else:
+            # obtain number of features and number of unique featID values
+            cursor = arcpy.SearchCursor(inFeatClass)
+            idList = []
+            for row in cursor:
+                id1 = row.getValue("featID")
+                idList.append(id1)
+            del row, cursor
+            nuFeats = len(idList)
+            arcpy.AddMessage("number of featues: " + str(nuFeats))
+            uniqueIDs = list(set(idList))
+            nuUniqueID = len(uniqueIDs)
+            arcpy.AddMessage("number of unique featID: " + str(nuUniqueID))
+            if nuUniqueID < nuFeats:
+                messages.addErrorMessage(
+                "There are duplications of featID values. Please make sure the featID values are unique!"
+                )
+                raise arcpy.ExecuteError
 
         # important, need to set the python.exe within ArcGIS Pro as the python set_executable
         # this will make sure the multiprocessing opens multiple python windows for processing
@@ -324,7 +351,7 @@ class Add_Shape_Attributes_Low_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the total number of logical processors available in the computer
+        # the default value is the half of logical processors available in the computer
         param5.value = int(multiprocessing.cpu_count() / 2)
 
         # 7th parameter
@@ -349,20 +376,6 @@ class Add_Shape_Attributes_Low_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output head and foot featureclasses to be at the
-        # same FileGeodatabase as the input featureclass 
-        if parameters[0].value:
-            inFeatClass = parameters[0].valueAsText
-            if inFeatClass.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isFeatureLayer:
-                        if inFeatClass == lyr.name:
-                            inFeatClass = lyr.dataSource
-                        
-            parameters[3].value = inFeatClass + "_head"
-            parameters[4].value = inFeatClass + "_foot"    
 
         return
 
@@ -475,14 +488,49 @@ class Add_Shape_Attributes_Low_Tool:
         env.workspace = workspaceName
         env.overwriteOutput = True
 
+        results = arcpy.management.GetCount(inFeatClass)
+        noFeats = int(results.getOutput(0))
+        if noFeats <= nCPU:
+            messages.addErrorMessage(
+                "The number of input features must be larger than the number of CPU processors used for multiprocessing!"
+            )
+            raise arcpy.ExecuteError
+
+        # waterproof some unusal errors
+        if headFeatClass == footFeatClass:
+            messages.addErrorMessage(
+                "The output Head Featureclass and output Foot Featureclass cannot have the same name in the same workspace!"
+            )
+            raise arcpy.ExecuteError
+
+
         fields = arcpy.ListFields(inFeatClass)
         field_names = [f.name for f in fields]
 
         # check the 'featID' field exists
         # if not, add and calculate it
+        # if yes, check duplication of featID values
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
             HelperFunctions.addIDField(inFeatClass, "featID")
+        else:
+            # obtain number of features and number of unique featID values
+            cursor = arcpy.SearchCursor(inFeatClass)
+            idList = []
+            for row in cursor:
+                id1 = row.getValue("featID")
+                idList.append(id1)
+            del row, cursor
+            nuFeats = len(idList)
+            arcpy.AddMessage("number of featues: " + str(nuFeats))
+            uniqueIDs = list(set(idList))
+            nuUniqueID = len(uniqueIDs)
+            arcpy.AddMessage("number of unique featID: " + str(nuUniqueID))
+            if nuUniqueID < nuFeats:
+                messages.addErrorMessage(
+                "There are duplications of featID values. Please make sure the featID values are unique!"
+                )
+                raise arcpy.ExecuteError
 
         # important, need to set the python.exe within ArcGIS Pro as the python set_executable
         # this will make sure the multiprocessing opens multiple python windows for processing
@@ -589,7 +637,7 @@ class Add_Topographic_Attributes_High_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the total number of logical processors available in the computer
+        # the default value is the half of logical processors available in the computer
         param3.value = int(multiprocessing.cpu_count() / 2)
         
 
@@ -697,16 +745,43 @@ class Add_Topographic_Attributes_High_Tool:
         
         workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
-        env.overwriteOutput = True   
+        env.overwriteOutput = True
+
+        results = arcpy.management.GetCount(inFeatClass)
+        noFeats = int(results.getOutput(0))
+        if noFeats <= nCPU:
+            messages.addErrorMessage(
+                "The number of input features must be larger than the number of CPU processors used for multiprocessing!"
+            )
+            raise arcpy.ExecuteError
 
         fields = arcpy.ListFields(inFeatClass)
         field_names = [f.name for f in fields]
 
         # check the 'featID' field exists
         # if not, add and calculate it
+        # if yes, check duplication of featID values
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
             HelperFunctions.addIDField(inFeatClass, "featID")
+        else:
+            # obtain number of features and number of unique featID values
+            cursor = arcpy.SearchCursor(inFeatClass)
+            idList = []
+            for row in cursor:
+                id1 = row.getValue("featID")
+                idList.append(id1)
+            del row, cursor
+            nuFeats = len(idList)
+            arcpy.AddMessage("number of featues: " + str(nuFeats))
+            uniqueIDs = list(set(idList))
+            nuUniqueID = len(uniqueIDs)
+            arcpy.AddMessage("number of unique featID: " + str(nuUniqueID))
+            if nuUniqueID < nuFeats:
+                messages.addErrorMessage(
+                "There are duplications of featID values. Please make sure the featID values are unique!"
+                )
+                raise arcpy.ExecuteError
 
         itemList = []
 
@@ -852,7 +927,7 @@ class Add_Topographic_Attributes_Low_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the total number of logical processors available in the computer
+        # the default value is the half of logical processors available in the computer
         param5.value = int(multiprocessing.cpu_count() / 2)
         
 
@@ -1019,16 +1094,43 @@ class Add_Topographic_Attributes_Low_Tool:
         
         workspaceName = inFeatClass[0:inFeatClass.rfind("/")]
         env.workspace = workspaceName
-        env.overwriteOutput = True   
+        env.overwriteOutput = True
+
+        results = arcpy.management.GetCount(inFeatClass)
+        noFeats = int(results.getOutput(0))
+        if noFeats <= nCPU:
+            messages.addErrorMessage(
+                "The number of input features must be larger than the number of CPU processors used for multiprocessing!"
+            )
+            raise arcpy.ExecuteError
 
         fields = arcpy.ListFields(inFeatClass)
         field_names = [f.name for f in fields]
 
         # check the 'featID' field exists
         # if not, add and calculate it
+        # if yes, check duplication of featID values
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
             HelperFunctions.addIDField(inFeatClass, "featID")
+        else:
+            # obtain number of features and number of unique featID values
+            cursor = arcpy.SearchCursor(inFeatClass)
+            idList = []
+            for row in cursor:
+                id1 = row.getValue("featID")
+                idList.append(id1)
+            del row, cursor
+            nuFeats = len(idList)
+            arcpy.AddMessage("number of featues: " + str(nuFeats))
+            uniqueIDs = list(set(idList))
+            nuUniqueID = len(uniqueIDs)
+            arcpy.AddMessage("number of unique featID: " + str(nuUniqueID))
+            if nuUniqueID < nuFeats:
+                messages.addErrorMessage(
+                "There are duplications of featID values. Please make sure the featID values are unique!"
+                )
+                raise arcpy.ExecuteError
             
         # check the 'head_foot_length' field exists
         if "head_foot_length" not in field_names:
@@ -1197,7 +1299,7 @@ class Add_Profile_Attributes_High_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the total number of logical processors available in the computer
+        # the default value is the half of logical processors available in the computer
         param4.value = int(multiprocessing.cpu_count() / 2)
 
         parameters = [param0, param1, param2, param3, param4]
@@ -1307,11 +1409,20 @@ class Add_Profile_Attributes_High_Tool:
         workspaceName = inFeatClass[0: inFeatClass.rfind("/")]
         env.workspace = workspaceName
         env.overwriteOutput = True
+
+        results = arcpy.management.GetCount(inFeatClass)
+        noFeats = int(results.getOutput(0))
+        if noFeats <= nCPU:
+            messages.addErrorMessage(
+                "The number of input features must be larger than the number of CPU processors used for multiprocessing!"
+            )
+            raise arcpy.ExecuteError
+        
         # areaThreshold input has two components: the threshold value and the area unit
         areaUnit = areaThreshold.split(" ")[1]
 
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You can't provide an unknown area unit.")
+            messages.addErrorMessage("You can't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         fields = arcpy.ListFields(inFeatClass)
@@ -1319,10 +1430,29 @@ class Add_Profile_Attributes_High_Tool:
 
         # check the 'featID' field exists
         # if not, add and calculate it
+        # if yes, check duplication of featID values
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
             HelperFunctions.addIDField(inFeatClass, "featID")
-
+        else:
+            # obtain number of features and number of unique featID values
+            cursor = arcpy.SearchCursor(inFeatClass)
+            idList = []
+            for row in cursor:
+                id1 = row.getValue("featID")
+                idList.append(id1)
+            del row, cursor
+            nuFeats = len(idList)
+            arcpy.AddMessage("number of featues: " + str(nuFeats))
+            uniqueIDs = list(set(idList))
+            nuUniqueID = len(uniqueIDs)
+            arcpy.AddMessage("number of unique featID: " + str(nuUniqueID))
+            if nuUniqueID < nuFeats:
+                messages.addErrorMessage(
+                "There are duplications of featID values. Please make sure the featID values are unique!"
+                )
+                raise arcpy.ExecuteError
+            
         # check the 'LengthWidthRatio' field exists
         if "LengthWidthRatio" not in field_names:
             messages.addErrorMessage(
@@ -1556,10 +1686,18 @@ class Add_Profile_Attributes_Low_Tool:
         env.workspace = workspaceName
         env.overwriteOutput = True
 
+        results = arcpy.management.GetCount(inFeatClass)
+        noFeats = int(results.getOutput(0))
+        if noFeats <= nCPU:
+            messages.addErrorMessage(
+                "The number of input features must be larger than the number of CPU processors used for multiprocessing!"
+            )
+            raise arcpy.ExecuteError
+
         areaUnit = areaThreshold.split(" ")[1]
 
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You can't provide an unknown area unit.")
+            messages.addErrorMessage("You can't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         fields = arcpy.ListFields(inFeatClass)
@@ -1567,9 +1705,28 @@ class Add_Profile_Attributes_Low_Tool:
 
         # check the 'featID' field exists
         # if not, add and calculate it
+        # if yes, check duplication of featID values
         if "featID" not in field_names:
             arcpy.AddMessage("Adding an unique featID...")
             HelperFunctions.addIDField(inFeatClass, "featID")
+        else:
+            # obtain number of features and number of unique featID values
+            cursor = arcpy.SearchCursor(inFeatClass)
+            idList = []
+            for row in cursor:
+                id1 = row.getValue("featID")
+                idList.append(id1)
+            del row, cursor
+            nuFeats = len(idList)
+            arcpy.AddMessage("number of featues: " + str(nuFeats))
+            uniqueIDs = list(set(idList))
+            nuUniqueID = len(uniqueIDs)
+            arcpy.AddMessage("number of unique featID: " + str(nuUniqueID))
+            if nuUniqueID < nuFeats:
+                messages.addErrorMessage(
+                "There are duplications of featID values. Please make sure the featID values are unique!"
+                )
+                raise arcpy.ExecuteError
 
         # check the 'LengthWidthRatio' field exists
         if "LengthWidthRatio" not in field_names:

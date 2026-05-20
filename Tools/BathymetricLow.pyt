@@ -125,19 +125,7 @@ class TPIToolLow:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output TPI raster and output featureclass to be at the
-        # same FileGeodatabase as the input bathymetry grid
-        if parameters[0].value:
-            bathyRas = parameters[0].valueAsText
-            if bathyRas.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isRasterLayer:
-                        if bathyRas == lyr.name:
-                            bathyRas = lyr.dataSource
-            parameters[1].value = bathyRas + "_tpi"
-            parameters[2].value = bathyRas + "_outFeats"    
+
 
         return
 
@@ -231,7 +219,7 @@ class TPIToolLow:
             raise arcpy.ExecuteError
 
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         arcpy.env.workspace = workspaceName
@@ -246,6 +234,7 @@ class TPIToolLow:
             areaUnit,
             tpiRadius,
             tpiSTDScale,
+            messages,
         )
         return
 
@@ -351,19 +340,6 @@ class Openness_Low_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output Openness raster and output featureclass to be at the
-        # same FileGeodatabase as the input bathymetry grid
-        if parameters[0].value:
-            bathyRas = parameters[0].valueAsText
-            if bathyRas.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isRasterLayer:
-                        if bathyRas == lyr.name:
-                            bathyRas = lyr.dataSource
-            parameters[1].value = bathyRas + "_po"
-            parameters[2].value = bathyRas + "_outFeats" 
 
         return
 
@@ -432,6 +408,14 @@ class Openness_Low_Tool:
                 "The temporary workspace must be nominated as a File GeoDatabase!"
             )
             raise arcpy.ExecuteError
+
+                # check that the NO STD Scale Large parameter is larger than the NO STD Scale Small parameter
+        if float(poSTDScaleLarge) <= float(poSTDScaleSmall):
+            messages.addErrorMessage(
+                "The PO STD Scale Large parameter must be larger than the PO STD Scale Small parameter!"
+            )
+            raise arcpy.ExecuteError
+        
         workspaceName = bathyRas[0 : bathyRas.rfind("/")]
         workspaceName1 = poRas[0 : poRas.rfind("/")]
         workspaceName2 = outFeat[0 : outFeat.rfind("/")]
@@ -454,7 +438,7 @@ class Openness_Low_Tool:
             raise arcpy.ExecuteError
 
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         arcpy.env.workspace = workspaceName
@@ -603,20 +587,6 @@ class TPI_CI_Low_Tool:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output TPI raster, the output CI raster and output featureclass to be at the
-        # same FileGeodatabase as the input bathymetry grid
-        if parameters[0].value:
-            bathyRas = parameters[0].valueAsText
-            if bathyRas.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isRasterLayer:
-                        if bathyRas == lyr.name:
-                            bathyRas = lyr.dataSource
-            parameters[1].value = bathyRas + "_tpi"
-            parameters[2].value = bathyRas + "_ci"
-            parameters[3].value = bathyRas + "_outFeats" 
 
         return
 
@@ -703,9 +673,9 @@ class TPI_CI_Low_Tool:
         areaThresholdValue = areaThreshold.split(" ")[0]
         areaUnit = areaThreshold.split(" ")[1]
         # waterproof some unusual errors
-        if (outFeat == tpiRas) or (outFeat == ciRas):
+        if (outFeat == tpiRas) or (outFeat == ciRas) or (tpiRas == ciRas):
             messages.addErrorMessage(
-                "The output CI and TPI rasters cannot have the same name as the output Featureclass in the same workspace!"
+                "The output CI raster, the output TPI raster and the output Featureclass cannot have the same name in the same workspace!"
             )
             raise arcpy.ExecuteError
         if (
@@ -720,7 +690,7 @@ class TPI_CI_Low_Tool:
             raise arcpy.ExecuteError
 
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         arcpy.env.workspace = workspaceName
@@ -738,6 +708,7 @@ class TPI_CI_Low_Tool:
             tpiSTDScale,
             ciSTDScale,
             tempFolder,
+            messages,
         )
         return
 
@@ -859,19 +830,6 @@ class ContourBL_Tool(object):
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output contour featureclass and output featureclass to be at the
-        # same FileGeodatabase as the input bathymetry grid
-        if parameters[0].value:
-            bathyRas = parameters[0].valueAsText
-            if bathyRas.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isRasterLayer:
-                        if bathyRas == lyr.name:
-                            bathyRas = lyr.dataSource
-            parameters[1].value = bathyRas + "_contour"
-            parameters[2].value = bathyRas + "_outFeats"   
 
         return
 
@@ -987,6 +945,12 @@ class ContourBL_Tool(object):
                 "The output Bathymetric High featureclass must be nominated as a feature class in a File GeoDatabase!"
             )
             raise arcpy.ExecuteError
+        # waterproof some unusal errors                
+        if outContour == outFeat:
+            messages.addErrorMessage(
+                "The output Contour Featureclass and output Featureclass cannot have the same name in the same workspace!"
+            )
+            raise arcpy.ExecuteError
 
         workspaceName = bathyRas[0: bathyRas.rfind("/")]
         env.workspace = workspaceName
@@ -998,11 +962,15 @@ class ContourBL_Tool(object):
 
         areaThresholdValue = areaThreshold.split(" ")[0]
         areaUnit = areaThreshold.split(" ")[1]
-        # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = HelperFunctions.areaUnitConverter(areaUnit)
-        areaThresholdValue = converter * float(areaThresholdValue)
-        # convert to "square meters"
-        areaThresholdValue = areaThresholdValue * 1000000
+        if areaUnit == "Unknown":
+            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
+            raise arcpy.ExecuteError
+        else:
+            # convert the input area unit to "SQUARE_KILOMETERS"
+            converter = HelperFunctions.areaUnitConverter(areaUnit)
+            areaThresholdValue = converter * float(areaThresholdValue)
+            # convert to "square meters"
+            areaThresholdValue = areaThresholdValue * 1000000
 
         depth = sDepth
         mergeList = []
@@ -1433,18 +1401,6 @@ class PseudoContourBL_Tool(object):
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output featureclass to be at the
-        # same FileGeodatabase as the input bathymetry grid
-        if parameters[0].value:
-            bathyRas = parameters[0].valueAsText
-            if bathyRas.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isRasterLayer:
-                        if bathyRas == lyr.name:
-                            bathyRas = lyr.dataSource
-            parameters[1].value = bathyRas + "_outFeats"
             
         # to provide a default value for the maximum area threshold parameter
         if parameters[8].value:  # if the maximum area threshold parameter has an existing value, do nothing
@@ -1600,19 +1556,27 @@ class PseudoContourBL_Tool(object):
 
         minAreaThresholdValue = minAreaThreshold.split(" ")[0]
         areaUnit = minAreaThreshold.split(" ")[1]
-        # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = HelperFunctions.areaUnitConverter(areaUnit)
-        minAreaThresholdValue = converter * float(minAreaThresholdValue)
-        # convert to "square meters"
-        minAreaThresholdValue = minAreaThresholdValue * 1000000
+        if areaUnit == "Unknown":
+            messages.addErrorMessage("You cann't provide an unknown area unit for Minimum Area Threshold.")
+            raise arcpy.ExecuteError
+        else:
+            # convert the input area unit to "SQUARE_KILOMETERS"
+            converter = HelperFunctions.areaUnitConverter(areaUnit)
+            minAreaThresholdValue = converter * float(minAreaThresholdValue)
+            # convert to "square meters"
+            minAreaThresholdValue = minAreaThresholdValue * 1000000
 
         maxAreaThresholdValue = maxAreaThreshold.split(" ")[0]
         areaUnit = maxAreaThreshold.split(" ")[1]
-        # convert the input area unit to "SQUARE_KILOMETERS"
-        converter = HelperFunctions.areaUnitConverter(areaUnit)
-        maxAreaThresholdValue = converter * float(maxAreaThresholdValue)
-        # convert to "square meters"
-        maxAreaThresholdValue = maxAreaThresholdValue * 1000000
+        if areaUnit == "Unknown":
+            messages.addErrorMessage("You cann't provide an unknown area unit for Maximum Area Threshold.")
+            raise arcpy.ExecuteError
+        else:
+            # convert the input area unit to "SQUARE_KILOMETERS"
+            converter = HelperFunctions.areaUnitConverter(areaUnit)
+            maxAreaThresholdValue = converter * float(maxAreaThresholdValue)
+            # convert to "square meters"
+            maxAreaThresholdValue = maxAreaThresholdValue * 1000000
 
         depth = sDepth
         mergeList = []
@@ -2025,6 +1989,7 @@ class helpers:
         areaUnit,
         tpiRadius,
         tpiSTDScale,
+        messages,
     ):
         # tempWS: temporary workspace to store temporary data
         # bathyRas: input bathymetry grid
@@ -2056,7 +2021,7 @@ class helpers:
         # copy the TPI raster to a backup directory
         arcpy.management.Copy(tpiRas, tpiRas1)
 
-        # obtain spatial mean and spatial standard deviation of the TPI grid
+        # obtain spatial mean, spatial standard deviation and minimum of the TPI grid
         tpiSTDResult = arcpy.management.GetRasterProperties(tpiRas, "STD")
         stdText = tpiSTDResult.getOutput(0)
         if stdText.find(",") > 0:
@@ -2067,9 +2032,20 @@ class helpers:
         if meanText.find(",") > 0:
             meanText = HelperFunctions.convertDecimalSeparator(meanText)
         tpiMean = float(meanText)
+        tpiMINResult = arcpy.management.GetRasterProperties(tpiRas, "MINIMUM")
+        minText = tpiMINResult.getOutput(0)
+        if minText.find(",") > 0:
+            minText = HelperFunctions.convertDecimalSeparator(minText)
+        tpiMin = float(minText)
         # define the TPI threshold value for the subsequent mapping
         tpiThreshold = tpiMean - float(tpiSTDScale) * tpiSTD
-        arcpy.AddMessage("using tpi threshold " + str(tpiThreshold))
+        if tpiThreshold <= tpiMin:
+            messages.addErrorMessage(
+                "The TPI threshold value is smaller than the minimum value of the TPI grid. Please reduce the TPI STD Scale parameter!"
+                )
+            raise arcpy.ExecuteError
+        else:
+            arcpy.AddMessage("using tpi threshold " + str(tpiThreshold))
         tpiClassRas1 = tempWS + "/" + "tpiC"
         # select areas that satisfy the threshold condition
         HelperFunctions.selectRaster(tpiRas, tpiClassRas1, tpiThreshold, "<=")
@@ -2149,6 +2125,33 @@ class helpers:
 
         interimDataList = []
 
+        poSTDResult = arcpy.management.GetRasterProperties(poRas, "STD")
+        stdText = poSTDResult.getOutput(0)
+        if stdText.find(",") > 0:
+            stdText = HelperFunctions.convertDecimalSeparator(stdText)
+        poSTD = float(stdText)
+        poMEANResult = arcpy.management.GetRasterProperties(poRas, "MEAN")
+        meanText = poMEANResult.getOutput(0)
+        if meanText.find(",") > 0:
+            meanText = HelperFunctions.convertDecimalSeparator(meanText)
+        poMean = float(meanText)
+        poMINResult = arcpy.management.GetRasterProperties(poRas, "MINIMUM")
+        minText = poMINResult.getOutput(0)
+        if minText.find(",") > 0:
+            minText = HelperFunctions.convertDecimalSeparator(minText)
+        poMin = float(minText)
+        poThresholdLarge = poMean - float(poSTDScaleLarge) * poSTD
+        if poThresholdLarge <= poMin:
+            messages.addErrorMessage(
+                "The PO threshold value is smaller than the minimum value of the PO raster. Please reduce the PO STD Scale Large parameter!"
+            )
+            raise arcpy.ExecuteError
+        else:
+            arcpy.AddMessage("using po threshold small: " + str(poThresholdLarge))
+
+        poThresholdSmall = poMean - float(poSTDScaleSmall) * poSTD
+        arcpy.AddMessage("using po threshold large:" + str(poThresholdSmall))
+
         # The following codes are used to identify possible 'bottoms' (or 'pits') or Bathymetry Low features
         # The way doing that is to iidentify sinks
 
@@ -2172,25 +2175,14 @@ class helpers:
         arcpy.AddMessage("convert sinks to polygon done")
 
         # select first set of areas (features) areas with po <= poThresholdLarge
-        poSTDResult = arcpy.management.GetRasterProperties(poRas, "STD")
-        stdText = poSTDResult.getOutput(0)
-        if stdText.find(",") > 0:
-            stdText = HelperFunctions.convertDecimalSeparator(stdText)
-        poSTD = float(stdText)
-        poMEANResult = arcpy.management.GetRasterProperties(poRas, "MEAN")
-        meanText = poMEANResult.getOutput(0)
-        if meanText.find(",") > 0:
-            meanText = HelperFunctions.convertDecimalSeparator(meanText)
-        poMean = float(meanText)
-        poThresholdLarge = poMean - float(poSTDScaleLarge) * poSTD
-        arcpy.AddMessage("using po threshold " + str(poThresholdLarge))
+
+            
         poClassRas1 = tempWS + "/" + "po_C"
         HelperFunctions.selectRaster(poRas, poClassRas1, poThresholdLarge, "<=")
         interimDataList.append(poClassRas1)
 
         # select second set of areas (features) areas with po <= poThresholdSmall
-        poThresholdSmall = poMean - float(poSTDScaleSmall) * poSTD
-        arcpy.AddMessage("using po threshold " + str(poThresholdSmall))
+
         poClassRas2 = tempWS + "/" + "po_C1"
         HelperFunctions.selectRaster(poRas, poClassRas2, poThresholdSmall, "<=")
         interimDataList.append(poClassRas2)
@@ -2309,6 +2301,7 @@ class helpers:
         tpiSTDScale,
         ciSTDScale,
         tempFolder,
+        messages,
     ):
         # tempWS: temporary workspace to store temporary data
         # bathyRas: input bathymetry grid
@@ -2321,6 +2314,7 @@ class helpers:
         # tpiSTDScale: input TPI threshold used to identify Bathymetric Low features
         # ciSTDScale: input CI threshold used to identify Bathymetric Low features
         # tempFolder: temporary folder to store temporary files
+        # messages: internal arcpy messages class for handling arcpy messages
 
         arcpy.AddMessage("runing TPI CI Low tool ...")
 
@@ -2378,7 +2372,7 @@ class helpers:
         # copy the TPI raster to a backup directory
         arcpy.management.CopyRaster(tpiRas, tpiRas1)
 
-        # obtain spatial mean and standard deviation of the CI grid
+        # obtain spatial mean, standard deviation and minimum of the CI grid
         # select CI based on the threshold
         ciSTDResult = arcpy.management.GetRasterProperties(ciRas, "STD")
         cistdText = ciSTDResult.getOutput(0)
@@ -2390,8 +2384,19 @@ class helpers:
         if cimeanText.find(",") > 0:
             cimeanText = HelperFunctions.convertDecimalSeparator(cimeanText)
         ciMean = float(cimeanText)
+        ciMINResult = arcpy.management.GetRasterProperties(ciRas, "MINIMUM")
+        ciminText = ciMINResult.getOutput(0)
+        if ciminText.find(",") > 0:
+            ciminText = HelperFunctions.convertDecimalSeparator(ciminText)
+        ciMin = float(ciminText)
         ciThreshold = ciMean - float(ciSTDScale) * ciSTD
-        arcpy.AddMessage("using ci threshold " + str(ciThreshold))
+        if ciThreshold <= ciMin:
+            messages.addErrorMessage(
+                "The CI threshold value is smaller than the minimum value of the CI raster. Please reduce the CI STD Scale parameter!"
+            )
+            raise arcpy.ExecuteError
+        else:
+            arcpy.AddMessage("using CI threshold " + str(ciThreshold))
         ciClassRas1 = tempWS + "/" + "ciC"
         interimDataList.append(ciClassRas1)
         HelperFunctions.selectRaster(ciRas, ciClassRas1, ciThreshold, "<=")
@@ -2408,8 +2413,19 @@ class helpers:
         if tpimeanText.find(",") > 0:
             tpimeanText = HelperFunctions.convertDecimalSeparator(tpimeanText)
         tpiMean = float(tpimeanText)
+        tpiMINResult = arcpy.management.GetRasterProperties(tpiRas, "MINIMUM")
+        tpiminText = tpiMINResult.getOutput(0)
+        if tpiminText.find(",") > 0:
+            tpiminText = HelperFunctions.convertDecimalSeparator(tpiminText)
+        tpiMin = float(tpiminText)
         tpiThreshold = tpiMean - float(tpiSTDScale) * tpiSTD
-        arcpy.AddMessage("using tpi threshold " + str(tpiThreshold))
+        if tpiThreshold <= tpiMin:
+            messages.addErrorMessage(
+                "The TPI threshold value is smaller than the minimum value of the TPI raster. Please reduce the TPI STD Scale parameter!"
+            )
+            raise arcpy.ExecuteError
+        else:
+            arcpy.AddMessage("using TPI threshold " + str(tpiThreshold))
         tpiClassRas1 = tempWS + "/" + "tpiC"
         interimDataList.append(tpiClassRas1)
         HelperFunctions.selectRaster(tpiRas, tpiClassRas1, tpiThreshold, "<=")

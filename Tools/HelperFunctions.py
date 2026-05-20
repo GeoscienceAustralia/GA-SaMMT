@@ -377,7 +377,7 @@ def addField(inFeat, joinFeat, fieldName, inID, joinID, expression):
 
     arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
 
-    arcpy.RemoveJoin_management(layerName, joinFeat)
+    arcpy.management.RemoveJoin(layerName, joinFeat)
 
     arcpy.management.Delete(layerName)
     arcpy.AddMessage(fieldName + " added and calculated")
@@ -515,7 +515,7 @@ def addTextField(inFeat, joinFeat, fieldName, inID, joinID, expression):
 
     arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
 
-    arcpy.RemoveJoin_management(layerName, joinFeat)
+    arcpy.management.RemoveJoin(layerName, joinFeat)
 
     arcpy.management.Delete(layerName)
     arcpy.AddMessage(fieldName + " added and calculated")
@@ -547,7 +547,7 @@ def addLongField(inFeat, joinFeat, fieldName, inID, joinID, expression):
 
     arcpy.management.CalculateField(layerName, fieldName, expression, "PYTHON3")
 
-    arcpy.RemoveJoin_management(layerName, joinFeat)
+    arcpy.management.RemoveJoin(layerName, joinFeat)
 
     arcpy.management.Delete(layerName)
     arcpy.AddMessage(fieldName + " added and calculated")

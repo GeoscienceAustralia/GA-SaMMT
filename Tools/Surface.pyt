@@ -104,19 +104,6 @@ class SurfaceToolBathy:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output slope raster and output featureclass to be at the
-        # same FileGeodatabase as the input bathymetry grid
-        if parameters[0].value:
-            bathyRas = parameters[0].valueAsText
-            if bathyRas.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isRasterLayer:
-                        if bathyRas == lyr.name:
-                            bathyRas = lyr.dataSource
-            parameters[1].value = bathyRas + "_slope"
-            parameters[2].value = bathyRas + "_surface"  
 
         return
 
@@ -185,8 +172,15 @@ class SurfaceToolBathy:
         areaThresholdValue = areaThreshold.split(" ")[0]
         areaUnit = areaThreshold.split(" ")[1]
 
+        # waterproof some unusal errors
+        if slopeRas == outFeat:
+            messages.addErrorMessage(
+                "The output Slope raster and output Featureclass cannot have the same name in the same workspace!"
+            )
+            raise arcpy.ExecuteError
+
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         # Check out the ArcGIS Spatial Analyst extension license
@@ -272,18 +266,6 @@ class SurfaceToolSlope:
         validation is performed.  This method is called whenever a parameter
         has been changed."""
 
-        # set the output slope raster and output featureclass to be at the
-        # same FileGeodatabase as the input bathymetry grid
-        if parameters[0].value:
-            slopeRas = parameters[0].valueAsText
-            if slopeRas.rfind("/") < 0:
-                aprx = arcpy.mp.ArcGISProject("CURRENT")
-                m = aprx.activeMap
-                for lyr in m.listLayers():
-                    if lyr.isRasterLayer:
-                        if slopeRas == lyr.name:
-                            slopeRas = lyr.dataSource
-            parameters[1].value = slopeRas + "_surface"  
 
         return
 
@@ -343,7 +325,7 @@ class SurfaceToolSlope:
         areaUnit = areaThreshold.split(" ")[1]
 
         if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit.")
+            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
         # Check out the ArcGIS Spatial Analyst extension license
