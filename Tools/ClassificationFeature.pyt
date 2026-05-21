@@ -204,24 +204,6 @@ class Classify_Bathymetric_Low_Features_Tool:
         fields = arcpy.ListFields(inFeatClass)
         field_names = [f.name for f in fields]
         # make sure all the required attributes exist in the input featureclass
-        attributeList = [
-            "featID",
-            "LengthWidthRatio",
-            "head_foot_depthRange",
-            "mean_width",
-            "profileSymmetry",
-            "profile_bottom_SlopeClass",
-            "profile_side_SlopeClass",
-            "headDepth",
-            "mean_segment_slope",
-            "mean_width_thickness_ratio",
-            "mean_thickness",
-            "width_distance_slope",
-            "width_distance_correlation",
-            "thick_distance_slope",
-            "thick_distance_correlation",
-            "Circularity",
-        ]
 
         attributeList = [
             "featID",
@@ -240,7 +222,7 @@ class Classify_Bathymetric_Low_Features_Tool:
                 messages.addErrorMessage(
                     "The input featureclass does not have "
                     + attribute
-                    + " attribute. You have to calculate the attribute using the Attributes Tool!"
+                    + " attribute. You have to calculate the attribute using the AddAttributes or Add AttributesFast Tools!"
                 )
                 raise arcpy.ExecuteError
 
@@ -328,8 +310,8 @@ class Classify_Bathymetric_Low_Features_Tool:
                             feature = "Valley/Channel"
             else:
                 sCount = sSteepCount + sModerateCount + sGentleCount + sFlatCount
-                if sCount == 0:
-                    feature = "Depression"
+                if sCount == 0: # profile_side_slopeClass is NA (profileShape is Flat); previously assigned as Depression, but now assign it as unclassified
+                    feature = "unclassified"
                 elif (
                     (circularity >= circularityT)
                     and (sSteepCount >= sModerateCount)
@@ -670,10 +652,15 @@ class Classify_Bathymetric_High_Features_Tool:
                     feature = "Knoll"
                 else:
                     feature = "Hill"
-            elif (depthRange < hummock_depthRangeT) and (area < hummock_areaT):
-                feature = "Hummock"
-            else:
-                feature = "Mound"
+            else: 
+                if (
+                    (depthRange <= hummock_depthRangeT)
+                    and (area <= hummock_areaT)
+                ):
+                    feature = "Hummock"
+                else:
+                    feature = "Mound"
+            
             row.setValue(field, feature)
             cursor.updateRow(row)
             arcpy.AddMessage(feature)
