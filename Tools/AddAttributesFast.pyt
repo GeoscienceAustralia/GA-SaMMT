@@ -96,8 +96,8 @@ class Add_Shape_Attributes_High_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the half of logical processors available in the computer
-        param3.value = int(multiprocessing.cpu_count() / 2)
+        # the default value is the half of logical processors available in the computer minus 1
+        param3.value = int(multiprocessing.cpu_count() / 2) - 1
 
         parameters = [param0, param1, param2, param3]
         return parameters
@@ -351,8 +351,8 @@ class Add_Shape_Attributes_Low_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the half of logical processors available in the computer
-        param5.value = int(multiprocessing.cpu_count() / 2)
+        # the default value is the half of logical processors available in the computer minus 1
+        param5.value = int(multiprocessing.cpu_count() / 2) - 1
 
         # 7th parameter
         param6 = arcpy.Parameter(
@@ -637,8 +637,8 @@ class Add_Topographic_Attributes_High_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the half of logical processors available in the computer
-        param3.value = int(multiprocessing.cpu_count() / 2)
+        # the default value is the half of logical processors available in the computer minus 1
+        param3.value = int(multiprocessing.cpu_count() / 2) - 1
         
 
         parameters = [param0, param1, param2, param3]
@@ -927,8 +927,8 @@ class Add_Topographic_Attributes_Low_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the half of logical processors available in the computer
-        param5.value = int(multiprocessing.cpu_count() / 2)
+        # the default value is the half of logical processors available in the computer minus 1
+        param5.value = int(multiprocessing.cpu_count() / 2) - 1
         
 
         parameters = [param0, param1, param2, param3, param4, param5]
@@ -1299,8 +1299,8 @@ class Add_Profile_Attributes_High_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the half of logical processors available in the computer
-        param4.value = int(multiprocessing.cpu_count() / 2)
+        # the default value is the half of logical processors available in the computer minus 1
+        param4.value = int(multiprocessing.cpu_count() / 2) - 1
 
         parameters = [param0, param1, param2, param3, param4]
         return parameters
@@ -1575,8 +1575,8 @@ class Add_Profile_Attributes_Low_Tool:
             parameterType="Required",
             direction="Input",
         )
-        # the default value is the total number of logical processors available in the computer
-        param4.value = int(multiprocessing.cpu_count() / 2)
+        # the default value is the total number of logical processors available in the computer minus 1
+        param4.value = int(multiprocessing.cpu_count() / 2) - 1
 
         parameters = [param0, param1, param2, param3, param4]
         return parameters

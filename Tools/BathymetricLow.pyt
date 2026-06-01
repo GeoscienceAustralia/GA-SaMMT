@@ -800,8 +800,8 @@ class ContourBL_Tool(object):
 
         # 9th parameter
         param8 = arcpy.Parameter(
-            displayName="Area Threshold",
-            name="areaThreshold",
+            displayName="Minimum Area Threshold",
+            name="minAreaThreshold",
             datatype="GPArealUnit",
             parameterType="Required",
             direction="Input",
@@ -809,16 +809,26 @@ class ContourBL_Tool(object):
 
         # 10th parameter
         param9 = arcpy.Parameter(
+            displayName="Maximum Area Threshold",
+            name="maxAreaThreshold",
+            datatype="GPArealUnit",
+            parameterType="Required",
+            direction="Input",
+        )
+
+
+        # 11th parameter
+        param10 = arcpy.Parameter(
             displayName="Mapping Method",
             name="method",
             datatype="GPString",
             parameterType="Required",
             direction="Input",
         )
-        param9.filter.type = "ValueList"
-        param9.filter.list = ['First Derivative', 'Second Derivative']
+        param10.filter.type = "ValueList"
+        param10.filter.list = ['First Derivative', 'Second Derivative']
 
-        parameters = [param0, param1, param2, param3, param4, param5, param6, param7, param8, param9]
+        parameters = [param0, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10]
         return parameters
 
     def isLicensed(self):
@@ -849,8 +859,9 @@ class ContourBL_Tool(object):
         cInterval = parameters[5].valueAsText
         depthFactor = float(parameters[6].valueAsText)
         depthMethod = parameters[7].valueAsText
-        areaThreshold = parameters[8].valueAsText
-        method = parameters[9].valueAsText
+        minAreaThreshold = parameters[8].valueAsText
+        maxAreaThreshold = parameters[9].valueAsText
+        method = parameters[10].valueAsText
         # enable helper function
         helper = helpers()
 
@@ -960,17 +971,29 @@ class ContourBL_Tool(object):
         dDepth = float(dDepth)
         cInterval = float(cInterval)
 
-        areaThresholdValue = areaThreshold.split(" ")[0]
-        areaUnit = areaThreshold.split(" ")[1]
-        if areaUnit == "Unknown":
-            messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
+        minAreaThresholdValue = minAreaThreshold.split(" ")[0]
+        areaUnit1 = minAreaThreshold.split(" ")[1]
+        if areaUnit1 == "Unknown":
+            messages.addErrorMessage("You cann't provide an unknown area unit for Minimum Area Threshold.")
             raise arcpy.ExecuteError
         else:
             # convert the input area unit to "SQUARE_KILOMETERS"
-            converter = HelperFunctions.areaUnitConverter(areaUnit)
-            areaThresholdValue = converter * float(areaThresholdValue)
+            converter = HelperFunctions.areaUnitConverter(areaUnit1)
+            minAreaThresholdValue = converter * float(minAreaThresholdValue)
             # convert to "square meters"
-            areaThresholdValue = areaThresholdValue * 1000000
+            minAreaThresholdValue = minAreaThresholdValue * 1000000
+
+        maxAreaThresholdValue = maxAreaThreshold.split(" ")[0]
+        areaUnit2 = maxAreaThreshold.split(" ")[1]
+        if areaUnit2 == "Unknown":
+            messages.addErrorMessage("You cann't provide an unknown area unit for Maximum Area Threshold.")
+            raise arcpy.ExecuteError
+        else:
+            # convert the input area unit to "SQUARE_KILOMETERS"
+            converter = HelperFunctions.areaUnitConverter(areaUnit2)
+            maxAreaThresholdValue = converter * float(maxAreaThresholdValue)
+            # convert to "square meters"
+            maxAreaThresholdValue = maxAreaThresholdValue * 1000000
 
         depth = sDepth
         mergeList = []
@@ -1015,8 +1038,8 @@ def roundNumber(a):
             arcpy.management.FeatureToPolygon(contourFeat, contourPoly)
             nuFeats = int(arcpy.management.GetCount(contourPoly)[0])
             if nuFeats > 0:
-                # select only those contour polygons with their areas greater than a threshold
-                whereClause = "Shape_Area >= " + str(areaThresholdValue)
+                # select only those contour polygons with their areas greater than the minimum threshold and smaller than the maximum threshold
+                whereClause = "Shape_Area >= " + str(minAreaThresholdValue) + " AND " + "Shape_Area <= " + str(maxAreaThresholdValue)
                 selectedFeat = contourPoly + "_selected"
                 itemList.append(selectedFeat)
                 arcpy.analysis.Select(contourPoly, selectedFeat, whereClause)
@@ -1112,10 +1135,11 @@ def roundNumber(a):
                     mergeList.append(selectedFeat)
 
             depth = depth - cInterval
-
+        itemList1 = []
         # merge selected features for all contour values (e.g., -40m to -150m),
         # in the descending order (from -40m to -150m)
         outFeat1 = "contours_merged_BL"
+        itemList1.append(outFeat1)
         arcpy.management.Merge(mergeList, outFeat1)
         arcpy.AddMessage("merge done")
         # add a temporary field for dissolve action
@@ -1126,10 +1150,12 @@ def roundNumber(a):
         # dissolve to obtain updated boundaries
         # this results in the out most boundary (e.g., the deepest contour) for each selected bathymetric high feature
         outFeat2 = outFeat1 + "_dissolved"
+        itemList1.append(outFeat2)
         arcpy.management.Dissolve(outFeat1, outFeat2, fieldName, "", "SINGLE_PART")
         arcpy.AddMessage("dissolve done")
         # spatial join to get attributes from outFeat1
         outFeat3 = outFeat2 + "_joined"
+        itemList1.append(outFeat3)
         arcpy.analysis.SpatialJoin(outFeat2, outFeat1, outFeat3, "JOIN_ONE_TO_MANY", "KEEP_ALL", "#", "CONTAINS")
         arcpy.AddMessage("spatial join done")
         # get a statistics for the relationship between each dissolved feature and merged feature(s)
@@ -1169,6 +1195,7 @@ def roundNumber(a):
         arcpy.management.Delete(layer1)
 
         outFeat1_Selected1 = outFeat1 + "_selected1"
+        itemList1.append(outFeat1_Selected1)
         whereClause = fieldName + ' > 0'
         arcpy.analysis.Select(outFeat1, outFeat1_Selected1, whereClause)
         arcpy.AddMessage("first selection done")
@@ -1193,12 +1220,13 @@ def roundNumber(a):
 
         # select the dissolved features that have more than two associated merged features
         outFeat2_Selected = outFeat2 + "_selected"
+        itemList1.append(outFeat2_Selected)
         arcpy.analysis.Select(outFeat2, outFeat2_Selected, whereClause)
         # get the feature count of outFeat2_Selected
         nuFeats = int(arcpy.management.GetCount(outFeat2_Selected)[0])
         arcpy.AddMessage("They are " + str(nuFeats) + " features for multiprocessing.")
-        # set the maximum number of CPUs for the multiprocessing job equals to half of those available
-        maxCPU = int(multiprocessing.cpu_count() / 2)
+        # set the maximum number of CPUs for the multiprocessing job equals to half of those available minus 1
+        maxCPU = int(multiprocessing.cpu_count() / 2) - 1
         if nuFeats > 0:
             # determine how many CPUs to use depending on the feature count of outFeat2_Selected
             if nuFeats % 5 > 0:
@@ -1212,7 +1240,7 @@ def roundNumber(a):
 
             # the name of the second selection
             outFeat1_Selected2 = outFeat1 + "_selected2"
-
+            itemList1.append(outFeat1_Selected2)
             # now let us call the multiprocessing model to speed up the second selection process
 
             arcpy.AddMessage("Using " + str(nCPU) + " CPU processors for multiprocessing")
@@ -1275,7 +1303,7 @@ def roundNumber(a):
 
         # delete intermediate datasets
         HelperFunctions.deleteDataItems(itemList)
-
+        HelperFunctions.deleteDataItems(itemList1)
         time2 = datetime.now()
         diff = time2 - time1
         arcpy.AddMessage("took " + str(diff) + " to finish.")
@@ -1706,10 +1734,11 @@ class PseudoContourBL_Tool(object):
                     mergeList.append(selectedFeat)
 
             depth = depth - cInterval
-
+        itemList1 = []
         # merge selected features for all contour values (e.g., -40m to -150m),
         # in the descending order (from -40m to -150m)
         outFeat1 = "contours_merged_BL_pseudo"
+        itemList1.append(outFeat1)
         arcpy.management.Merge(mergeList, outFeat1)
         arcpy.AddMessage("merge done")
         # add a temporary field for dissolve action
@@ -1720,10 +1749,12 @@ class PseudoContourBL_Tool(object):
         # dissolve to obtain updated boundaries
         # this results in the out most boundary (e.g., the deepest contour) for each selected bathymetric high feature
         outFeat2 = outFeat1 + "_dissolved"
+        itemList1.append(outFeat2)
         arcpy.management.Dissolve(outFeat1, outFeat2, fieldName, "", "SINGLE_PART")
         arcpy.AddMessage("dissolve done")
         # spatial join to get attributes from outFeat1
         outFeat3 = outFeat2 + "_joined"
+        itemList1.append(outFeat3)
         arcpy.analysis.SpatialJoin(outFeat2, outFeat1, outFeat3, "JOIN_ONE_TO_MANY", "KEEP_ALL", "#", "CONTAINS")
         arcpy.AddMessage("spatial join done")
         # get a statistics for the relationship between each dissolved feature and merged feature(s)
@@ -1763,6 +1794,7 @@ class PseudoContourBL_Tool(object):
         arcpy.management.Delete(layer1)
 
         outFeat1_Selected1 = outFeat1 + "_selected1"
+        itemList1.append(outFeat1_Selected1)
         whereClause = fieldName + ' > 0'
         arcpy.analysis.Select(outFeat1, outFeat1_Selected1, whereClause)
         arcpy.AddMessage("first selection done")
@@ -1787,12 +1819,13 @@ class PseudoContourBL_Tool(object):
 
         # select the dissolved features that have more than two associated merged features
         outFeat2_Selected = outFeat2 + "_selected"
+        itemList1.append(outFeat2_Selected)
         arcpy.analysis.Select(outFeat2, outFeat2_Selected, whereClause)
         # get the feature count of outFeat2_Selected
         nuFeats = int(arcpy.management.GetCount(outFeat2_Selected)[0])
         arcpy.AddMessage("They are " + str(nuFeats) + " features for multiprocessing.")
-        # set the maximum number of CPUs for the multiprocessing job equals to half of those available
-        maxCPU = int(multiprocessing.cpu_count() / 2)
+        # set the maximum number of CPUs for the multiprocessing job equals to half of those available minus 1
+        maxCPU = int(multiprocessing.cpu_count() / 2) - 1
         if nuFeats > 0:
             # determine how many CPUs to use depending on the feature count of outFeat2_Selected
             if nuFeats % 5 > 0:
@@ -1806,6 +1839,7 @@ class PseudoContourBL_Tool(object):
 
             # the name of the second selection
             outFeat1_Selected2 = outFeat1 + "_selected2"
+            itemList1.append(outFeat1_Selected2)
 
             # now let us call the multiprocessing model to speed up the second selection process
 
@@ -1869,7 +1903,7 @@ class PseudoContourBL_Tool(object):
 
         # delete intermediate datasets
         HelperFunctions.deleteDataItems(itemList)
-
+        HelperFunctions.deleteDataItems(itemList1)
         time2 = datetime.now()
         diff = time2 - time1
         arcpy.AddMessage("took " + str(diff) + " to finish.")

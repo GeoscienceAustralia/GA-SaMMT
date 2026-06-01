@@ -854,7 +854,7 @@ class Verify_Depression_Tool:
         # get the total number of Depression feature to be verified through the multiprocessing process
         nuFeats = int(arcpy.management.GetCount(depressionFeat)[0])
         arcpy.AddMessage("They are " + str(nuFeats) + " features for multiprocessing.")
-        # set the maximum number of CPUs for the multiprocessing job equals to half of those available
+        # set the maximum number of CPUs for the multiprocessing job equals to half of those available minus 1
         maxCPU = int(multiprocessing.cpu_count() / 2) - 1
         # the name of the featureclass after merging all output features resulted from the multiprocessing jobs
         depressionFeat1 = depressionFeat + "_merged"
@@ -928,6 +928,15 @@ class Verify_Depression_Tool:
         time2 = datetime.now()
         time_diff = time2 - time1
         arcpy.AddMessage("It took: " + str(time_diff) + " to finish")
+
+        whereClause = "Morphology_feature = " + "'Depression'"
+        depressionFeat = "depressionFeat1"
+        arcpy.analysis.Select(outFeatClass, depressionFeat, whereClause)
+
+        nuFeats1 = int(arcpy.management.GetCount(depressionFeat)[0])
+        arcpy.management.Delete(depressionFeat)
+        arcpy.AddMessage(str(nuFeats1) + " out of " + str(nuFeats) + " Depressions were verified.")
+        
 
         return
 

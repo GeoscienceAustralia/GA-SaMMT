@@ -64,7 +64,6 @@ def verifyDepression(arg):
         # closed-contours; while, using the buffered feature would usually allow the generation of close-contours.
         bufferFeat = "bufferFeat"
         distance = cellSize + " Meter"
-        arcpy.AddMessage(distance)
         arcpy.analysis.Buffer(selectedFeat, bufferFeat, distance)
         # extract the bathymetric grid to the extent of the buffered feature
         featBathy = ExtractByMask(inBathy, bufferFeat, "INSIDE")
@@ -150,7 +149,7 @@ def roundNumber(a):
                     del cursor1, row1
                 else:
                     # else, add NaN to the array
-                    arr = np.append(arr, np.NaN)
+                    arr = np.append(arr, np.nan)
 
                 i += 1
             del cursor2, row2
