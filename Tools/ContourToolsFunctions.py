@@ -15,7 +15,7 @@ import os
 import sys
 import math
 
-arcpy.CheckOutExtension("Spatial")
+##arcpy.CheckOutExtension("Spatial")
 
 
 def execute_contour_BH(argList, method, n_cpu):
@@ -164,6 +164,12 @@ def doFirstDerivativeBH(arg):
     fieldName = "idV"
     env.workspace = workspaceName
 
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+
     # looping through each selected dissolved feature
     idList = []
     cursor = arcpy.SearchCursor(inFeat2)
@@ -248,6 +254,8 @@ def doFirstDerivativeBH(arg):
     arcpy.analysis.Select(inFeat1, outFeat, whereClause)
     print("second selection done")
 
+    arcpy.CheckInExtension("Spatial")
+
 
 # the first derivative mapping method for mapping Bathymetric Low features
 def doFirstDerivativeBL(arg):
@@ -260,6 +268,12 @@ def doFirstDerivativeBL(arg):
     outFeat = arg[5]  # output features selected from the merged features
     fieldName = "idV"
     env.workspace = workspaceName
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
 
     # looping through each selected dissolved feature
     idList = []
@@ -345,6 +359,8 @@ def doFirstDerivativeBL(arg):
     arcpy.analysis.Select(inFeat1, outFeat, whereClause)
     print("second selection done")
 
+    arcpy.CheckInExtension("Spatial")
+
 
 # the second derivative mapping method for mapping Bathymetric High features
 def doSecondDerivativeBH(arg):
@@ -357,6 +373,13 @@ def doSecondDerivativeBH(arg):
     outFeat = arg[5]  # output features selected from the merged features
     fieldName = "idV"
     env.workspace = workspaceName
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+
 
     # looping through each selected dissolved feature
     idList = []
@@ -454,6 +477,8 @@ def doSecondDerivativeBH(arg):
     arcpy.analysis.Select(inFeat1, outFeat, whereClause)
     print("second selection done")
 
+    arcpy.CheckInExtension("Spatial")
+
 # the second derivative mapping method for mapping the Bathymetric Low features-967
 def doSecondDerivativeBL(arg):
     """ pass a list of arguments"""
@@ -465,6 +490,12 @@ def doSecondDerivativeBL(arg):
     outFeat = arg[5]  # output features selected from the merged features
     fieldName = "idV"
     env.workspace = workspaceName
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
 
     # looping through each selected dissolved feature
     idList = []
@@ -561,4 +592,6 @@ def doSecondDerivativeBL(arg):
 
     arcpy.analysis.Select(inFeat1, outFeat, whereClause)
     print("second selection done")
+
+    arcpy.CheckInExtension("Spatial")
 

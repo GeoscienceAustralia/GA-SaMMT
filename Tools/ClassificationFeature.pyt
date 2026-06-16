@@ -728,7 +728,18 @@ class Verify_Depression_Tool:
         )
         param4.value = 10
 
-        parameters = [param0, param1, param2, param3, param4]
+        # 6th parameter
+        param5 = arcpy.Parameter(
+            displayName="Maximu number of CPU processors used for multiprocessing",
+            name="maxCPU",
+            datatype="GPLong",
+            parameterType="Required",
+            direction="Input",
+        )
+        # the default value is the half of logical processors available in the computer minus 1
+        param5.value = int(multiprocessing.cpu_count() / 2) - 1
+
+        parameters = [param0, param1, param2, param3, param4, param5]
         return parameters
 
     def isLicensed(self):
@@ -757,6 +768,7 @@ class Verify_Depression_Tool:
         outFeatClass = parameters[2].valueAsText
         areaRatioT = float(parameters[3].valueAsText)
         maxContour = int(parameters[4].valueAsText)
+        maxCPU = int(parameters[5].valueAsText)
 
         # enable helper
         helper = helpers()
@@ -854,8 +866,7 @@ class Verify_Depression_Tool:
         # get the total number of Depression feature to be verified through the multiprocessing process
         nuFeats = int(arcpy.management.GetCount(depressionFeat)[0])
         arcpy.AddMessage("They are " + str(nuFeats) + " features for multiprocessing.")
-        # set the maximum number of CPUs for the multiprocessing job equals to half of those available minus 1
-        maxCPU = int(multiprocessing.cpu_count() / 2) - 1
+
         # the name of the featureclass after merging all output features resulted from the multiprocessing jobs
         depressionFeat1 = depressionFeat + "_merged"
         # only doing the multiprocessing jobs if there is at least one Depression feature to verify

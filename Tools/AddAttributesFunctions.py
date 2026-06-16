@@ -23,7 +23,7 @@ import multiprocessing
 from importlib import reload
 import HelperFunctions
 
-arcpy.CheckOutExtension("Spatial")
+##arcpy.CheckOutExtension("Spatial")
 
 # All the helper functions are defined here
 
@@ -136,8 +136,17 @@ def add_topographic_attributes_high_function(arg):
     inBathy = arg[3]
     slpGrid = arg[4]
     saGrid = arg[5]
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+        
     # calling individual functions to calculate the topographic features
     calculateTopographicBH(workspaceName, tempFolder, inFeat, inBathy, slpGrid, saGrid)
+
+    arcpy.CheckInExtension("Spatial")
 
     return
 
@@ -152,8 +161,17 @@ def add_topographic_attributes_low_function(arg):
     inBathy = arg[5]
     slpGrid = arg[6]
     saGrid = arg[7]
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+        
     # calling individual functions to calculate the topographic features
     calculateTopographicBL(workspaceName, tempFolder, inFeat, headFeat, footFeat, inBathy, slpGrid, saGrid)
+
+    arcpy.CheckInExtension("Spatial")
 
     return
 
@@ -164,10 +182,19 @@ def add_shape_attributes_high_function(arg):
     tempFolder = arg[1]
     inFeat = arg[2]
     inBathy = arg[3]
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+        
     # calling individual functions to calculate the shape features
     calculateCompactness(inFeat)
     calculateCircularity_Convexity_Solidity(workspaceName, inFeat)
     calculateSinuosity_LwR(workspaceName, tempFolder, inFeat, inBathy)
+
+    arcpy.CheckInExtension("Spatial")
 
     return
 
@@ -181,10 +208,19 @@ def add_shape_attributes_low_function(arg):
     footFeat = arg[4]
     inBathy = arg[5]
     additionalOption = arg[6]
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+        
     # calling individual functions to calculate the shape features
     calculateCompactness(inFeat)
     calculateCircularity_Convexity_Solidity(workspaceName, inFeat)
     calculateSinuosity_LwR_WdR_Slopes(workspaceName, tempFolder, inFeat, inBathy, headFeat, footFeat, additionalOption)
+
+    arcpy.CheckInExtension("Spatial")
 
     return
 
@@ -196,8 +232,17 @@ def add_profile_attributes_high_function(arg):
     inFeat = arg[2]
     inBathy = arg[3]
     areaT = arg[4]
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+        
     # calling individual functions to calculate the shape features
     calculateProfileBH(workspaceName, tempFolder, inFeat, inBathy, areaT)
+
+    arcpy.CheckInExtension("Spatial")
 
     return
 
@@ -209,8 +254,17 @@ def add_profile_attributes_low_function(arg):
     inFeat = arg[2]
     inBathy = arg[3]
     areaT = arg[4]
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+        
     # calling individual functions to calculate the shape features
     calculateProfileBL(workspaceName, tempFolder, inFeat, inBathy, areaT)
+
+    arcpy.CheckInExtension("Spatial")
 
     return
 
@@ -4537,6 +4591,12 @@ def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
     # direction: direction for calculating volume (a value of 1 (-1) indicates volume for bathymerric high (low) features))
     # csvFile: the text file stores the volume and sArea values
     # workspaceName: workspace name
+
+    if arcpy.CheckExtension("3D") == "Available":
+        arcpy.CheckOutExtension("3D")
+        print("3D Analyst license checked out successfully.")
+    else:
+        print("3D Analyst license is unavailable.")   
     
     time1 = datetime.now()
     # get cell size of the input bathymetry grid. make sure the grid has a quare cell
@@ -4563,40 +4623,41 @@ def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
     for row in cursor:
         featID = row.getValue("featID")
         arcpy.AddMessage("working on " + str(featID))
+        outTin1 = tempFolder + "/" + "outTin1_" + str(featID)
+        outTin2 = tempFolder + "/" + "outTin2_" + str(featID)
+        outFeat = workspaceName + "/" + "outFeat" + str(featID)
+        inFeat = workspaceName + "/" + "inFeat" + str(featID)
+        inPoints = workspaceName + "/" + "inPoints" + str(featID)
+        outPoints = workspaceName + "/" + "outPoints" + str(featID)
         try:
             where_clause = "featID" + " = " + str(featID)
-            inFeat = workspaceName + "/" + "inFeat" + str(featID)
             arcpy.analysis.Select(bufferFeats, inFeat, where_clause)
            
             # convert polygon to points
-            inPoints = workspaceName + "/" + "inPoints" + str(featID)
             arcpy.management.FeatureVerticesToPoints(inFeat,inPoints,"ALL")
             
             # extract depth values
-            inRasterList = [[inBathy1, "depth"]]
-            ExtractMultiValuesToPoints(inPoints, inRasterList)
+            ExtractValuesToPoints(inPoints, inBathy1, outPoints)            
             
             # generate the reference surface first
             # by interpolating points along the polygon boundaries
-            input1 = TopoPointElevation([[inPoints, 'depth']])
-            input2 = TopoBoundary([inFeat])
             # the TopoToRster function would throw errors when dealing with small (narrow) features
             # this needs to be caught and skipped to next feature
-            inputs = ([input1, input2])
-            outTopo = TopoToRaster(inputs, cell_size=cSize, data_type="SPOT")
+            input1 = outPoints + " RASTERVALU" + " PointElevation"
+            outRaster = "outTopo1"
+            arcpy.ddd.TopoToRaster(input1, outRaster, cell_size=cSize, data_type="SPOT")
+            outTopo = ExtractByMask(outRaster, inFeat)
+            
             arcpy.AddMessage("reference surface generated")
             # convert raster to tin surface
-            outTin1 = tempFolder + "/" + "outTin1_" + str(featID)
             arcpy.ddd.RasterTin(outTopo, outTin1)
             arcpy.AddMessage("reference tin generated")
             # generate the real surface
             outExtract = ExtractByMask(inBathy1, inFeat, "INSIDE", inFeat)
             arcpy.AddMessage("real surface generated")
-            outTin2 = tempFolder + "/" + "outTin2_" + str(featID)
             arcpy.ddd.RasterTin(outExtract, outTin2)
             arcpy.AddMessage("real tin generated")
             # Volume = real surface - reference surface
-            outFeat = workspaceName + "/" + "outFeat" + str(featID)
             arcpy.ddd.SurfaceDifference(outTin2, outTin1, outFeat)
             arcpy.AddMessage("surface difference done")
             # get the total volume (surface area)
@@ -4623,24 +4684,20 @@ def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
             arcpy.management.Delete(inPoints)
             arcpy.management.Delete(outTopo)
             arcpy.management.Delete(outExtract)
+            arcpy.management.Delete(outRaster)
+            arcpy.management.Delete(outPoints)
         # the TopoToRster function would throw errors when dealing with small (narrow) features
         # this needs to be caught and skipped to next feature
         except:
             print("skipping", str(featID))
-            if arcpy.Exists(outTin1):
-                arcpy.management.Delete(outTin1)
-            if arcpy.Exists(outTin2):
-                arcpy.management.Delete(outTin2)
-            if arcpy.Exists(outFeat):
-                arcpy.management.Delete(outFeat)
+
             if arcpy.Exists(inFeat):
                 arcpy.management.Delete(inFeat)
             if arcpy.Exists(inPoints):
                 arcpy.management.Delete(inPoints)
-            if arcpy.Exists(outTopo):
-                arcpy.management.Delete(outTopo)
-            if arcpy.Exists(outExtract):
-                arcpy.management.Delete(outExtract)
+            if arcpy.Exists(outPoints):
+                arcpy.management.Delete(outPoints)
+  
             continue
         
     fil.close()
@@ -4652,6 +4709,8 @@ def calculateVolume(inBathy, inFeats, direction, csvFile, workspaceName):
     arcpy.management.Delete(inBathy1)
     arcpy.management.Delete(bufferFeats)
     arcpy.AddMessage("Volume and sArea attributes calculated")
+
+    arcpy.CheckInExtension("3D")
     
                 
         

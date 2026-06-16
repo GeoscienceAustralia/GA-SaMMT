@@ -10,6 +10,7 @@ from datetime import datetime
 import arcpy
 import numpy as np
 import pandas as pd
+import os
 from arcpy import env
 from arcpy.sa import *
 from pandas.core.common import flatten

@@ -506,18 +506,27 @@ class Add_Topographic_Attributes_High_Tool:
             direction="Input",
         )
 
-        # 4th parameter
+        # fourth parameter
         param3 = arcpy.Parameter(
+            displayName="Temporary Folder",
+            name="tempFolder",
+            datatype="DEFolder",
+            parameterType="Required",
+            direction="Input",
+        )
+
+        # 5th parameter
+        param4 = arcpy.Parameter(
             displayName="Calculate volume attribute",
             name="additionalOption",
             datatype="GPBoolean",
             parameterType="Required",
             direction="Input",
         )
-        param3.value = False
+        param4.value = False
         
 
-        parameters = [param0, param1, param2, param3]
+        parameters = [param0, param1, param2, param3, param4]
         return parameters
 
     def isLicensed(self):
@@ -542,12 +551,14 @@ class Add_Topographic_Attributes_High_Tool:
         inFeatClass = parameters[0].valueAsText
         outFeatClass = parameters[1].valueAsText
         inBathy = parameters[2].valueAsText
-        additionalOption = parameters[3].valueAsText
+        tempFolder = parameters[3].valueAsText
+        additionalOption = parameters[4].valueAsText
 
         # calling the helper functions
        
         inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
         inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
+        tempFolder = HelperFunctions.convert_backslash_forwardslash(tempFolder)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -705,8 +716,6 @@ class Add_Topographic_Attributes_High_Tool:
         # generate the surface area grid
         saGrid = "saGrid"
         itemList.append(saGrid)
-        path1 = inBathy.split(".gdb")[0]
-        tempFolder = path1[0: path1.rfind("/")]
         AddAttributesFunctions.calculateSurfaceArea(mosaicBathy, saGrid, 3, tempFolder)
         arcpy.AddMessage("Surface Area grid generated")
 
@@ -823,8 +832,6 @@ class Add_Topographic_Attributes_High_Tool:
         # The function is unable to calculate volume and surface area for very small (narrow) features
         # The estimated volume and surface area values are more accurate for large features
         if additionalOption == "true":
-            path1 = workspaceName.split(".gdb")[0]
-            tempFolder = path1[0: path1.rfind("/")]
             csvFile = tempFolder + "/" + "volume.csv"
             itemList.append(csvFile)
             AddAttributesFunctions.calculateVolume(inBathy, inFeatClass, 1, csvFile, workspaceName)
@@ -914,15 +921,24 @@ class Add_Topographic_Attributes_Low_Tool:
 
         # 6th parameter
         param5 = arcpy.Parameter(
+            displayName="Temporary Folder",
+            name="tempFolder",
+            datatype="DEFolder",
+            parameterType="Required",
+            direction="Input",
+        )
+
+        # 7th parameter
+        param6 = arcpy.Parameter(
             displayName="Calculate volume attribute",
             name="additionalOption",
             datatype="GPBoolean",
             parameterType="Required",
             direction="Input",
         )
-        param5.value = False
+        param6.value = False
 
-        parameters = [param0, param1, param2, param3, param4, param5]
+        parameters = [param0, param1, param2, param3, param4, param5, param6]
         return parameters
 
     def isLicensed(self):
@@ -949,13 +965,15 @@ class Add_Topographic_Attributes_Low_Tool:
         inBathy = parameters[2].valueAsText
         headFeatClass = parameters[3].valueAsText
         footFeatClass = parameters[4].valueAsText
-        additionalOption = parameters[5].valueAsText
+        tempFolder = parameters[5].valueAsText
+        additionalOption = parameters[6].valueAsText
 
         
         inFeatClass = HelperFunctions.convert_backslash_forwardslash(inFeatClass)
         inBathy = HelperFunctions.convert_backslash_forwardslash(inBathy)
         headFeatClass = HelperFunctions.convert_backslash_forwardslash(headFeatClass)
         footFeatClass = HelperFunctions.convert_backslash_forwardslash(footFeatClass)
+        tempFolder = HelperFunctions.convert_backslash_forwardslash(tempFolder)
 
         # if the input feature class is selected from a drop-down list, the inFeatClass does not contain the full path
         # In this case, the full path needs to be obtained from the map layer
@@ -1208,8 +1226,6 @@ class Add_Topographic_Attributes_Low_Tool:
         # generate the surface area grid
         saGrid = "saGrid"
         itemList.append(saGrid)
-        path1 = inBathy.split(".gdb")[0]
-        tempFolder = path1[0: path1.rfind("/")]
         AddAttributesFunctions.calculateSurfaceArea(mosaicBathy, saGrid, 3, tempFolder)
         arcpy.AddMessage("Surface Area grid generated")
         
@@ -1385,8 +1401,6 @@ class Add_Topographic_Attributes_Low_Tool:
         arcpy.management.CalculateField(inFeatClass, field, expression, "PYTHON3")
         # calculate volume and sArea attributes using 3D extension
         if additionalOption == "true":
-            path1 = workspaceName.split(".gdb")[0]
-            tempFolder = path1[0: path1.rfind("/")]
             csvFile = tempFolder + "/" + "volume.csv"
             itemList.append(csvFile)
             AddAttributesFunctions.calculateVolume(inBathy, inFeatClass, -1, csvFile, workspaceName)

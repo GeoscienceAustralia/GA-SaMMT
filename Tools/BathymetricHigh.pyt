@@ -837,7 +837,18 @@ class ContourBH_Tool(object):
         param10.filter.type = "ValueList"
         param10.filter.list = ['First Derivative', 'Second Derivative']
 
-        parameters = [param0, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10]
+        # 12th parameter
+        param11 = arcpy.Parameter(
+            displayName="Maximum number of CPU processors used for multiprocessing",
+            name="maxCPU",
+            datatype="GPLong",
+            parameterType="Required",
+            direction="Input",
+        )
+        # the default value is the half of logical processors available in the computer minus 1
+        param11.value = int(multiprocessing.cpu_count() / 2) - 1        
+
+        parameters = [param0, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11]
         return parameters
 
     def isLicensed(self):
@@ -871,6 +882,7 @@ class ContourBH_Tool(object):
         minAreaThreshold = parameters[8].valueAsText
         maxAreaThreshold = parameters[9].valueAsText
         method = parameters[10].valueAsText
+        maxCPU = int(parameters[11].valueAsText)
         # enable helper function
         helper = helpers()
 
@@ -1244,8 +1256,6 @@ def roundNumber(a):
         # get the feature count of outFeat2_Selected
         nuFeats = int(arcpy.management.GetCount(outFeat2_Selected)[0])
         arcpy.AddMessage("They are " + str(nuFeats) + " features for multiprocessing.")
-        # set the maximum number of CPUs for the multiprocessing job equals to half of those available minus 1
-        maxCPU = int(multiprocessing.cpu_count() / 2) - 1
 
         if nuFeats > 0:
             # determine how many CPUs to use depending on the feature count of outFeat2_Selected
@@ -1438,7 +1448,19 @@ class PseudoContourBH_Tool(object):
         param9.filter.type = "ValueList"
         param9.filter.list = ['First Derivative', 'Second Derivative']
 
-        parameters = [param0, param1, param2, param3, param4, param5, param6, param7, param8, param9]
+        # 11th parameter
+        param10 = arcpy.Parameter(
+            displayName="Maximu number of CPU processors used for multiprocessing",
+            name="maxCPU",
+            datatype="GPLong",
+            parameterType="Required",
+            direction="Input",
+        )
+        # the default value is the half of logical processors available in the computer minus 1
+        param10.value = int(multiprocessing.cpu_count() / 2) - 1
+
+
+        parameters = [param0, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10]
         return parameters
 
     def isLicensed(self):
@@ -1507,6 +1529,7 @@ class PseudoContourBH_Tool(object):
         minAreaThreshold = parameters[7].valueAsText
         maxAreaThreshold = parameters[8].valueAsText
         method = parameters[9].valueAsText
+        maxCPU = int(parameters[10].valueAsText)
         # enable helper function
         helper = helpers()
 
@@ -1847,8 +1870,7 @@ class PseudoContourBH_Tool(object):
         # get the feature count of outFeat2_Selected
         nuFeats = int(arcpy.management.GetCount(outFeat2_Selected)[0])
         arcpy.AddMessage("They are " + str(nuFeats) + " features for multiprocessing.")
-        # set the maximum number of CPUs for the multiprocessing job equals to half of those available minus 1
-        maxCPU = int(multiprocessing.cpu_count() / 2) - 1
+
         if nuFeats > 0:
             # determine how many CPUs to use depending on the feature count of outFeat2_Selected
             if nuFeats % 5 > 0:

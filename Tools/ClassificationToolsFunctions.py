@@ -15,7 +15,7 @@ import os
 import sys
 import HelperFunctions
 
-arcpy.CheckOutExtension("Spatial")
+##arcpy.CheckOutExtension("Spatial")
 
 # This function calls the multiprocessing module to verify Depression Feature
 def execute_verify_depression(argList, n_cpu):
@@ -49,6 +49,13 @@ def verifyDepression(arg):
     outFeat = arg[6] # the output features resulted from the verification process
     env.workspace = workspaceName
     env.overwriteOutput = True
+
+    if arcpy.CheckExtension("Spatial") == "Available":
+        arcpy.CheckOutExtension("Spatial")
+        print("Spatial Analyst license checked out successfully.")
+    else:
+        print("Spatial Analyst license is unavailable.")
+        
     # step through each original Depression Feature, run the verification process, and update the classification
     # either as Depression or as unclassified
     cursor = arcpy.UpdateCursor(depressionFeat)
@@ -174,5 +181,7 @@ def roundNumber(a):
     del cursor, row
     # copy the updated depression features to the output features
     arcpy.management.Copy(depressionFeat, outFeat)
+
+    arcpy.CheckInExtension("Spatial")
 
     return
