@@ -88,7 +88,7 @@ class TPITool:
             name="tpiRadius",
             datatype="GPLong",
             parameterType="Required",
-                direction="Input",
+            direction="Input",
         )
         param4.value = 3
 
@@ -125,6 +125,7 @@ class TPITool:
         has been changed."""
 
 
+
         return
 
     def updateMessages(self, parameters):
@@ -134,7 +135,7 @@ class TPITool:
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        arcpy.env.overwriteOutput = True
+        
         bathyRas = parameters[0].valueAsText
         tpiRas = parameters[1].valueAsText
         outFeat = parameters[2].valueAsText
@@ -222,7 +223,10 @@ class TPITool:
             messages.addErrorMessage("You cann't provide an unknown area unit for Area Threshold.")
             raise arcpy.ExecuteError
 
+        
+            
         arcpy.env.workspace = workspaceName
+        arcpy.env.overwriteOutput = True
 
         # call the helper function to calculate TPI and generate output Bathymetric High features
         helper.TPI_Tool_High(
@@ -2086,6 +2090,7 @@ class helpers:
         # If the TPI raster already exists in a backup directory, just copied the raster to the workspace.
         # The intension is to calculate TPI with a defined tpiRadius only once,
         # as the calculation may takes a long time depending on the radius value and the size of the bathymetric grid.
+
         if arcpy.Exists(tpiRas1):
             arcpy.management.Copy(tpiRas1, tpiRas)
             arcpy.AddMessage(tpiRas + " exists and will be used")
