@@ -74,17 +74,32 @@ def verifyDepression(arg):
         arcpy.analysis.Buffer(selectedFeat, bufferFeat, distance)
         # extract the bathymetric grid to the extent of the buffered feature
         featBathy = ExtractByMask(inBathy, bufferFeat, "INSIDE")
-        # get the minimum and maximum depth values within the extracted bathymetric grid
-        result1 = arcpy.management.GetRasterProperties(featBathy, "MINIMUM")
-        minDepth = result1.getOutput(0)
-        if minDepth.find(",") > 0:
-            minDepth = HelperFunctions.convertDecimalSeparator(minDepth)
-        minDepth = round(float(minDepth), 2)
-        result1 = arcpy.management.GetRasterProperties(featBathy, "MAXIMUM")
-        maxDepth = result1.getOutput(0)
-        if maxDepth.find(",") > 0:
-            maxDepth = HelperFunctions.convertDecimalSeparator(maxDepth)
-        maxDepth = round(float(maxDepth), 2)
+
+        # instead of the minumum and maximum depth values, get the top and bottom 2.5 percentile values
+        # this is to remove extreme bathymetry values from influencing the calculation of the contour interval values
+        percentile_values=[2.5,97.5]
+        zoneField = "OBJECTID"
+        outTab1 = "outTab1"
+        outZ1 = ZonalStatisticsAsTable(
+            bufferFeat, zoneField, featBathy, outTab1, "DATA", "ALL", percentile_values=percentile_values
+        )
+        
+        cursor1 = arcpy.SearchCursor(outTab1)
+        for row1 in cursor1:
+            pctMax = row1.getValue("PCT97_5")
+            pctMin = row1.getValue("PCT2_5")
+
+        del cursor1, row1
+        if pctMax.find(",") > 0:
+            pctMax = HelperFunctions.convertDecimalSeparator(pctMax)
+        pctMax = round(float(pctMax), 2)
+
+        if pctMin.find(",") > 0:
+            pctMin = HelperFunctions.convertDecimalSeparator(pctMin)
+        pctMin = round(float(pctMin), 2)
+
+        arcpy.AddMessage("PCTMax: " + str(pctMax))
+        arcpy.AddMessage("PCTMin: " + str(pctMin))
         # The verification process is an iterative process. The maximum number of the iteration is determined by the
         # maxContour parameter. The process starts with generating contours with 2 or 3 distinct contour values (j = 1).
         # The process then evaluates whether the area ratio between the largest contour polygon generated
@@ -101,9 +116,16 @@ def verifyDepression(arg):
         # starts the iterative verification process
         while j < (maxContour + 1):
             # calculate the contourInt parameter for the Contour tool
-            contourInt = round((maxDepth - minDepth) / (j + 1), 2)
+            contourInt = round((pctMax - pctMin) / (j + 1), 2)
+            # if no depth difference within the feature polygon, stop the iteration
+            if contourInt == 0:
+                arcpy.AddMessage("skip this one")
+                break
+            
+            arcpy.AddMessage("round: " + str(j))
+            arcpy.AddMessage("contour interval: " + str(contourInt))
             # call the contour tool to generate contours within the extracted bathymetric grid
-            Contour(featBathy, featContour, contourInt, maxDepth)
+            Contour(featBathy, featContour, contourInt, pctMax)
             # adding a "contour1" field to get around the rounding issue
             fieldType = "DOUBLE"
             fieldPrecision = 15
@@ -130,7 +152,7 @@ def roundNumber(a):
             arr = np.empty(0)
             while i < (j + 1):
                 # select a set of contours with a distinct contour value
-                selectedContour = round(maxDepth - i * contourInt, 2)
+                selectedContour = round(pctMax - i * contourInt, 2)
                 whereClause = "contour1 = " + str(selectedContour)
                 contourFeat = "contourFeat"
                 arcpy.analysis.Select(featContour, contourFeat, whereClause)

@@ -850,12 +850,12 @@ class Verify_Depression_Tool:
         env.overwriteOutput = True
 
         time1 = datetime.now()
-        # select the input bathymetric low features that are originally classified as the Depression
-        whereClause = "Morphology_feature = " + "'Depression'"
+        # select the input bathymetric low features that are originally classified as the Depression or unclassified
+        whereClause = "Morphology_feature = " + "'Depression'" + " Or " + "Morphology_feature = " + "'unclassified'"
         depressionFeat = "depressionFeat"
         arcpy.analysis.Select(inFeatClass, depressionFeat, whereClause)
         # select the input bathymetric low features that are originally classified as other feature types
-        whereClause = "Morphology_feature <> " + "'Depression'"
+        whereClause = "Morphology_feature <> " + "'Depression'" + " And " + "Morphology_feature <> " + "'unclassified'"
         otherFeat = "otherFeat"
         arcpy.analysis.Select(inFeatClass, otherFeat, whereClause)
         # get the cell size of the input bathymetric grid, assuming the cell is square shape
