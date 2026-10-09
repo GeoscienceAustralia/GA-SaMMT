@@ -393,7 +393,10 @@ def splitFeat(workspace, inFeat, mergeFeat, joinFeat, selectFeat, noSplit):
 
     noFeat = int(arcpy.management.GetCount(inFeat).getOutput(0))
     featCount = int(noFeat / noSplit)
-
+    b = noFeat % noSplit
+    if (b / noSplit) > 0.5:
+        featCount = featCount + 1
+        
     featList = []
     tempfolderList = []
     workspaceList = []
