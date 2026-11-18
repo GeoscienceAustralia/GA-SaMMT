@@ -3995,7 +3995,7 @@ def calculateTopographicBH(workspaceName, tempFolder, inFeat, inBathy, slpGrid, 
     # The relativeHeight attribute is the depth difference between the 97.5th and the 2.5th percentiles.
     # The relativeHeight attribute is more appropriate than the depthRange attribute in classifying Seamount, Pinnacle, Knoll and Hills (Dolan and Bjarnadottir, 2025).
     # This is because the depthRange attribute is more likely affected by bathymetry data uncertainty.
-    # Dolan MFJ and Bjarnadóttir LR (2025) Seamounts and related topographic highs – automated mapping in support of sustainable ocean management, Norway. Front. Earth Sci. 13:1690996. doi: 10.3389/feart.2025.1690996
+    # Dolan MFJ and BjarnadÃ³ttir LR (2025) Seamounts and related topographic highs â€“ automated mapping in support of sustainable ocean management, Norway. Front. Earth Sci. 13:1690996. doi: 10.3389/feart.2025.1690996
     percentile_values=[2.5,97.5]
     outZ1 = ZonalStatisticsAsTable(
         inFeat, zoneField, inBathy, outTab1, "DATA", "ALL", percentile_values=percentile_values
@@ -4397,7 +4397,8 @@ def calculateSurfaceArea(bathyRas, outRas, wSize, tempFolder):
     HelperFunctions.generateWeightFiles(tempFolder, wSize)
 
     rasResult = arcpy.management.GetRasterProperties(bathyRas, "CELLSIZEX")
-    size = int(rasResult.getOutput(0))
+    # change to float() instead of int() to accommodate the cellsize with floating number (e.g., 3.5 metres)
+    size = float(rasResult.getOutput(0))
     # window is the window size
 
     a = wSize - 1

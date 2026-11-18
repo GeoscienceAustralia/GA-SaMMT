@@ -52,6 +52,10 @@ def splitFeat(workspace, inFeat, inBathy, inSlope, noSplit):
 
     noFeat = int(arcpy.management.GetCount(inFeat).getOutput(0))
     featCount = int(noFeat / noSplit)
+    b = noFeat % noSplit
+    if (b / noSplit) > 0.5:
+        featCount = featCount + 1
+        
     featList = []
     bathyList = []
     slopeList = []

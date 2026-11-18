@@ -171,7 +171,7 @@ def calculateOpenness(
         messages.addErrorMessage("    *** Analysis window is too long. ***")
         raise arcpy.ExecuteError
 
-    #   calculate elevation angles within roughly circular search window (clockwise from N=0บ)
+    #   calculate elevation angles within roughly circular search window (clockwise from N=0ยบ)
     outShape = rasterDEMArray.shape
 
     outArray = np.zeros(outShape, dtype=np.float32)
@@ -198,7 +198,7 @@ def calculateOpenness(
         for x in range(-radius, radius + 1)
         for y in range(-radius, radius + 1)
     ]
-    #   calculate elevation angles within roughly circular search window (clockwise from N=0บ)
+    #   calculate elevation angles within roughly circular search window (clockwise from N=0ยบ)
     for direction in range(0, 360, 45):
         if direction == 0:
             shiftsListD = filter(lambda arr: arr[0] < 0 and arr[1] == 0, shiftsList)

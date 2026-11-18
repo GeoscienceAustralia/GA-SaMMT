@@ -86,8 +86,8 @@ def verifyDepression(arg):
         
         cursor1 = arcpy.SearchCursor(outTab1)
         for row1 in cursor1:
-            pctMax = row1.getValue("PCT97_5")
-            pctMin = row1.getValue("PCT2_5")
+            pctMax = str(row1.getValue("PCT97_5"))
+            pctMin = str(row1.getValue("PCT2_5"))
 
         del cursor1, row1
         if pctMax.find(",") > 0:
